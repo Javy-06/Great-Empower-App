@@ -1,0 +1,11 @@
+{
+  "title": "GREAT EMPOWER — Financial Wellness Education Demo",
+  "description": "An independent educational demo for Malaysian young adults to explore financial wellness, learning and protection concepts. Sample figures and rewards are illustrative; no Great Eastern partnership or endorsement is implied.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
