@@ -1,13 +1,14 @@
 import type { HTMLAttributes, ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
-export type CardVariant = 'default' | 'muted' | 'elevated' | 'navy' | 'outline-dashed'
+export type CardVariant = 'default' | 'muted' | 'elevated' | 'navy' | 'paper' | 'outline-dashed'
 
 const variantCls: Record<CardVariant, string> = {
   default: 'bg-surface border border-line',
   muted: 'bg-sunken border border-transparent',
   elevated: 'bg-surface border border-line shadow-e1',
   navy: 'bg-navy-900 text-white border border-navy-800',
+  paper: 'bg-paper border border-sand-100',
   'outline-dashed': 'bg-transparent border border-dashed border-line-strong',
 }
 

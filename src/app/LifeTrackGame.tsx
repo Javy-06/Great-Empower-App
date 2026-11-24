@@ -69,7 +69,7 @@ function JourneyResult({ state, onRestart }: { state: ReturnType<typeof initialS
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Badge tone="teal" variant="solid" icon={Flag}>Journey complete</Badge>
-          <h1 className="mt-3 text-title text-ink md:text-display">Your twenties, one decision at a time.</h1>
+          <h2 className="mt-3 text-title text-ink md:text-display">Your twenties, one decision at a time.</h2>
           <p className="mt-2 max-w-2xl text-body text-ink-secondary">You reached the end of this illustrative journey. There is no insurance-based win condition; your choices shaped five separate resources.</p>
         </div>
         <Button variant="support" leadingIcon={RotateCcw} onClick={onRestart}>Play again</Button>
@@ -129,7 +129,7 @@ export function LifeTrackGame() {
           <p className="mt-2 max-w-3xl text-body text-ink-secondary">A financial life simulation for Malaysian young adults. Move through 20 spaces covering work, health, family, housing and long-term plans.</p>
         </div>
         <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <Card padding="lg" className="flex flex-col gap-5 bg-navy-900 text-white">
+          <Card variant="navy" padding="lg" className="flex flex-col gap-5 self-start">
             <div className="flex items-center gap-3"><span className="inline-flex size-12 items-center justify-center rounded-2xl bg-white/10 text-teal-200"><Dice5 size={26} /></span><div><Badge tone="teal" variant="solid">Sample journey</Badge><h3 className="mt-1 text-subheading text-white">Aisyah Hassan · demo player</h3></div></div>
             <p className="text-body-sm text-white/80">Roll, land on a life event, make a choice and see how it changes your resources. Your decisions stay in this browser session.</p>
             <Button variant="inverse" leadingIcon={ArrowRight} onClick={startJourney}>Start journey</Button>

@@ -5,6 +5,7 @@ import { Badge, Chip } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SearchField } from "@/components/ui/Field";
+import { PageHeader } from "@/components/layout/Page";
 
 const guideArticles = [
   {
@@ -192,7 +193,7 @@ export function GuideCentre() {
             <Badge tone="teal">
               {article.category} · {article.minutes} min read
             </Badge>
-            <h1 className="mt-3 text-title text-ink md:text-display">{article.title}</h1>
+            <h1 className="mt-3 font-brand text-serif-title text-navy-900 md:text-serif-hero">{article.title}</h1>
             <p className="mt-2 max-w-2xl text-body text-ink-secondary">{article.summary}</p>
             <h2 className="mt-7 text-heading text-ink">Key ideas</h2>
             <ul className="mt-3 grid gap-3">
@@ -243,15 +244,15 @@ export function GuideCentre() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div>
-        <p className="text-overline uppercase text-teal-700">Guide</p>
-        <h1 className="mt-1 text-title text-ink md:text-display">Financial guidance</h1>
-        <p className="mt-2 max-w-2xl text-body text-ink-secondary">
-          Short, general explainers for everyday financial topics. This is an independent
-          educational demo.
-        </p>
-        <div className="mt-4 max-w-xl">
+        <PageHeader
+          eyebrow="Guide"
+          tone="gold"
+          title="Plain answers to money questions."
+          lede="Short, general explainers. Read one in under ten minutes."
+        />
+        <div className="mt-6 max-w-xl">
           <SearchField placeholder="Search guide articles" value={query} onChange={setQuery} />
         </div>
       </div>

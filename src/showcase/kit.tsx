@@ -16,14 +16,15 @@ export function Section({ id, index, eyebrow, title, intro, children }: { id: st
         </h2>
         {intro && <p className="mt-2 text-body text-ink-secondary sm:mt-3 sm:text-body-lg">{intro}</p>}
       </header>
-      <div className="flex flex-col gap-10 md:gap-12">{children}</div>
+      {/* Grid items default to min-width:auto and would stretch to fixed-width mockups; let them shrink. */}
+      <div className="flex flex-col gap-10 md:gap-12 [&_.grid>*]:min-w-0">{children}</div>
     </section>
   )
 }
 
 export function Sub({ title, description, children, aside }: { title: string; description?: ReactNode; children: ReactNode; aside?: ReactNode }) {
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="max-w-2xl">
           <h3 className="text-heading text-ink">{title}</h3>
@@ -31,7 +32,8 @@ export function Sub({ title, description, children, aside }: { title: string; de
         </div>
         {aside}
       </div>
-      {children}
+      {/* Device mockups are fixed-width; on narrow screens they scroll sideways instead of being clipped. */}
+      <div className="-mx-1 -mt-3 min-w-0 overflow-x-auto px-1 pb-1 pt-3">{children}</div>
     </div>
   )
 }

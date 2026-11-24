@@ -40,18 +40,18 @@ export function Sidebar({ active, onChange, points = 2450, onRewardsClick, onLog
       </nav>
 
       <div className="mt-6 px-3">
-        <button type="button" onClick={onRewardsClick} className="group w-full rounded-2xl bg-navy-900 p-4 text-left text-white transition-colors hover:bg-navy-800">
+        <button type="button" onClick={onRewardsClick} className="group w-full rounded-2xl border border-line bg-paper p-4 text-left transition-colors hover:border-sand-200 hover:bg-sand-50">
           <div className="flex items-center justify-between">
-            <span className="text-overline uppercase text-white/70">Rewards Hub</span>
-            <ChevronRight size={18} className="text-white/70 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            <span className="text-overline uppercase text-crimson-700">Rewards Hub</span>
+            <ChevronRight size={18} className="text-ink-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
           </div>
-          <p className="mt-2 text-numeric tabular-nums">
-            {points.toLocaleString('en-MY')} <span className="text-body-sm font-medium text-white/70">pts</span>
+          <p className="mt-1.5 text-subheading tabular-nums text-ink">
+            {points.toLocaleString('en-MY')} <span className="text-body-sm font-medium text-ink-muted">demo pts</span>
           </p>
-          <div className="mt-3">
-            <ProgressBar value={72} tone="gold" size="sm" onDark />
+          <div className="mt-2.5">
+            <ProgressBar value={72} tone="gold" size="sm" />
           </div>
-          <p className="mt-2 text-caption text-white/70">550 pts to Silver tier</p>
+          <p className="mt-1.5 text-caption text-ink-muted">550 pts to Silver tier</p>
         </button>
       </div>
 

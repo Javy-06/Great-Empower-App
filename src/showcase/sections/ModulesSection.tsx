@@ -189,7 +189,7 @@ export function ModulesSection() {
   const mod = modules.find((m) => m.key === active)!
   return (
     <Section id="modules" index="12" eyebrow="Module identity" title="One brand, seven personalities" intro="Each module tunes density, colour emphasis and illustration within the same tokens and components. Select a module to see its guidelines and signature components.">
-      <div role="tablist" aria-label="Modules" className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0">
+      <div role="tablist" aria-label="Modules" className="scrollbar-none -mx-3 flex gap-2 overflow-x-auto px-3 sm:-mx-4 sm:px-4 md:mx-0 md:flex-wrap md:px-0">
         {modules.map((m) => {
           const Icon = m.icon
           const on = m.key === active

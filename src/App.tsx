@@ -170,6 +170,7 @@ function FoundationApp() {
 
         <main className="min-w-0 flex-1 px-3 sm:px-4 md:px-8 xl:px-12">
           <div className="mx-auto max-w-[1200px]">
+            <h1 className="sr-only">GREAT EMPOWER Design Foundation</h1>
             <DirectionSection />
             <ColorSection />
             <TypographySection />

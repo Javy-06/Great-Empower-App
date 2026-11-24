@@ -25,7 +25,7 @@ export function MobileAppHeader({ title, variant = 'root', points = 2450, onDark
       ) : (
         <LogoMark size={32} tone={onDark ? 'white' : 'navy'} />
       )}
-      <h1 className={cn('min-w-0 flex-1 truncate text-subheading', variant === 'root' && 'ml-1', onDark ? 'text-white' : 'text-ink')}>{title}</h1>
+      <p className={cn('min-w-0 flex-1 truncate text-subheading', variant === 'root' && 'ml-1', onDark ? 'text-white' : 'text-ink')}>{title}</p>
       <RewardsShortcut points={points} compact onDark={onDark} onClick={onRewardsClick} />
       <IconButton icon={Bell} label="Notifications" variant={onDark ? 'inverse-outline' : 'ghost'} badge className={cn('-mr-2', onDark && 'border-0')} onClick={onNotificationsClick} />
     </header>

@@ -144,11 +144,13 @@ export function LessonCard({
             <LessonArt art={art} tone={tone} />
           )}
         </button>
-        <div className="absolute left-3 top-3 flex gap-1.5">
-          <Badge tone="neutral" variant="solid" className="bg-white/95 text-navy-900">
-            {level}
-          </Badge>
-        </div>
+        {level && (
+          <div className="absolute left-3 top-3 flex gap-1.5">
+            <Badge tone="neutral" variant="solid" className="bg-white/95 text-navy-900">
+              {level}
+            </Badge>
+          </div>
+        )}
         <button
           type="button"
           aria-label={isBookmarked ? `Remove bookmark for ${title}` : `Bookmark ${title}`}

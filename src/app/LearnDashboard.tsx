@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { IconTile } from "@/components/ui/IconTile";
 import { ProgressBar } from "@/components/ui/Progress";
 import { LessonCard } from "@/components/cards/LearnCards";
+import { ListRow, PageHeader, SectionHeader } from "@/components/layout/Page";
 import { demoLearning } from "@/data/demo-learning";
 import { demoLearningCategories, demoLessons, protectionPurposes } from "@/data/demo-courses";
 import type { LearningCategoryKey, LearningLesson } from "@/types/learning";
@@ -84,26 +85,6 @@ const lessonKeyPoints: Record<string, string[]> = {
   ],
 };
 
-function SectionHeading({
-  eyebrow,
-  title,
-  action,
-}: {
-  eyebrow: string;
-  title: string;
-  action?: ReactNode;
-}) {
-  return (
-    <div className="mb-3 flex items-end justify-between gap-3">
-      <div>
-        <p className="text-overline uppercase text-teal-700">{eyebrow}</p>
-        <h2 className="mt-1 text-heading text-ink">{title}</h2>
-      </div>
-      {action}
-    </div>
-  );
-}
-
 function LessonGrid({
   lessons,
   bookmarked,
@@ -161,14 +142,6 @@ const categoryToneByKey: Record<LearningCategoryKey, "teal" | "navy" | "crimson"
   protection: "crimson",
   "life-planning": "navy",
   practical: "teal",
-};
-
-const categoryAccentByKey: Record<LearningCategoryKey, string> = {
-  all: "border-t-navy-700 bg-navy-50/50",
-  "financial-wellness": "border-t-teal-600 bg-teal-50/40",
-  protection: "border-t-crimson-600 bg-crimson-50/30",
-  "life-planning": "border-t-navy-700 bg-navy-50/50",
-  practical: "border-t-teal-700 bg-surface",
 };
 
 export function LearnDashboard() {
@@ -234,7 +207,7 @@ export function LearnDashboard() {
                 {status}
               </Badge>
             </div>
-            <h1 className="mt-3 max-w-2xl text-title md:text-display">{lesson.title}</h1>
+            <h1 className="mt-3 max-w-2xl font-brand text-serif-title md:text-serif-hero">{lesson.title}</h1>
             <div className="mt-3 flex flex-wrap gap-4 text-caption text-white/75">
               <span className="inline-flex items-center gap-1">
                 <Clock3 size={14} /> {lesson.minutes} min
@@ -328,34 +301,20 @@ export function LearnDashboard() {
         >
           Back to Learn
         </Button>
-        <Card variant="navy" radius="3xl" padding="lg" className="overflow-hidden">
-          <div className="flex items-start gap-4">
-            <IconTile icon={Icon} tone="teal" size="lg" />
-            <div>
-              <p className="text-overline uppercase text-teal-300">Learn category · Demo</p>
-              <h1 className="mt-1 text-title text-white md:text-display">{category.label}</h1>
-              <p className="mt-2 max-w-2xl text-body-sm text-white/75 md:text-body">
-                {category.description}.
-              </p>
-            </div>
-          </div>
-        </Card>
+        <PageHeader
+          eyebrow="Learn · Category"
+          tone="teal"
+          title={category.label}
+          lede={`${category.description}.`}
+          aside={
+            <span className="inline-flex items-center gap-2 text-body-sm text-ink-muted">
+              <Icon size={18} aria-hidden /> {lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}
+            </span>
+          }
+        />
 
-        {lessons.length > 0 && (
-          <section aria-label={`${category.label} featured lesson`}>
-            <SectionHeading eyebrow="Featured" title="Featured lesson" />
-            <LessonGrid
-              lessons={[lessons[0]]}
-              bookmarked={bookmarked}
-              onBookmark={toggleBookmark}
-              started={started}
-              completed={completed}
-            />
-          </section>
-        )}
-
-        <section aria-label={`${category.label} available lessons`}>
-          <SectionHeading eyebrow="Available" title="Available lessons" />
+        <section aria-labelledby="category-lessons-title" className="mt-4">
+          <SectionHeader id="category-lessons-title" title="Lessons" />
           {lessons.length > 0 ? (
             <LessonGrid
               lessons={lessons}
@@ -365,61 +324,35 @@ export function LearnDashboard() {
               completed={completed}
             />
           ) : (
-            <Card padding="lg">
-              <p className="text-body-sm text-ink-secondary">
-                No lessons are available in this category yet.
-              </p>
-            </Card>
+            <p className="text-body-sm text-ink-secondary">
+              No lessons are available in this category yet.
+            </p>
           )}
         </section>
 
-        <section aria-label="Relevant learning paths">
-          <SectionHeading eyebrow="Learning path" title="Relevant learning paths" />
-          <div className="grid gap-3 md:grid-cols-2">
-            <Card padding="md">
-              <p className="text-overline uppercase text-teal-700">Path</p>
-              <h3 className="mt-1 text-subheading text-ink">
-                Build your {category.label.toLowerCase()} foundation
-              </h3>
-              <p className="mt-1 text-body-sm text-ink-secondary">
-                Follow the featured lessons and short practical activities in this category.
-              </p>
-            </Card>
-            <Card padding="md">
-              <p className="text-overline uppercase text-navy-700">Progress</p>
-              <h3 className="mt-1 text-subheading text-ink">
-                {lessons.length} demo lessons available
-              </h3>
-              <p className="mt-1 text-body-sm text-ink-secondary">
-                Illustrative learning data only.
-              </p>
-            </Card>
-          </div>
-        </section>
-
         {route.category === "protection" && (
-          <section aria-label="Eight financial protection purposes">
-            <SectionHeading
-              eyebrow="Protection education"
-              title="Eight Financial Protection Purposes"
+          <section aria-labelledby="purposes-title" className="mt-6">
+            <SectionHeader
+              id="purposes-title"
+              title="Eight financial protection purposes"
+              description="The reasons people plan for protection — each needs its own kind of cover."
             />
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <ol className="grid gap-x-10 md:grid-cols-2">
               {protectionPurposes.map((purpose, index) => (
-                <Card key={purpose.title} padding="md">
-                  <div className="flex items-start justify-between gap-3">
-                    <IconTile
-                      icon={Icon}
-                      tone={index % 3 === 0 ? "crimson" : index % 3 === 1 ? "navy" : "teal"}
-                    />
-                    <span className="text-caption font-semibold tabular-nums text-ink-muted">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                <li
+                  key={purpose.title}
+                  className="flex gap-4 border-b border-line py-4 last:border-b-0 md:[&:nth-last-child(2)]:border-b-0"
+                >
+                  <span className="font-brand text-serif-title leading-none text-teal-700 tabular-nums">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-body font-semibold text-ink">{purpose.title}</h3>
+                    <p className="mt-1 text-body-sm text-ink-secondary">{purpose.description}</p>
                   </div>
-                  <h3 className="mt-3 text-body font-semibold text-ink">{purpose.title}</h3>
-                  <p className="mt-1 text-body-sm text-ink-secondary">{purpose.description}</p>
-                </Card>
+                </li>
               ))}
-            </div>
+            </ol>
           </section>
         )}
       </div>
@@ -431,9 +364,15 @@ export function LearnDashboard() {
   );
 
   return (
-    <div className="flex flex-col gap-8 md:gap-10">
+    <div className="flex flex-col gap-12 md:gap-14">
+      <PageHeader
+        eyebrow="Learn"
+        tone="teal"
+        title="Money basics, five minutes at a time."
+        lede="Short lessons on saving, health costs and protection — written for your first years of earning."
+      />
       <section aria-label="Continue learning">
-        <Card variant="navy" radius="3xl" padding="none" className="overflow-hidden">
+        <Card variant="paper" radius="3xl" padding="none" className="overflow-hidden">
           <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
             <div className="relative aspect-[16/8] overflow-hidden bg-teal-50 md:aspect-[16/9] lg:aspect-auto lg:min-h-[380px]">
               {featurePhotoUnavailable ? (
@@ -459,37 +398,31 @@ export function LearnDashboard() {
                 />
               )}
             </div>
-            <div className="flex min-w-0 flex-col justify-center p-5 sm:p-7 md:p-8 lg:p-10">
-              <p className="text-overline uppercase tracking-[0.08em] text-teal-300">
-                Learn Academy · Demo account
-              </p>
-              <p className="mt-4 text-caption font-semibold text-teal-200">
-                Build your financial confidence.
-              </p>
-              <h1 className="mt-1 text-title text-white sm:text-display">
+            <div className="flex min-w-0 flex-col justify-center p-6 sm:p-8 lg:p-10">
+              <p className="text-overline uppercase text-teal-700">Your course</p>
+              <h2 className="mt-2 font-brand text-serif-title text-navy-900">
                 {demoLearning.courseName}
-              </h1>
+              </h2>
               {protectionCategory && (
-                <p className="mt-2 max-w-xl text-body-sm text-white/80 md:text-body">
+                <p className="mt-2 max-w-xl text-body-sm text-ink-secondary md:text-body">
                   {protectionCategory.description}.
                 </p>
               )}
-              <div className="mt-5 max-w-xl">
+              <div className="mt-6 max-w-xl">
                 <ProgressBar
                   value={demoLearning.completionPercent}
-                  tone="white"
-                  onDark
+                  tone="teal"
                   label="Course progress"
                   valueLabel={`${demoLearning.completionPercent}%`}
                 />
-                <p className="mt-2 text-caption text-white/75">
-                  {demoLearning.lessonsCompleted} of {demoLearning.lessonsTotal} lessons complete ·
-                  Demo data
+                <p className="mt-2 text-caption text-ink-muted">
+                  {demoLearning.lessonsCompleted} of {demoLearning.lessonsTotal} lessons · demo
+                  progress
                 </p>
               </div>
-              <div className="mt-5 max-w-xl rounded-2xl bg-white p-2">
-                <p className="px-3 pt-2 text-overline uppercase text-teal-700">Up next</p>
-                <div className="flex min-w-0 items-start gap-3 rounded-2xl bg-teal-50 p-3">
+              <div className="mt-6 max-w-xl border-t border-sand-100 pt-4">
+                <p className="text-overline uppercase text-ink-muted">Up next</p>
+                <div className="mt-2 flex min-w-0 items-start gap-3">
                   <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-teal-600 text-body-sm font-semibold tabular-nums text-teal-700">
                     {demoLearning.nextLesson.index}
                   </span>
@@ -510,77 +443,53 @@ export function LearnDashboard() {
                 </div>
               </div>
               <Button
-                variant="inverse"
+                variant="primary"
                 trailingIcon={ArrowRight}
                 onClick={() => navigateToLearn({ view: "lesson", lessonId: "hospital-bills" })}
-                className="mt-5 w-full scroll-mb-24 sm:w-fit"
+                className="mt-6 w-full scroll-mb-24 sm:w-fit"
               >
-                Continue learning
+                Continue lesson
               </Button>
             </div>
           </div>
         </Card>
       </section>
 
-      <section aria-label="Explore categories">
-        <SectionHeading
-          eyebrow="Explore"
-          title="Learning categories"
-          action={
-            <Button
-              size="sm"
-              variant="ghost"
-              trailingIcon={ArrowRight}
-              onClick={() => navigateToLearn({ view: "category", category: "all" })}
-            >
-              All lessons
-            </Button>
-          }
+      <section aria-labelledby="learn-categories-title">
+        <SectionHeader
+          id="learn-categories-title"
+          title="Topics"
+          action={{
+            label: "All lessons",
+            onClick: () => navigateToLearn({ view: "category", category: "all" }),
+          }}
         />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid gap-x-10 md:grid-cols-2">
           {demoLearningCategories
             .filter((category) => category.key !== "all")
-            .map((category) => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.key}
-                  type="button"
+            .map((category) => (
+              <div key={category.key} className="border-b border-line last:border-b-0 md:[&:nth-last-child(2)]:border-b-0">
+                <ListRow
+                  icon={category.icon}
+                  tone={categoryToneByKey[category.key]}
+                  title={category.label}
+                  description={category.description}
+                  meta={`${category.lessonCount} ${category.lessonCount === 1 ? "lesson" : "lessons"}`}
                   onClick={() => navigateToLearn({ view: "category", category: category.key })}
-                  className={`flex min-h-40 scroll-mb-24 flex-col rounded-2xl border border-line border-t-4 p-3 text-left transition-colors hover:border-navy-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-700 sm:p-4 ${categoryAccentByKey[category.key]}`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <IconTile icon={Icon} tone={categoryToneByKey[category.key]} />
-                    <Badge tone="neutral" size="sm">
-                      {category.lessonCount} lessons
-                    </Badge>
-                  </div>
-                  <h3 className="mt-3 text-body-sm font-semibold text-ink sm:text-body">
-                    {category.label}
-                  </h3>
-                  <p className="mt-1 text-caption leading-5 text-ink-secondary">
-                    {category.description}
-                  </p>
-                </button>
-              );
-            })}
+                />
+              </div>
+            ))}
         </div>
       </section>
 
-      <section aria-label="Recommended lessons">
-        <SectionHeading
-          eyebrow="For you"
-          title="Recommended lessons"
-          action={
-            <Button
-              size="sm"
-              variant="ghost"
-              trailingIcon={ArrowRight}
-              onClick={() => navigateToLearn({ view: "category", category: "all" })}
-            >
-              View all
-            </Button>
-          }
+      <section aria-labelledby="recommended-title">
+        <SectionHeader
+          id="recommended-title"
+          title="Recommended for you"
+          action={{
+            label: "View all",
+            onClick: () => navigateToLearn({ view: "category", category: "all" }),
+          }}
         />
         <LessonGrid
           lessons={demoLessons.filter(
