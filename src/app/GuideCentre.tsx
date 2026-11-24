@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, HeartPulse, Landmark, PiggyBank, ShieldCheck } from "lucide-react";
-import { ArticleRow, FaqItem } from "@/components/cards/GuideCards";
-import { Badge, Chip } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
+import { ArrowLeft, ArrowUpRight, ChevronDown } from "lucide-react";
 import { SearchField } from "@/components/ui/Field";
-import { PageHeader } from "@/components/layout/Page";
+import { Band, Chapter, Container } from "@/components/layout/Editorial";
+import { cn } from "@/lib/cn";
 
 const guideArticles = [
   {
@@ -63,86 +60,6 @@ const guideCategoryImages: Record<ArticleCategory, string> = {
   Saving: "/images/pexels/young-professional-savings-planning.webp",
 };
 
-const categoryIcons: Record<ArticleCategory, typeof ShieldCheck> = {
-  Protection: ShieldCheck,
-  Health: HeartPulse,
-  Saving: PiggyBank,
-};
-
-function CategoryMediaFallback({ icon: Icon }: { icon: typeof ShieldCheck }) {
-  return (
-    <div
-      className="absolute inset-0 flex items-center justify-center bg-navy-50"
-      aria-hidden="true"
-    >
-      <span className="inline-flex size-10 items-center justify-center rounded-xl bg-white text-navy-900 shadow-e1">
-        <Icon size={20} />
-      </span>
-    </div>
-  );
-}
-
-function GuideCategoryTile({
-  label,
-  count,
-  icon,
-  imageSrc,
-}: {
-  label: string;
-  count: number;
-  icon: typeof ShieldCheck;
-  imageSrc?: string;
-}) {
-  const [imageUnavailable, setImageUnavailable] = useState(false);
-  return (
-    <Card padding="none" className="flex flex-col overflow-hidden">
-      <div className="relative aspect-[3/2] overflow-hidden bg-navy-50">
-        {imageSrc && !imageUnavailable ? (
-          // Decorative crop: the tile label below already names the category.
-          <img
-            src={imageSrc}
-            alt=""
-            width={1200}
-            height={800}
-            loading="lazy"
-            decoding="async"
-            onError={() => setImageUnavailable(true)}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <CategoryMediaFallback icon={icon} />
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-1 p-3 sm:p-4">
-        <span className="text-body-sm font-semibold text-ink">{label}</span>
-        <span className="mt-auto text-caption text-ink-muted">
-          {count} demo {count === 1 ? "guide" : "guides"}
-        </span>
-      </div>
-    </Card>
-  );
-}
-
-function ArticleHeaderImage({ src }: { src: string }) {
-  const [imageUnavailable, setImageUnavailable] = useState(false);
-  if (imageUnavailable) return null;
-  return (
-    <div className="relative aspect-[16/9] overflow-hidden bg-navy-50 sm:aspect-[21/9]">
-      {/* Decorative header: the article title and category follow immediately. */}
-      <img
-        src={src}
-        alt=""
-        width={1200}
-        height={800}
-        loading="eager"
-        decoding="async"
-        onError={() => setImageUnavailable(true)}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-    </div>
-  );
-}
-
 function readArticleId() {
   const match = /^#app\/guide\/article\/([^/?#]+)$/.exec(window.location.hash);
   return match?.[1];
@@ -153,10 +70,31 @@ function openGuide() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function Photo({ src, className, eager }: { src: string; className?: string; eager?: boolean }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <div className={cn("bg-sand-100", className)} aria-hidden />;
+  return (
+    <img
+      src={src}
+      alt=""
+      width={1200}
+      height={800}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      onError={() => setFailed(true)}
+      className={cn("object-cover", className)}
+    />
+  );
+}
+
+const tabs: GuideCategory[] = ["All", "Protection", "Health", "Saving"];
+const FEATURED_ID = "hospital-costs";
+
 export function GuideCentre() {
   const [articleId, setArticleId] = useState(readArticleId);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<GuideCategory>("All");
+  const [faqOpen, setFaqOpen] = useState(false);
 
   useEffect(() => {
     const updateArticle = () => setArticleId(readArticleId());
@@ -175,41 +113,52 @@ export function GuideCentre() {
     });
   }, [category, query]);
 
+  /* ---------- Article: a reading layout ---------- */
   if (articleId && article) {
     return (
-      <div className="mx-auto flex max-w-[900px] flex-col gap-5">
-        <Button
-          size="sm"
-          variant="ghost"
-          leadingIcon={ArrowLeft}
-          onClick={openGuide}
-          className="w-fit"
-        >
-          Back to Guide
-        </Button>
-        <Card padding="none" radius="3xl" className="overflow-hidden">
-          <ArticleHeaderImage src={guideCategoryImages[article.category]} />
-          <div className="p-5 md:p-6">
-            <Badge tone="teal">
+      <article>
+        <div className="relative h-[38vh] min-h-[260px] overflow-hidden bg-sand-100 sm:h-[46vh]">
+          <Photo
+            src={guideCategoryImages[article.category]}
+            eager
+            className="absolute inset-0 h-full w-full"
+          />
+        </div>
+        <Band tone="paper" label={article.title} className="!pt-10 sm:!pt-14">
+          <Container className="max-w-[820px]">
+            <button
+              type="button"
+              onClick={openGuide}
+              className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-navy-800 hover:text-navy-950"
+            >
+              <ArrowLeft size={16} aria-hidden /> Back to Guide
+            </button>
+            <p className="mt-8 text-overline uppercase text-teal-700">
               {article.category} · {article.minutes} min read
-            </Badge>
-            <h1 className="mt-3 font-brand text-serif-title text-navy-900 md:text-serif-hero">
-              {article.title}
-            </h1>
-            <p className="mt-2 max-w-2xl text-body text-ink-secondary">{article.summary}</p>
-            <h2 className="mt-7 text-heading text-ink">Key ideas</h2>
-            <ul className="mt-3 grid gap-3">
-              {article.points.map((point) => (
+            </p>
+            <h1 className="mt-4 font-brand text-mega text-navy-950">{article.title}</h1>
+            <p className="mt-6 text-lede text-ink-secondary">{article.summary}</p>
+            <h2 className="mt-12 text-caption font-semibold uppercase tracking-[0.14em] text-ink-muted">
+              Key ideas
+            </h2>
+            <ol className="mt-4 border-t border-ink/15">
+              {article.points.map((point, index) => (
                 <li
                   key={point}
-                  className="rounded-xl bg-sunken p-4 text-body-sm text-ink-secondary"
+                  className="grid grid-cols-[3.5rem_1fr] gap-4 border-b border-ink/15 py-6"
                 >
-                  {point}
+                  <span className="font-brand text-chapter leading-none text-teal-700 tabular-nums">
+                    {index + 1}
+                  </span>
+                  <span className="text-lede text-ink">{point}</span>
                 </li>
               ))}
-            </ul>
+            </ol>
             {article.id === "hospital-costs" && (
-              <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-body-sm">
+              <div className="mt-8 flex flex-col gap-2 text-body-sm">
+                <p className="text-caption font-semibold uppercase tracking-[0.14em] text-ink-muted">
+                  Further reading
+                </p>
                 <a
                   className="font-semibold text-navy-800 underline underline-offset-4"
                   href="https://www.bnm.gov.my/faqs/ins-tkf/life-family"
@@ -228,94 +177,136 @@ export function GuideCentre() {
                 </a>
               </div>
             )}
-            <p className="mt-7 border-t border-line pt-4 text-caption text-ink-muted">
+            <p className="mt-12 border-t border-ink/15 pt-4 text-caption text-ink-muted">
               Educational demo content only. It is not personal financial, insurance or medical
               advice, and does not recommend buying a product.
             </p>
-          </div>
-        </Card>
-      </div>
+          </Container>
+        </Band>
+      </article>
     );
   }
 
-  const categories: Array<{ label: GuideCategory; icon?: typeof ShieldCheck }> = [
-    { label: "All" },
-    { label: "Protection", icon: ShieldCheck },
-    { label: "Health", icon: HeartPulse },
-    { label: "Saving", icon: PiggyBank },
-  ];
-
+  /* ---------- Guide: featured story + index ---------- */
+  const featured = guideArticles.find((item) => item.id === FEATURED_ID)!;
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <PageHeader
-          eyebrow="Guide"
-          tone="gold"
-          title="Plain answers to money questions."
-          lede="Short, general explainers. Read one in under ten minutes."
-        />
-        <div className="mt-6 max-w-xl">
-          <SearchField placeholder="Search guide articles" value={query} onChange={setQuery} />
-        </div>
-      </div>
-
-      <section aria-label="Guide categories">
-        <div className="flex flex-wrap gap-2">
-          {categories.map(({ label, icon: Icon }) => (
-            <Chip
-              key={label}
-              selected={category === label}
-              onClick={() => setCategory(label)}
-              icon={Icon}
-            >
-              {label}
-            </Chip>
-          ))}
-        </div>
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            {
-              label: "Protection",
-              count: 1,
-              icon: ShieldCheck,
-              imageSrc: guideCategoryImages.Protection,
-            },
-            { label: "Health", count: 1, icon: HeartPulse, imageSrc: guideCategoryImages.Health },
-            { label: "Saving", count: 1, icon: PiggyBank, imageSrc: guideCategoryImages.Saving },
-            { label: "Money basics", count: 0, icon: Landmark },
-          ].map((tile) => (
-            <GuideCategoryTile key={tile.label} {...tile} />
-          ))}
-        </div>
-
-        <Card padding="sm">
-          {filteredArticles.length > 0 ? (
-            filteredArticles.map((item) => (
-              <ArticleRow
-                key={item.id}
-                icon={categoryIcons[item.category]}
-                imageSrc={guideCategoryImages[item.category]}
-                category={item.category}
-                title={item.title}
-                minutes={item.minutes}
-                href={`#app/guide/article/${item.id}`}
-              />
-            ))
-          ) : (
-            <div className="p-4 text-body-sm text-ink-secondary" role="status">
-              No demo guides match that search. Try another word or clear the search.
+    <>
+      <Band tone="paper" labelledBy="guide-title" className="!pb-12">
+        <Container className="grid gap-12 lg:grid-cols-[5fr_7fr] lg:items-end">
+          <div>
+            <Chapter
+              as="h1"
+              label="Guide"
+              id="guide-title"
+              title="Plain answers to money questions."
+            />
+            <div className="mt-8 max-w-md">
+              <SearchField placeholder="Search guide articles" value={query} onChange={setQuery} />
             </div>
+          </div>
+          <a href={`#app/guide/article/${featured.id}`} className="ge-zoom group block">
+            <span className="block aspect-[16/10] overflow-hidden">
+              <Photo src={guideCategoryImages[featured.category]} eager className="h-full w-full" />
+            </span>
+            <span className="mt-5 block text-overline uppercase text-teal-700">
+              Featured · {featured.category} · {featured.minutes} min
+            </span>
+            <span className="mt-2 block font-brand text-chapter text-navy-950 group-hover:underline group-hover:underline-offset-4">
+              {featured.title}
+            </span>
+          </a>
+        </Container>
+      </Band>
+
+      <Band tone="canvas" labelledBy="articles-title" className="!pt-12">
+        <Container>
+          <h2 id="articles-title" className="sr-only">
+            Guide articles
+          </h2>
+          <nav aria-label="Guide categories">
+            <ul className="flex flex-wrap gap-1 border-b border-ink/15">
+              {tabs.map((label) => (
+                <li key={label}>
+                  <button
+                    type="button"
+                    aria-pressed={category === label}
+                    onClick={() => setCategory(label)}
+                    className={cn(
+                      "relative inline-flex h-12 items-center px-3 text-body-sm font-semibold",
+                      category === label ? "text-navy-950" : "text-ink-muted hover:text-navy-900",
+                    )}
+                  >
+                    {label}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "absolute inset-x-3 -bottom-px h-0.5",
+                        category === label ? "bg-crimson-600" : "bg-transparent",
+                      )}
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {filteredArticles.length > 0 ? (
+            <ol className="mt-2">
+              {filteredArticles.map((item) => (
+                <li key={item.id} className="border-b border-ink/15">
+                  <a
+                    href={`#app/guide/article/${item.id}`}
+                    className="ge-zoom group grid grid-cols-[4.5rem_1fr_auto] items-center gap-4 py-5 sm:grid-cols-[8rem_1fr_auto] sm:gap-6 sm:py-6"
+                  >
+                    <span className="block aspect-square overflow-hidden sm:aspect-[4/3]">
+                      <Photo src={guideCategoryImages[item.category]} className="h-full w-full" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted">
+                        {item.category} · {item.minutes} min read
+                      </span>
+                      <p className="mt-1 font-brand text-serif-title font-semibold text-navy-950 group-hover:underline group-hover:underline-offset-4">
+                        {item.title}
+                      </p>
+                    </span>
+                    <ArrowUpRight
+                      size={22}
+                      className="text-ink-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      aria-hidden
+                    />
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="py-8 text-body text-ink-secondary" role="status">
+              No demo guides match that search. Try another word or clear the search.
+            </p>
           )}
-          <FaqItem
-            q="Is this financial advice?"
-            a="No. These resources are general educational information and are not personalised financial or insurance advice."
-            defaultOpen
-          />
-        </Card>
-      </div>
-    </div>
+
+          <div className="mt-10">
+            <button
+              type="button"
+              aria-expanded={faqOpen}
+              onClick={() => setFaqOpen((value) => !value)}
+              className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-navy-800"
+            >
+              Is this financial advice?
+              <ChevronDown
+                size={18}
+                className={cn("transition-transform", faqOpen && "rotate-180")}
+                aria-hidden
+              />
+            </button>
+            {faqOpen && (
+              <p className="mt-1 max-w-xl text-body-sm text-ink-secondary">
+                No. These resources are general educational information and are not personalised
+                financial or insurance advice.
+              </p>
+            )}
+          </div>
+        </Container>
+      </Band>
+    </>
   );
 }

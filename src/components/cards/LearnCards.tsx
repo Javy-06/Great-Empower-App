@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/Progress";
 import { cn } from "@/lib/cn";
 
-type Art = "shield" | "growth" | "umbrella";
+export type Art = "shield" | "growth" | "umbrella";
 
 /** Geometric illustration header — the default visual for lessons without photography. */
-function LessonArt({ art, tone }: { art: Art; tone: "teal" | "navy" | "crimson" }) {
+export function LessonArt({ art, tone }: { art: Art; tone: "teal" | "navy" | "crimson" }) {
   const bg = { teal: "bg-teal-50", navy: "bg-navy-50", crimson: "bg-crimson-50" }[tone];
   const main = { teal: "#297E85", navy: "#0F294A", crimson: "#C8102E" }[tone];
   const soft = { teal: "#B0DCDE", navy: "#C6D3E6", crimson: "#F6C4CD" }[tone];

@@ -1,3 +1,4 @@
+import { BrandPrologue } from "@/showcase/BrandPrologue";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Badge } from "@/components/ui/Badge";
@@ -107,7 +108,7 @@ function FoundationApp() {
               Open app
             </Button>
             <Badge tone="teal" className="hidden sm:inline-flex">
-              System v3.0
+              Foundation 2.0
             </Badge>
           </div>
         </div>
@@ -149,7 +150,7 @@ function FoundationApp() {
           <div className="px-6 pb-4 pt-6">
             <Logo size="sm" />
             <p className="mt-4 text-body-sm font-semibold text-ink">Design Foundation</p>
-            <p className="text-caption text-ink-muted">Version 3.0 · Draft for review</p>
+            <p className="text-caption text-ink-muted">Version 2.0 redesign · Draft for review</p>
           </div>
           <nav aria-label="Sections" className="flex-1 overflow-y-auto px-3 pb-6">
             {groups.map((g) => (
@@ -207,6 +208,7 @@ function FoundationApp() {
         <main className="min-w-0 flex-1 px-3 sm:px-4 md:px-8 xl:px-12">
           <div className="mx-auto max-w-[1200px]">
             <h1 className="sr-only">GREAT EMPOWER Design Foundation</h1>
+            <BrandPrologue />
             <DirectionSection />
             <ColorSection />
             <TypographySection />
@@ -235,7 +237,7 @@ function FoundationApp() {
                   </p>
                 </div>
                 <div className="text-body-sm">
-                  <p className="font-semibold text-ink">Design Foundation v3.0</p>
+                  <p className="font-semibold text-ink">Design Foundation 2.0</p>
                   <p className="text-ink-muted">
                     Inter · Tailwind CSS v4 tokens · React + TypeScript
                   </p>

@@ -90,6 +90,21 @@
   --color-info-600: #2f5285;
 
   /* Type scale */
+  /* 2.0 editorial display (brand serif). Fluid sizes; used for page heroes and oversized figures. */
+  --text-mega: clamp(3rem, 1.6rem + 5.2vw, 6.5rem);
+  --text-mega--line-height: 0.96;
+  --text-mega--letter-spacing: -0.02em;
+  --text-mega--font-weight: 500;
+  --text-figure: clamp(4.5rem, 2rem + 9vw, 10rem);
+  --text-figure--line-height: 0.85;
+  --text-figure--letter-spacing: -0.03em;
+  --text-figure--font-weight: 500;
+  --text-chapter: clamp(2.25rem, 1.4rem + 2.8vw, 3.75rem);
+  --text-chapter--line-height: 1;
+  --text-chapter--letter-spacing: -0.015em;
+  --text-chapter--font-weight: 500;
+  --text-lede: 1.1875rem;
+  --text-lede--line-height: 1.6;
   /* Editorial serif titles (brand font). Cormorant has a small x-height, so it runs larger than Inter. */
   --text-serif-hero: 2.75rem;
   --text-serif-hero--line-height: 1.02;
@@ -151,6 +166,11 @@
 }
 
 @layer base {
+  /* Brand serif: lining figures so display numerals sit on the baseline (Cormorant defaults to old-style). */
+  .font-brand {
+    font-feature-settings: "lnum" 1;
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;

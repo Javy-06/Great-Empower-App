@@ -379,62 +379,56 @@ export function MedicalClaimSimulator() {
       className="scroll-mt-24"
     >
       {!isOpen ? (
-        <Card padding="none" radius="3xl" className="overflow-hidden border-teal-200">
-          <div className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
-            <div className="flex min-w-0 flex-col items-start p-5 sm:p-6 md:p-8">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="teal" variant="solid" icon={ShieldCheck}>
-                  Education only
-                </Badge>
-                <Badge tone="neutral">Guided scenario</Badge>
-              </div>
-              <h2 className="mt-4 text-heading text-ink md:text-title">Medical claim simulator</h2>
-              <p className="mt-2 max-w-2xl text-body text-ink-secondary">
-                Explore how a hypothetical medical bill could be divided under clearly selected
-                assumptions. This is not a coverage check or an insurer decision.
-              </p>
-              <div className="mt-5">
-                <Button
-                  variant="primary"
-                  leadingIcon={Calculator}
-                  trailingIcon={ArrowRight}
-                  onClick={() => {
-                    setStep(0);
-                    setIsOpen(true);
-                  }}
-                >
-                  {entryButtonLabel}
-                </Button>
-              </div>
-              <p className="mt-3 text-caption text-ink-muted">
-                No policy terms are looked up. Your draft stays in this page and is not saved.
-              </p>
-            </div>
-            <div className="flex flex-col justify-center gap-4 bg-[linear-gradient(135deg,var(--color-teal-50),var(--color-navy-50))] p-5 sm:p-6 md:p-8">
-              <p className="text-overline uppercase text-navy-700">A guided walkthrough</p>
-              <ul className="grid gap-3">
-                <li className="flex items-center gap-3 text-body-sm font-medium text-ink">
-                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-navy-900 shadow-e1">
-                    <FileText size={18} aria-hidden />
-                  </span>
-                  Set up a hypothetical scenario
-                </li>
-                <li className="flex items-center gap-3 text-body-sm font-medium text-ink">
-                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-teal-700 shadow-e1">
-                    <Hospital size={18} aria-hidden />
-                  </span>
-                  Describe bill lines and assumptions
-                </li>
-                <li className="flex items-center gap-3 text-body-sm font-medium text-ink">
-                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-crimson-700 shadow-e1">
-                    <BriefcaseBusiness size={18} aria-hidden />
-                  </span>
-                  Review payer and cost-sharing choices
-                </li>
-              </ul>
-            </div>
+        // 2.0 entry: an editorial introduction instead of a card. Behaviour is unchanged —
+        // the same button opens the same wizard at step 0.
+        <div className="grid gap-10 border-y border-ink/15 py-10 lg:grid-cols-[7fr_5fr] lg:gap-16 lg:py-14">
+          <div className="flex min-w-0 flex-col items-start">
+            <p className="inline-flex items-center gap-2 text-caption font-semibold uppercase tracking-[0.12em] text-teal-700">
+              <ShieldCheck size={14} aria-hidden /> Education only · not a coverage check
+            </p>
+            <h2 className="mt-4 font-brand text-chapter text-navy-950">
+              Split a hospital bill, stage by stage.
+            </h2>
+            <p className="mt-4 max-w-xl text-lede text-ink-secondary">
+              See how a hypothetical bill could be divided between employer, insurer and you — under
+              assumptions you choose.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setStep(0);
+                setIsOpen(true);
+              }}
+              className="group mt-8 inline-flex h-14 items-center gap-3 rounded-full bg-navy-950 px-7 text-body font-semibold text-white transition-colors hover:bg-navy-800"
+            >
+              <Calculator size={18} aria-hidden />
+              {entryButtonLabel}
+              <ArrowRight
+                size={20}
+                className="transition-transform group-hover:translate-x-1"
+                aria-hidden
+              />
+            </button>
+            <p className="mt-4 text-caption text-ink-muted">
+              No policy terms are looked up. Your draft stays in this page and is not saved.
+            </p>
           </div>
-        </Card>
+          <ol className="flex flex-col justify-center border-t border-ink/15 lg:border-l lg:border-t-0 lg:pl-12">
+            {[
+              { icon: FileText, text: "Set up a hypothetical scenario" },
+              { icon: Hospital, text: "Describe bill lines and assumptions" },
+              { icon: BriefcaseBusiness, text: "Review payer and cost-sharing choices" },
+            ].map(({ text }, index) => (
+              <li
+                key={text}
+                className="grid grid-cols-[3rem_1fr] items-baseline border-b border-ink/15 py-5 last:border-b-0"
+              >
+                <span className="font-brand text-serif-title text-teal-700">{index + 1}</span>
+                <span className="text-body font-medium text-ink">{text}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
       ) : (
         <Card padding="none" radius="3xl" className="border-line shadow-e2">
           <div className="flex flex-col gap-5 border-b border-line p-4 sm:p-5 md:p-6">

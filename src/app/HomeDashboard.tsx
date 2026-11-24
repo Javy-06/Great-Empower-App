@@ -1,56 +1,31 @@
 import { useState } from "react";
-import { ArrowRight, BookOpen, Calculator, ChartPie, Compass, type LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { ListRow, SectionHeader, StatStrip } from "@/components/layout/Page";
-import { LifeTrackLauncher } from "./lifetrack/LifeTrackLauncher";
+import { ArrowRight, Clock3 } from "lucide-react";
+import { Band, Chapter, Container, TextLink } from "@/components/layout/Editorial";
+import { LessonArt } from "@/components/cards/LearnCards";
+import { LifeTrackPoster } from "./lifetrack/LifeTrackLauncher";
 import { demoUser } from "@/data/demo-user";
 import { demoLearning } from "@/data/demo-learning";
-import { demoRewards } from "@/data/demo-rewards";
-import { demoActivities } from "@/data/demo-activities";
+import { demoLessons } from "@/data/demo-courses";
 
 export type DashboardDestination = "home" | "learn" | "simulate" | "analyze" | "guide" | "rewards";
 
-const destinations: Array<{
-  destination: DashboardDestination;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  tone: string;
-}> = [
-  {
-    destination: "learn",
-    title: "Learn",
-    description: "Short lessons, from first payslip to the eight protection purposes.",
-    icon: BookOpen,
-    tone: "bg-teal-50 text-teal-700",
-  },
-  {
-    destination: "simulate",
-    title: "Simulate",
-    description: "Split a hospital bill, size an emergency fund, play LifeTrack.",
-    icon: Calculator,
-    tone: "bg-navy-50 text-navy-900",
-  },
-  {
-    destination: "analyze",
-    title: "Analyze",
-    description: "See an income-protection gap and a monthly spending mix.",
-    icon: ChartPie,
-    tone: "bg-crimson-50 text-crimson-700",
-  },
-  {
-    destination: "guide",
-    title: "Guide",
-    description: "Plain-language explainers on protection, health costs and saving.",
-    icon: Compass,
-    tone: "bg-gold-50 text-gold-700",
-  },
+const go = (hash: string) => {
+  window.location.hash = hash;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+// The three-step story below restates the documented, Engine 2-calculated illustrative scenario
+// used in the simulator's acceptance tests (inpatient, waiting-period gate, MYR 500.00 bill,
+// RM200.00 external employer payment). It is labelled illustrative on the page.
+const story = [
+  { figure: "500", label: "Hospital bill", note: "An inpatient stay" },
+  { figure: "200", label: "Employer pays", note: "In this scenario" },
+  { figure: "300", label: "Left for you", note: "Patient payable", accent: true },
 ];
 
-function openLesson() {
-  window.location.hash = "app/learn/lesson/hospital-bills";
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
+const featuredLessons = ["hospital-bills", "emergency-fund", "first-salary"]
+  .map((id) => demoLessons.find((lesson) => lesson.id === id))
+  .filter((lesson): lesson is (typeof demoLessons)[number] => Boolean(lesson));
 
 export function HomeDashboard({
   onNavigate,
@@ -64,44 +39,64 @@ export function HomeDashboard({
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="flex flex-col gap-12 md:gap-16">
-      <section
-        aria-labelledby="home-title"
-        className="overflow-hidden rounded-3xl bg-navy-900 text-white"
-      >
-        <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="flex min-w-0 flex-col justify-center p-6 sm:p-8 lg:p-12">
-            <p className="text-overline uppercase tracking-[0.12em] text-teal-200">
-              Empowering you to protect your tomorrow
-            </p>
-            <h1
-              id="home-title"
-              className="mt-4 font-brand text-serif-title text-white sm:text-serif-hero"
-            >
-              {greeting}, {profileName}.
-            </h1>
-            <p className="mt-4 max-w-md text-body text-white/80 sm:text-body-lg">
-              Next up:{" "}
-              <span className="font-semibold text-white">{demoLearning.nextLesson.title}</span> —{" "}
-              {demoLearning.nextLesson.minutes} minutes.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Button variant="inverse" trailingIcon={ArrowRight} onClick={openLesson}>
-                Continue lesson
-              </Button>
-              <Button variant="inverse-outline" onClick={() => onNavigate("simulate")}>
-                Try a simulator
-              </Button>
-            </div>
-          </div>
-          <div className="relative aspect-[16/9] overflow-hidden bg-navy-800 lg:aspect-auto lg:min-h-[420px]">
-            {heroPhotoUnavailable ? (
-              <div
-                className="absolute inset-0 flex items-center justify-center bg-navy-800"
-                aria-hidden="true"
-              >
-                <BookOpen size={40} strokeWidth={1.25} className="text-white/40" />
+    <>
+      {/* HERO — one headline, one message, one dominant action */}
+      <Band tone="night" flush labelledBy="home-title" className="relative overflow-hidden">
+        <div className="grid md:min-h-[640px] lg:min-h-[calc(100svh-72px)] lg:grid-cols-[7fr_5fr]">
+          <div className="flex flex-col justify-between gap-12 px-5 pb-12 pt-14 sm:px-8 lg:pl-[max(3rem,calc((100vw-1200px)/2+3rem))] lg:pr-12 lg:pt-24">
+            <div>
+              <p className="text-overline uppercase tracking-[0.16em] text-teal-200">
+                {greeting}, {profileName}
+              </p>
+              <h1 id="home-title" className="mt-6 max-w-[11ch] font-brand text-mega text-white">
+                Protect your tomorrow, starting today.
+              </h1>
+              <p className="mt-7 max-w-md text-lede text-white/75">
+                Learn how money and protection really work — before you need them.
+              </p>
+              <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+                <button
+                  type="button"
+                  onClick={() => onNavigate("learn")}
+                  className="group inline-flex h-14 items-center gap-3 rounded-full bg-crimson-600 px-7 text-body font-semibold text-white transition-colors hover:bg-crimson-700"
+                >
+                  Start learning
+                  <ArrowRight
+                    size={20}
+                    className="transition-transform group-hover:translate-x-1"
+                    aria-hidden
+                  />
+                </button>
+                <TextLink onDark onClick={() => onNavigate("simulate")}>
+                  Try the claim simulator
+                </TextLink>
               </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => go("app/learn/lesson/hospital-bills")}
+              className="group flex max-w-md items-center gap-4 border-t border-white/15 pt-5 text-left"
+            >
+              <span className="text-caption uppercase tracking-[0.14em] text-white/55">
+                Up next
+              </span>
+              <span className="min-w-0 flex-1 text-body-sm font-semibold text-white">
+                {demoLearning.nextLesson.title}
+                <span className="font-normal text-white/55">
+                  {" "}
+                  · {demoLearning.nextLesson.minutes} min
+                </span>
+              </span>
+              <ArrowRight
+                size={18}
+                className="shrink-0 text-white/70 transition-transform group-hover:translate-x-1"
+                aria-hidden
+              />
+            </button>
+          </div>
+          <div className="relative aspect-[4/3] overflow-hidden bg-navy-900 sm:aspect-[16/9] lg:aspect-auto">
+            {heroPhotoUnavailable ? (
+              <div className="absolute inset-0 bg-navy-900" aria-hidden />
             ) : (
               <img
                 src="/images/pexels/young-asian-students-learning-together.webp"
@@ -112,103 +107,175 @@ export function HomeDashboard({
                 fetchPriority="high"
                 decoding="async"
                 onError={() => setHeroPhotoUnavailable(true)}
-                className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
+                className="absolute inset-0 h-full w-full object-cover object-[55%_22%]"
               />
             )}
+            <span className="absolute inset-y-0 left-0 w-1.5 bg-crimson-600" aria-hidden />
           </div>
         </div>
-      </section>
+      </Band>
 
-      <section
-        aria-labelledby="week-title"
-        className="rounded-3xl bg-paper p-6 ring-1 ring-sand-100 sm:p-8"
-      >
-        <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 id="week-title" className="text-heading text-ink">
-            This week
-          </h2>
-          <p className="text-caption text-ink-muted">
-            Demo activity · illustrative, not an assessment
-          </p>
-        </div>
-        <StatStrip
-          items={[
-            {
-              label: demoLearning.courseName,
-              value: `${demoLearning.completionPercent}%`,
-              hint: `${demoLearning.lessonsCompleted} of ${demoLearning.lessonsTotal} lessons`,
-            },
-            { label: "Wellness score", value: demoLearning.wellness, hint: "Out of 100" },
-            {
-              label: "Quizzes",
-              value: demoLearning.quizProgress.split(" ")[0] + "/5",
-              hint: "Completed",
-            },
-            {
-              label: "Points",
-              value: demoRewards.points.toLocaleString("en-MY"),
-              hint: demoRewards.featuredChallenge,
-            },
-          ]}
-        />
-        <div className="mt-6 border-t border-sand-100 pt-4">
-          <button
-            type="button"
-            onClick={() => onNavigate("rewards")}
-            className="group inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-crimson-700"
-          >
-            Open Rewards Hub
-            <ArrowRight
-              size={16}
-              className="transition-transform group-hover:translate-x-0.5"
-              aria-hidden
-            />
-          </button>
-        </div>
-      </section>
-
-      <section aria-labelledby="start-title">
-        <SectionHeader id="start-title" title="Where to start" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {destinations.map(({ destination, title, description, icon: Icon, tone }) => (
-            <button
-              key={destination}
-              type="button"
-              onClick={() => onNavigate(destination)}
-              className="ge-lift group flex min-h-24 items-start gap-4 rounded-2xl border border-line bg-surface p-5 text-left hover:border-line-strong"
-            >
-              <span
-                className={`inline-flex size-11 shrink-0 items-center justify-center rounded-xl ${tone}`}
-                aria-hidden
+      {/* 01 — WHY PROTECTION MATTERS: one illustrative story told in figures */}
+      <Band tone="paper" labelledBy="why-title">
+        <Container>
+          <Chapter
+            number="01"
+            label="Why it matters"
+            id="why-title"
+            title="One hospital bill can undo months of saving."
+          />
+          <ol className="mt-12 grid grid-cols-3 gap-4 sm:mt-14 sm:gap-0">
+            {story.map(({ figure, label, note, accent }, index) => (
+              <li
+                key={label}
+                className="flex flex-col sm:border-l sm:border-ink/15 sm:pl-8 sm:first:border-l-0 sm:first:pl-0"
               >
-                <Icon size={20} strokeWidth={1.75} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="flex items-center justify-between gap-2">
-                  <span className="text-subheading text-ink">{title}</span>
-                  <ArrowRight
-                    size={18}
-                    className="shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5"
-                    aria-hidden
-                  />
+                <span className="text-caption font-semibold uppercase tracking-[0.14em] text-ink-muted">
+                  {String(index + 1).padStart(2, "0")} · {label}
                 </span>
-                <span className="mt-1 block text-body-sm text-ink-secondary">{description}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
+                <span
+                  className={`mt-3 font-brand text-[2.75rem] leading-none tabular-nums sm:text-figure ${accent ? "text-crimson-600" : "text-navy-950"}`}
+                >
+                  <span className="block text-body font-semibold sm:inline sm:align-top sm:text-chapter sm:font-medium">
+                    RM
+                  </span>
+                  {figure}
+                </span>
+                <span className="mt-2 text-body-sm text-ink-secondary">{note}</span>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-12 flex flex-col gap-4 border-t border-ink/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-xl text-caption text-ink-muted">
+              Illustrative simulator example (inpatient, waiting-period scenario). Not a quote or
+              claim decision.
+            </p>
+            <TextLink onClick={() => onNavigate("simulate")}>Run it yourself</TextLink>
+          </div>
+        </Container>
+      </Band>
 
-      <LifeTrackLauncher compact />
-
-      <section aria-labelledby="activity-title">
-        <SectionHeader id="activity-title" title="Recent activity" />
-        <div className="divide-y divide-line">
-          {demoActivities.map(({ title, detail, icon, tone }) => (
-            <ListRow key={title} icon={icon} tone={tone} title={title} description={detail} />
-          ))}
+      {/* 02 — LEARN THE ESSENTIALS: a short rail, not a grid */}
+      <Band tone="canvas" labelledBy="learn-title">
+        <Container>
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <Chapter
+              number="02"
+              label="Learn the essentials"
+              id="learn-title"
+              title="Short lessons. One idea each."
+            />
+            <TextLink onClick={() => onNavigate("learn")}>All lessons</TextLink>
+          </div>
+        </Container>
+        <div className="mt-12 overflow-x-auto pb-4 [scrollbar-width:thin]">
+          <ol className="flex w-max gap-5 px-5 sm:px-8 lg:pl-[max(3rem,calc((100vw-1200px)/2+3rem))] lg:pr-12">
+            {featuredLessons.map((lesson, index) => (
+              <li key={lesson.id} className="w-[78vw] max-w-[360px] sm:w-[340px]">
+                <button
+                  type="button"
+                  onClick={() => go(`app/learn/lesson/${lesson.id}`)}
+                  className="ge-lift group flex w-full flex-col text-left"
+                >
+                  <span className="relative block aspect-[4/3] overflow-hidden">
+                    <LessonArt art={lesson.art ?? "shield"} tone={lesson.tone ?? "teal"} />
+                    <span className="absolute left-4 top-4 font-brand text-chapter text-navy-950/80">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                  </span>
+                  <span className="mt-4 text-caption font-semibold uppercase tracking-[0.12em] text-teal-700">
+                    {lesson.categoryLabel}
+                  </span>
+                  <span className="mt-1 font-brand text-serif-title text-navy-950 group-hover:underline group-hover:underline-offset-4">
+                    {lesson.title}
+                  </span>
+                  <span className="mt-2 inline-flex items-center gap-1.5 text-body-sm text-ink-muted">
+                    <Clock3 size={14} aria-hidden /> {lesson.minutes} min
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
         </div>
-      </section>
-    </div>
+      </Band>
+
+      {/* 03 — EXPLORE YOUR SITUATION: one oversized figure */}
+      <Band tone="night" labelledBy="gap-title">
+        <Container className="grid gap-12 lg:grid-cols-[5fr_7fr] lg:items-end">
+          <Chapter
+            number="03"
+            label="See where you stand"
+            id="gap-title"
+            onDark
+            title="Most of the gap is invisible until you measure it."
+          />
+          <div>
+            <p className="font-brand text-figure tabular-nums text-white">
+              40<span className="text-chapter text-white/60">%</span>
+            </p>
+            <div className="mt-4 h-2 w-full bg-white/10" aria-hidden>
+              <div className="h-full w-[40%] bg-teal-300" />
+            </div>
+            <p className="mt-5 max-w-md text-body text-white/75">
+              of a reference income need is covered in our sample profile.
+            </p>
+            <TextLink onDark className="mt-4" onClick={() => onNavigate("analyze")}>
+              Read the analysis
+            </TextLink>
+          </div>
+        </Container>
+      </Band>
+
+      {/* 04 — USE THE TOOLS */}
+      <Band tone="paper" labelledBy="tools-title">
+        <Container>
+          <Chapter
+            number="04"
+            label="Try it safely"
+            id="tools-title"
+            title="Practise the hard moments."
+          />
+          <div className="mt-12 grid gap-0 md:grid-cols-2">
+            {[
+              {
+                title: "Medical claim simulator",
+                text: "Divide a hypothetical bill, stage by stage.",
+                action: () => go("app/simulate"),
+                cta: "Open simulator",
+              },
+              {
+                title: "Emergency fund",
+                text: "Months of essentials your savings would cover.",
+                action: () => {
+                  go("app/simulate");
+                  window.setTimeout(
+                    () =>
+                      document
+                        .getElementById("simulate-calculators")
+                        ?.scrollIntoView({ behavior: "smooth" }),
+                    400,
+                  );
+                },
+                cta: "Size your buffer",
+              },
+            ].map(({ title, text, action, cta }) => (
+              <div
+                key={title}
+                className="border-t border-ink/15 py-8 md:pr-10 md:[&:nth-child(2)]:border-l md:[&:nth-child(2)]:pl-10 md:[&:nth-child(2)]:pr-0"
+              >
+                <h3 className="font-brand text-serif-title text-navy-950">{title}</h3>
+                <p className="mt-3 max-w-sm text-body text-ink-secondary">{text}</p>
+                <TextLink className="mt-4" onClick={action}>
+                  {cta}
+                </TextLink>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </Band>
+
+      {/* 05 — THE GAME: a destination of its own */}
+      <LifeTrackPoster number="05" />
+    </>
   );
 }

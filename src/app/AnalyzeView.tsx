@@ -1,21 +1,20 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Donut } from "@/components/cards/AnalyzeCards";
-import { PageHeader, SectionHeader } from "@/components/layout/Page";
-import { Badge } from "@/components/ui/Badge";
+import { Band, Chapter, Container } from "@/components/layout/Editorial";
 import { cn } from "@/lib/cn";
 
 const rm = (value: number) => `RM ${value.toLocaleString("en-MY")}`;
 
-// Illustrative sample figures (unchanged from the previous Analyze screen).
+// Illustrative sample figures — unchanged from the original Analyze screen. No new calculations:
+// the only derived values are the gap (reference − current) and its share, as before.
 const incomeProtection = { current: 36000, reference: 90000 };
-// SVG presentation attributes cannot resolve CSS variables, so the brand token hex values are used.
 const spending = [
-  { label: "Needs", value: 52, color: "#0f294a" }, // navy-900
-  { label: "Wants", value: 26, color: "#9cb2d2" }, // navy-300
-  { label: "Savings", value: 14, color: "#297e85" }, // teal-600
-  { label: "Protection", value: 8, color: "#c8102e" }, // crimson-600
+  { label: "Needs", value: 52, cls: "bg-navy-900", text: "text-white" },
+  { label: "Wants", value: 26, cls: "bg-navy-300", text: "text-navy-950" },
+  { label: "Savings", value: 14, cls: "bg-teal-600", text: "text-white" },
+  { label: "Protection", value: 8, cls: "bg-crimson-600", text: "text-white" },
 ];
+const SAVINGS_GUIDELINE = 20; // the common 50/30/20 guideline, as stated on the original screen
 
 export function AnalyzeView() {
   const [showAbout, setShowAbout] = useState(false);
@@ -23,110 +22,163 @@ export function AnalyzeView() {
   const gap = incomeProtection.reference - incomeProtection.current;
 
   return (
-    <div className="flex flex-col gap-12 md:gap-14">
-      <PageHeader
-        eyebrow="Analyze"
-        title="See the gaps, not just the numbers."
-        lede="Two simple views of a sample young-adult budget: how protected the income is, and where the money goes."
-        aside={
-          <Badge tone="neutral" size="md">
-            Sample data · not your account
-          </Badge>
-        }
-      />
-
-      <section
-        aria-labelledby="gap-title"
-        className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12"
-      >
-        <div>
-          <SectionHeader id="gap-title" title="Income protection gap" />
-          <p className="text-caption text-ink-muted">Estimated gap</p>
-          <p className="mt-1 text-numeric-xl tabular-nums text-navy-900">{rm(gap)}</p>
-          <div className="relative mt-5 h-3 rounded-full bg-sunken" aria-hidden>
-            <div className="h-full rounded-full bg-navy-900" style={{ width: `${pct}%` }} />
-            <div className="absolute -inset-y-1 right-0 w-0.5 rounded bg-crimson-600" />
-          </div>
-          <div className="mt-3 flex flex-wrap justify-between gap-2 text-body-sm tabular-nums text-ink-secondary">
-            <span className="inline-flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-navy-900" aria-hidden />
-              Current {rm(incomeProtection.current)} ({pct}%)
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-crimson-600" aria-hidden />
-              Reference {rm(incomeProtection.reference)}
-            </span>
-          </div>
-          <p className="mt-6 max-w-xl text-body text-ink-secondary">
-            If income stopped, this sample person's existing support would cover about{" "}
-            <strong className="font-semibold text-ink">{pct}%</strong> of a common reference amount.
-            Real needs depend on income, dependants, commitments and savings.
-          </p>
-        </div>
-
-        <aside
-          aria-label="How to read the gap"
-          className="self-start rounded-2xl bg-sand-50 p-5 text-body-sm text-ink-secondary"
-        >
-          <p className="font-semibold text-ink">Reading this</p>
-          <ul className="mt-3 flex flex-col gap-2">
-            <li>
-              <span className="font-semibold text-ink">Current</span> — support already in place in
-              the sample.
-            </li>
-            <li>
-              <span className="font-semibold text-ink">Reference</span> — a planning rule of thumb,
-              not a recommendation.
-            </li>
-            <li>
-              <span className="font-semibold text-ink">Gap</span> — the difference. Medical cover
-              does not replace income, so it is not counted here.
-            </li>
-          </ul>
-        </aside>
-      </section>
-
-      <section aria-labelledby="mix-title">
-        <SectionHeader
-          id="mix-title"
-          title="Monthly spending mix"
-          description="Sample budget of RM 3,200 a month."
-        />
-        <div className="grid gap-8 md:grid-cols-[auto_1fr] md:items-center md:gap-12">
-          <Donut size={184} centerLabel="RM 3.2k" centerCaption="per month" segments={spending} />
-          <div className="max-w-xl">
-            <p className="text-body text-ink">
-              Savings take 14% — six points under the 20% in the common 50/30/20 guideline.
-            </p>
-            <p className="mt-2 text-body-sm text-ink-secondary">
-              Guidelines are a starting point for reflection, not a target everyone should hit.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-line pt-4">
-        <button
-          type="button"
-          aria-expanded={showAbout}
-          onClick={() => setShowAbout((value) => !value)}
-          className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-navy-800"
-        >
-          About this data
-          <ChevronDown
-            size={18}
-            className={cn("transition-transform", showAbout && "rotate-180")}
-            aria-hidden
+    <>
+      <Band tone="night" labelledBy="analyze-title" className="!pb-12 sm:!pb-14">
+        <Container className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <Chapter
+            as="h1"
+            label="Analyze"
+            id="analyze-title"
+            onDark
+            title="Where you stand, in two numbers."
           />
-        </button>
-        {showAbout && (
-          <p className="mt-2 max-w-2xl text-body-sm text-ink-secondary" role="status">
-            Both views use illustrative sample figures. They are not based on a user account, a
-            financial assessment or any insurer's product, and they are not a personal insurance
-            assessment.
+          <p className="shrink-0 border-l-2 border-teal-300 pl-4 text-body-sm text-white/75">
+            Sample young-adult profile
+            <br />
+            Not your account
           </p>
-        )}
-      </section>
-    </div>
+        </Container>
+      </Band>
+
+      {/* Story 1 — the protection gap */}
+      <Band tone="paper" labelledBy="gap-heading">
+        <Container>
+          <p className="text-overline uppercase text-teal-700">01 · Income protection</p>
+          <h2 id="gap-heading" className="sr-only">
+            Income protection gap
+          </h2>
+          <div className="mt-6 grid gap-10 lg:grid-cols-[7fr_5fr] lg:items-end">
+            <div>
+              <p className="text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted">
+                Estimated gap
+              </p>
+              <p className="mt-2 font-brand text-figure tabular-nums text-crimson-600">
+                <span className="align-top text-chapter">RM</span>
+                {(gap / 1000).toLocaleString("en-MY")}k
+              </p>
+            </div>
+            <p className="max-w-md text-lede text-ink">
+              If income stopped, existing support would cover only{" "}
+              <strong className="font-semibold">{pct}%</strong> of a common reference amount.
+            </p>
+          </div>
+
+          <figure
+            className="mt-12"
+            aria-label={`Current ${rm(incomeProtection.current)} of reference ${rm(incomeProtection.reference)}`}
+          >
+            <div className="flex h-14 w-full overflow-hidden">
+              <div
+                className="flex h-full items-center bg-navy-900 px-4 text-body-sm font-semibold text-white"
+                style={{ width: `${pct}%` }}
+              >
+                {pct}%
+              </div>
+              <div className="flex h-full flex-1 items-center justify-end bg-[repeating-linear-gradient(135deg,var(--color-crimson-100)_0_8px,var(--color-crimson-50)_8px_16px)] px-4 text-body-sm font-semibold text-crimson-700">
+                Gap {100 - pct}%
+              </div>
+            </div>
+            <figcaption className="mt-3 flex flex-wrap justify-between gap-2 text-body-sm tabular-nums text-ink-secondary">
+              <span>Current support {rm(incomeProtection.current)}</span>
+              <span>Reference {rm(incomeProtection.reference)}</span>
+            </figcaption>
+          </figure>
+
+          <dl className="mt-12 grid gap-8 border-t border-ink/15 pt-8 sm:grid-cols-2">
+            <div>
+              <dt className="text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted">
+                In the sample
+              </dt>
+              <dd className="mt-2 text-body text-ink-secondary">
+                {rm(incomeProtection.current)} of support already in place against a{" "}
+                {rm(incomeProtection.reference)} reference.
+              </dd>
+            </div>
+            <div>
+              <dt className="text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted">
+                Assumptions
+              </dt>
+              <dd className="mt-2 text-body text-ink-secondary">
+                The reference is a planning rule of thumb, not a recommendation. Medical cover pays
+                bills, not salary, so it is not counted.
+              </dd>
+            </div>
+          </dl>
+        </Container>
+      </Band>
+
+      {/* Story 2 — where the money goes */}
+      <Band tone="canvas" labelledBy="mix-heading">
+        <Container>
+          <p className="text-overline uppercase text-teal-700">02 · Monthly spending</p>
+          <h2 id="mix-heading" className="mt-4 max-w-2xl font-brand text-chapter text-navy-950">
+            Savings sit six points below the 50/30/20 guideline.
+          </h2>
+          <figure
+            className="mt-12"
+            aria-label="Sample spending mix: needs 52%, wants 26%, savings 14%, protection 8%"
+          >
+            <div className="relative">
+              <div className="flex h-16 w-full overflow-hidden">
+                {spending.map(({ label, value, cls, text }) => (
+                  <div
+                    key={label}
+                    className={cn(
+                      "flex h-full items-end px-2 pb-2 text-caption font-semibold sm:px-3",
+                      cls,
+                      text,
+                    )}
+                    style={{ width: `${value}%` }}
+                  >
+                    <span className="truncate">{value}%</span>
+                  </div>
+                ))}
+              </div>
+              {/* Guideline marker: savings would start at 78% (52 + 26) and run to 98% at 20%. */}
+              <div
+                className="pointer-events-none absolute -bottom-3 top-[-12px] left-[78%] w-[20%] border-x-2 border-dashed border-teal-700"
+                aria-hidden
+              />
+            </div>
+            <figcaption className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-body-sm sm:grid-cols-4">
+              {spending.map(({ label, value, cls }) => (
+                <span key={label} className="inline-flex items-center gap-2 text-ink-secondary">
+                  <span className={cn("size-3", cls)} aria-hidden />
+                  {label} <span className="font-semibold tabular-nums text-ink">{value}%</span>
+                </span>
+              ))}
+            </figcaption>
+          </figure>
+          <p className="mt-8 max-w-xl text-body text-ink-secondary">
+            Dashed frame: where savings would sit at the {SAVINGS_GUIDELINE}% guideline. A sample
+            budget of RM 3,200 a month — guidelines are a starting point for reflection, not a
+            target.
+          </p>
+
+          <div className="mt-12 border-t border-ink/15 pt-4">
+            <button
+              type="button"
+              aria-expanded={showAbout}
+              onClick={() => setShowAbout((value) => !value)}
+              className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-navy-800"
+            >
+              About this data
+              <ChevronDown
+                size={18}
+                className={cn("transition-transform", showAbout && "rotate-180")}
+                aria-hidden
+              />
+            </button>
+            {showAbout && (
+              <p className="mt-2 max-w-2xl text-body-sm text-ink-secondary" role="status">
+                Both views use illustrative sample figures. They are not based on a user account, a
+                financial assessment or any insurer's product, and they are not a personal insurance
+                assessment.
+              </p>
+            )}
+          </div>
+        </Container>
+      </Band>
+    </>
   );
 }

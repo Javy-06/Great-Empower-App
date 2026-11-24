@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
-import { Avatar, MobileAppHeader } from "@/components/nav/AppHeader";
+import { MobileAppHeader } from "@/components/nav/AppHeader";
 import { BottomNav } from "@/components/nav/BottomNav";
-import { NavRail, Sidebar } from "@/components/nav/Sidebar";
-import { RewardsShortcut } from "@/components/nav/RewardsShortcut";
+import { TopNav } from "@/components/nav/TopNav";
 import { primaryNav, type NavKey } from "@/components/nav/navItems";
-import { IconButton, Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Feedback";
-import { demoUser } from "@/data/demo-user";
+import { Container } from "@/components/layout/Editorial";
 import { demoRewards } from "@/data/demo-rewards";
 import { DashboardDestination, HomeDashboard } from "./HomeDashboard";
 import { LearnDashboard } from "./LearnDashboard";
@@ -33,12 +30,7 @@ function DestinationView({ destination }: { destination: DashboardDestination })
   if (destination === "simulate") return <SimulateHub />;
   if (destination === "analyze") return <AnalyzeView />;
   if (destination === "guide") return <GuideCentre />;
-  return (
-    <HomeDashboard
-      profileName="Aisyah"
-      onNavigate={(nextDestination) => navigateTo(nextDestination)}
-    />
-  );
+  return <HomeDashboard profileName="Aisyah" onNavigate={(next) => navigateTo(next)} />;
 }
 
 function navigateTo(destination: DashboardDestination) {
@@ -83,30 +75,20 @@ export function ApplicationApp() {
         Skip to content
       </a>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden lg:flex">
-        <Sidebar
-          active={activePrimary}
+      {/* Tablet & desktop: editorial top bar */}
+      <header className="sticky top-0 z-30 hidden border-b border-ink/10 bg-paper/90 backdrop-blur md:block">
+        <TopNav
+          active={destination === "rewards" ? null : (destination as NavKey)}
           onChange={navigate}
+          onHome={() => navigateTo("home")}
+          onRewards={() => navigateTo("rewards")}
           points={demoRewards.points}
-          onRewardsClick={() => navigateTo("rewards")}
-          onLogoClick={() => navigateTo("home")}
-          onSettingsClick={() => setDemoNotice("Settings are unavailable for this sample profile.")}
+          rewardsActive={destination === "rewards"}
         />
-      </aside>
-      <aside className="fixed inset-y-0 left-0 z-40 hidden md:flex lg:hidden">
-        <NavRail
-          active={activePrimary}
-          onChange={navigate}
-          onLogoClick={() => navigateTo("home")}
-          onSignOutClick={() =>
-            setDemoNotice(
-              "This sample profile is not signed in. Sign out is unavailable in the demo.",
-            )
-          }
-        />
-      </aside>
+      </header>
 
-      <header className="fixed left-0 right-0 top-0 z-30 border-b border-line bg-surface/95 backdrop-blur md:left-20 lg:hidden">
+      {/* Phone: compact app bar + bottom tabs */}
+      <header className="fixed left-0 right-0 top-0 z-30 border-b border-line bg-surface/95 backdrop-blur md:hidden">
         <MobileAppHeader
           title={label}
           variant={destination === "home" ? "root" : "detail"}
@@ -125,66 +107,46 @@ export function ApplicationApp() {
         />
       </header>
 
-      <div className="min-h-screen md:pl-20 lg:pl-[264px]">
-        <header className="sticky top-0 z-20 hidden h-[72px] items-center gap-2 border-b border-line bg-surface/90 px-8 backdrop-blur lg:flex">
-          <p className="text-body-sm font-semibold text-ink-secondary">{label}</p>
-          <div className="ml-auto flex items-center gap-2">
-            <RewardsShortcut points={demoRewards.points} onClick={() => navigateTo("rewards")} />
-            <IconButton
-              icon={Bell}
-              label="Notifications"
-              badge
-              onClick={() => setDemoNotice("Notifications are not connected in this demo.")}
-            />
-            <div className="ml-1 flex items-center gap-2">
-              <Avatar initials={demoUser.initials} />
-              <div className="hidden 2xl:block">
-                <p className="text-body-sm font-semibold text-ink">{demoUser.fullName}</p>
-                <p className="text-caption text-ink-muted">{demoUser.memberLabel}</p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                window.location.hash = "foundation";
-              }}
-            >
-              Design system
-            </Button>
-          </div>
-        </header>
+      <main id="main-content" tabIndex={-1} className="pb-24 pt-16 outline-none md:pb-0 md:pt-0">
+        {demoNotice && (
+          <Container className="pt-6">
+            <Alert tone="info" title={demoNotice} onDismiss={() => setDemoNotice(null)} />
+          </Container>
+        )}
+        {/* Keyed by destination (not full hash) so in-page sub-routes keep their state. */}
+        <div key={destination} className="ge-enter">
+          <DestinationView destination={destination} />
+        </div>
+      </main>
 
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="pb-28 pt-[64px] outline-none md:pb-10 md:pt-16 lg:pt-0"
-        >
-          <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6 md:py-10 lg:px-10 lg:py-12">
-            {demoNotice && (
-              <div className="mb-6">
-                <Alert tone="info" title={demoNotice} onDismiss={() => setDemoNotice(null)} />
-              </div>
-            )}
-            {/* Keyed by destination (not full hash) so in-page sub-routes keep their state. */}
-            <div key={destination} className="ge-enter">
-              <DestinationView destination={destination} />
-            </div>
-            <footer
-              aria-label="Educational and independence notice"
-              className="mt-16 border-t border-line pt-6 text-caption leading-relaxed text-ink-muted"
-            >
-              <p className="max-w-3xl">
+      <footer
+        aria-label="Educational and independence notice"
+        className="bg-navy-950 pb-28 pt-12 text-white md:pb-12"
+      >
+        <Container>
+          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-2xl">
+              <p className="font-brand text-serif-title text-white">GREAT EMPOWER</p>
+              <p className="mt-1 text-body-sm text-white/60">
+                Empowering you to protect your tomorrow.
+              </p>
+              <p className="mt-6 text-caption leading-relaxed text-white/60">
                 GREAT EMPOWER is an independent financial protection education concept. It is not an
                 official Great Eastern insurance product; no partnership, authorisation or
                 endorsement is implied. Examples and calculations are illustrative, not financial
                 advice, policy terms, insurer quotations or claim decisions. Actual coverage depends
                 on the relevant policy wording and terms.
               </p>
-            </footer>
+            </div>
+            <a
+              href="#foundation"
+              className="inline-flex min-h-11 items-center text-body-sm font-semibold text-white/80 underline-offset-4 hover:text-white hover:underline"
+            >
+              Design system
+            </a>
           </div>
-        </main>
-      </div>
+        </Container>
+      </footer>
 
       <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden">
         <BottomNav active={activePrimary} onChange={navigate} className="shadow-e2" />

@@ -58,7 +58,7 @@ export function DirectionSection() {
             <Logo tone="white" size="md" />
             <div className="mt-10 flex flex-wrap gap-2 md:mt-14">
               <Badge tone="teal" variant="solid">
-                Design foundation v3.0
+                Brand hero · reference
               </Badge>
               <Badge variant="outline" className="border-white/25 text-white/80">
                 Independent concept
@@ -83,10 +83,10 @@ export function DirectionSection() {
           </div>
           <div className="relative min-h-72 lg:min-h-full">
             <img
-              src="/images/pexels/young-friends-cafe-community.webp"
-              alt="Three young women of different backgrounds looking at a smartphone together over coffee in a café"
-              width={1600}
-              height={1067}
+              src="/images/pexels/learning-academy-students-in-library.webp"
+              alt="Two students studying together in a library with books and a laptop."
+              width={1800}
+              height={1200}
               decoding="async"
               className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
             />

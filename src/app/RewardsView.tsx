@@ -1,10 +1,9 @@
-import { Flame, HeartPulse, PiggyBank } from "lucide-react";
-import { VoucherCard, WalletCard, rewardCategories } from "@/components/cards/RewardsCards";
-import { PageHeader, SectionHeader } from "@/components/layout/Page";
-import { ProgressBar } from "@/components/ui/Progress";
+import { HeartPulse, PiggyBank } from "lucide-react";
+import { VoucherCard, rewardCategories } from "@/components/cards/RewardsCards";
+import { Band, Chapter, Container } from "@/components/layout/Editorial";
 import { demoRewards } from "@/data/demo-rewards";
-import { cn } from "@/lib/cn";
 
+// Existing demo values (unchanged): challenges, tier progress and wallet figures.
 const challenges = [
   {
     title: "5-day learning streak",
@@ -34,124 +33,118 @@ const challenges = [
 
 export function RewardsView() {
   return (
-    <div className="flex flex-col gap-12 md:gap-14">
-      <PageHeader
-        eyebrow="Rewards Hub"
-        tone="crimson"
-        title="Points for progress."
-        lede="Earn demo points for learning and trying the tools. This is a sample wallet — points and vouchers are not redeemable."
-      />
-
-      <section
-        aria-label="Points wallet"
-        className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-center"
-      >
-        <WalletCard points={demoRewards.points} />
-        <ol className="flex flex-col gap-4 text-body-sm text-ink-secondary">
-          {[
-            ["Learn", "Finish lessons and quizzes."],
-            ["Practise", "Use the simulators and play LifeTrack."],
-            ["Unlock", "Reach a tier to see sample rewards."],
-          ].map(([title, text], index) => (
-            <li key={title} className="flex items-start gap-4">
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-navy-900 text-body-sm font-semibold text-white">
-                {index + 1}
-              </span>
-              <span>
-                <span className="block text-body font-semibold text-ink">{title}</span>
-                {text}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section aria-labelledby="challenges-title">
-        <SectionHeader id="challenges-title" title="Active challenges" />
-        <ul className="divide-y divide-line">
-          {challenges.map((challenge) => (
-            <li
-              key={challenge.title}
-              className="grid gap-3 py-4 sm:grid-cols-[1fr_minmax(12rem,16rem)_auto] sm:items-center sm:gap-6"
+    <>
+      <Band tone="night" labelledBy="rewards-title">
+        <Container className="grid gap-12 lg:grid-cols-[6fr_6fr] lg:items-end">
+          <div>
+            <Chapter
+              as="h1"
+              label="Rewards Hub"
+              id="rewards-title"
+              onDark
+              title="Points for progress."
+            />
+            <p className="mt-5 max-w-md text-body text-white/70">
+              A sample wallet. Demo points and vouchers are not redeemable.
+            </p>
+          </div>
+          <div>
+            <p className="text-caption font-semibold uppercase tracking-[0.14em] text-white/60">
+              Demo points · Bronze
+            </p>
+            <p className="mt-2 font-brand text-figure tabular-nums text-white">
+              {demoRewards.points.toLocaleString("en-MY")}
+            </p>
+            <div
+              className="mt-6 h-1.5 w-full bg-white/10"
+              role="meter"
+              aria-label="Progress to Silver tier"
+              aria-valuenow={72}
+              aria-valuemin={0}
+              aria-valuemax={100}
             >
-              <div className="flex min-w-0 items-center gap-4">
-                <span
-                  className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-crimson-50 text-crimson-700"
-                  aria-hidden
+              <div className="h-full w-[72%] bg-gold-300" />
+            </div>
+            <div className="mt-3 flex justify-between text-body-sm text-white/70">
+              <span>550 pts to Silver</span>
+              <span className="tabular-nums">Earned 3,820 · Redeemed 1,370</span>
+            </div>
+          </div>
+        </Container>
+      </Band>
+
+      <Band tone="paper" labelledBy="challenges-title">
+        <Container>
+          <Chapter label="This week" id="challenges-title" title="Three challenges." />
+          <ol className="mt-10 grid gap-10 sm:grid-cols-3 sm:gap-0">
+            {challenges.map((challenge) => {
+              const pct = Math.round((challenge.progress / challenge.total) * 100);
+              return (
+                <li
+                  key={challenge.title}
+                  className="sm:border-l sm:border-ink/15 sm:px-8 sm:first:border-l-0 sm:first:pl-0"
                 >
-                  <Flame size={20} strokeWidth={1.75} />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-body font-semibold text-ink">{challenge.title}</p>
-                  <p className="text-body-sm text-ink-muted">{challenge.desc}</p>
-                </div>
-              </div>
-              <ProgressBar
-                value={challenge.progress}
-                max={challenge.total}
-                tone="crimson"
-                size="sm"
-                label={`${challenge.daysLeft} days left`}
-                valueLabel={`${challenge.progress}/${challenge.total}`}
-              />
-              <p className="text-body-sm font-semibold tabular-nums text-gold-700 sm:text-right">
-                +{challenge.points} pts
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
+                  <p className="font-brand text-chapter tabular-nums text-navy-950">
+                    {challenge.progress}
+                    <span className="text-ink-muted">/{challenge.total}</span>
+                  </p>
+                  <div
+                    className="mt-3 h-1 w-full bg-ink/10"
+                    role="meter"
+                    aria-label={`${challenge.title} progress`}
+                    aria-valuenow={challenge.progress}
+                    aria-valuemin={0}
+                    aria-valuemax={challenge.total}
+                  >
+                    <div className="h-full bg-crimson-600" style={{ width: `${pct}%` }} />
+                  </div>
+                  <p className="mt-4 text-body font-semibold text-ink">{challenge.title}</p>
+                  <p className="mt-1 text-body-sm text-ink-muted">
+                    {challenge.desc} · {challenge.daysLeft} days left ·{" "}
+                    <span className="font-semibold text-gold-700">+{challenge.points} pts</span>
+                  </p>
+                </li>
+              );
+            })}
+          </ol>
+        </Container>
+      </Band>
 
-      <section aria-labelledby="categories-title">
-        <SectionHeader id="categories-title" title="Reward categories" />
-        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {rewardCategories.map(({ id, label, icon: Icon, desc, tile }) => (
-            <li
-              key={id}
-              className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4"
-            >
-              <span
-                className={cn("inline-flex size-11 items-center justify-center rounded-xl", tile)}
-                aria-hidden
-              >
-                <Icon size={22} strokeWidth={1.75} />
+      <Band tone="canvas" labelledBy="sample-title">
+        <Container>
+          <Chapter
+            label="Sample rewards"
+            id="sample-title"
+            title="What points could unlock."
+            lede="Partners and values are placeholders until confirmed."
+          />
+          <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-body-sm text-ink-secondary">
+            {rewardCategories.map(({ id, label }) => (
+              <span key={id}>
+                {label}{" "}
+                <span className="tabular-nums text-ink-muted">· {id === "financial" ? 9 : 6}</span>
               </span>
-              <div>
-                <p className="text-body-sm font-semibold text-ink">{label}</p>
-                <p className="text-caption text-ink-muted">{desc}</p>
-              </div>
-              <p className="mt-auto text-caption font-semibold text-ink-secondary">
-                {id === "financial" ? 9 : 6} sample rewards
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section aria-labelledby="vouchers-title">
-        <SectionHeader
-          id="vouchers-title"
-          title="Sample vouchers"
-          description="Partners and values are placeholders until confirmed."
-        />
-        <div className="grid gap-3 lg:grid-cols-2">
-          <VoucherCard
-            category="Wellness"
-            title="Fitness class pass"
-            points={800}
-            icon={HeartPulse}
-            tile="bg-crimson-50 text-crimson-700"
-          />
-          <VoucherCard
-            category="Community"
-            title="Weekend experience"
-            points={1500}
-            icon={PiggyBank}
-            tile="bg-gold-50 text-gold-700"
-            locked
-          />
-        </div>
-      </section>
-    </div>
+            ))}
+          </p>
+          <div className="mt-10 grid gap-4 lg:grid-cols-2">
+            <VoucherCard
+              category="Wellness"
+              title="Fitness class pass"
+              points={800}
+              icon={HeartPulse}
+              tile="bg-crimson-50 text-crimson-700"
+            />
+            <VoucherCard
+              category="Community"
+              title="Weekend experience"
+              points={1500}
+              icon={PiggyBank}
+              tile="bg-gold-50 text-gold-700"
+              locked
+            />
+          </div>
+        </Container>
+      </Band>
+    </>
   );
 }
