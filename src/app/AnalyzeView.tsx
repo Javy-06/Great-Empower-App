@@ -35,7 +35,10 @@ export function AnalyzeView() {
         }
       />
 
-      <section aria-labelledby="gap-title" className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
+      <section
+        aria-labelledby="gap-title"
+        className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12"
+      >
         <div>
           <SectionHeader id="gap-title" title="Income protection gap" />
           <p className="text-caption text-ink-muted">Estimated gap</p>
@@ -56,8 +59,8 @@ export function AnalyzeView() {
           </div>
           <p className="mt-6 max-w-xl text-body text-ink-secondary">
             If income stopped, this sample person's existing support would cover about{" "}
-            <strong className="font-semibold text-ink">{pct}%</strong> of a common reference
-            amount. Real needs depend on income, dependants, commitments and savings.
+            <strong className="font-semibold text-ink">{pct}%</strong> of a common reference amount.
+            Real needs depend on income, dependants, commitments and savings.
           </p>
         </div>
 
@@ -68,8 +71,8 @@ export function AnalyzeView() {
           <p className="font-semibold text-ink">Reading this</p>
           <ul className="mt-3 flex flex-col gap-2">
             <li>
-              <span className="font-semibold text-ink">Current</span> — support already in place
-              in the sample.
+              <span className="font-semibold text-ink">Current</span> — support already in place in
+              the sample.
             </li>
             <li>
               <span className="font-semibold text-ink">Reference</span> — a planning rule of thumb,
@@ -84,7 +87,11 @@ export function AnalyzeView() {
       </section>
 
       <section aria-labelledby="mix-title">
-        <SectionHeader id="mix-title" title="Monthly spending mix" description="Sample budget of RM 3,200 a month." />
+        <SectionHeader
+          id="mix-title"
+          title="Monthly spending mix"
+          description="Sample budget of RM 3,200 a month."
+        />
         <div className="grid gap-8 md:grid-cols-[auto_1fr] md:items-center md:gap-12">
           <Donut size={184} centerLabel="RM 3.2k" centerCaption="per month" segments={spending} />
           <div className="max-w-xl">

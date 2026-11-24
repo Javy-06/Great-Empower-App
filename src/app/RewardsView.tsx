@@ -6,9 +6,30 @@ import { demoRewards } from "@/data/demo-rewards";
 import { cn } from "@/lib/cn";
 
 const challenges = [
-  { title: "5-day learning streak", desc: "One lesson a day", progress: 3, total: 5, points: 150, daysLeft: 2 },
-  { title: "Build your safety net", desc: "Try the emergency fund tool", progress: 1, total: 3, points: 80, daysLeft: 6 },
-  { title: "Know your coverage", desc: "Finish the protection path", progress: 4, total: 5, points: 200, daysLeft: 9 },
+  {
+    title: "5-day learning streak",
+    desc: "One lesson a day",
+    progress: 3,
+    total: 5,
+    points: 150,
+    daysLeft: 2,
+  },
+  {
+    title: "Build your safety net",
+    desc: "Try the emergency fund tool",
+    progress: 1,
+    total: 3,
+    points: 80,
+    daysLeft: 6,
+  },
+  {
+    title: "Know your coverage",
+    desc: "Finish the protection path",
+    progress: 4,
+    total: 5,
+    points: 200,
+    daysLeft: 9,
+  },
 ];
 
 export function RewardsView() {
@@ -21,7 +42,10 @@ export function RewardsView() {
         lede="Earn demo points for learning and trying the tools. This is a sample wallet — points and vouchers are not redeemable."
       />
 
-      <section aria-label="Points wallet" className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-center">
+      <section
+        aria-label="Points wallet"
+        className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-center"
+      >
         <WalletCard points={demoRewards.points} />
         <ol className="flex flex-col gap-4 text-body-sm text-ink-secondary">
           {[
@@ -82,7 +106,10 @@ export function RewardsView() {
         <SectionHeader id="categories-title" title="Reward categories" />
         <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {rewardCategories.map(({ id, label, icon: Icon, desc, tile }) => (
-            <li key={id} className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
+            <li
+              key={id}
+              className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4"
+            >
               <span
                 className={cn("inline-flex size-11 items-center justify-center rounded-xl", tile)}
                 aria-hidden

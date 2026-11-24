@@ -1,4 +1,12 @@
-import { ArrowLeft, ArrowRight, BriefcaseBusiness, Dice5, Hospital, Plane, Route } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BriefcaseBusiness,
+  Dice5,
+  Hospital,
+  Plane,
+  Route,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LifeTrackBoard } from "@/components/cards/SimulateCards";
 import { LifeTrackGame } from "@/app/LifeTrackGame";
@@ -16,7 +24,11 @@ const learnings = ["Emergency savings", "Health costs", "Income shocks", "Protec
 const miniTiles = [
   { label: "Start", icon: Route, cls: "border-navy-900 bg-navy-900 text-white" },
   { label: "First job", icon: BriefcaseBusiness, cls: "border-teal-200 bg-teal-50 text-teal-800" },
-  { label: "Clinic visit", icon: Hospital, cls: "border-crimson-200 bg-crimson-50 text-crimson-700" },
+  {
+    label: "Clinic visit",
+    icon: Hospital,
+    cls: "border-crimson-200 bg-crimson-50 text-crimson-700",
+  },
   { label: "Raya trip", icon: Plane, cls: "border-teal-200 bg-teal-50 text-teal-800" },
 ];
 
@@ -61,7 +73,9 @@ export function LifeTrackLauncher({ compact = false }: { compact?: boolean }) {
             <Button variant="inverse" trailingIcon={ArrowRight} onClick={openLifeTrack}>
               Enter game
             </Button>
-            <span className="text-caption text-white/65">Solo demo · no sign-in · nothing saved</span>
+            <span className="text-caption text-white/65">
+              Solo demo · no sign-in · nothing saved
+            </span>
           </div>
         </div>
         <div className="relative bg-navy-800/60 px-6 pb-6 sm:hidden" aria-hidden>

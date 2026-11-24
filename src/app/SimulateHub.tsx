@@ -52,7 +52,11 @@ export function SimulateHub() {
 
       <MedicalClaimSimulator />
 
-      <section id="simulate-calculators" aria-labelledby="calculators-title" className="scroll-mt-24">
+      <section
+        id="simulate-calculators"
+        aria-labelledby="calculators-title"
+        className="scroll-mt-24"
+      >
         <SectionHeader id="calculators-title" title="Emergency fund" />
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <EmergencyFundCalculator />
@@ -61,8 +65,8 @@ export function SimulateHub() {
               A cash buffer is what keeps a surprise bill from becoming debt.
             </p>
             <p>
-              Move the sliders to see how many months of essential costs you could cover. The
-              target is a planning rule of thumb, not a personal recommendation.
+              Move the sliders to see how many months of essential costs you could cover. The target
+              is a planning rule of thumb, not a personal recommendation.
             </p>
             <p className="border-l-2 border-teal-600 pl-3 text-ink-muted">
               Want the background first?{" "}

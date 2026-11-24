@@ -34,7 +34,10 @@ function DestinationView({ destination }: { destination: DashboardDestination })
   if (destination === "analyze") return <AnalyzeView />;
   if (destination === "guide") return <GuideCentre />;
   return (
-    <HomeDashboard profileName="Aisyah" onNavigate={(nextDestination) => navigateTo(nextDestination)} />
+    <HomeDashboard
+      profileName="Aisyah"
+      onNavigate={(nextDestination) => navigateTo(nextDestination)}
+    />
   );
 }
 
@@ -96,7 +99,9 @@ export function ApplicationApp() {
           onChange={navigate}
           onLogoClick={() => navigateTo("home")}
           onSignOutClick={() =>
-            setDemoNotice("This sample profile is not signed in. Sign out is unavailable in the demo.")
+            setDemoNotice(
+              "This sample profile is not signed in. Sign out is unavailable in the demo.",
+            )
           }
         />
       </aside>
@@ -107,7 +112,9 @@ export function ApplicationApp() {
           variant={destination === "home" ? "root" : "detail"}
           points={demoRewards.points}
           onRewardsClick={() => navigateTo("rewards")}
-          onNotificationsClick={() => setDemoNotice("Notifications are not connected in this demo.")}
+          onNotificationsClick={() =>
+            setDemoNotice("Notifications are not connected in this demo.")
+          }
           onBack={() => {
             const hash = window.location.hash;
             if (hash.startsWith("#app/learn/")) navigateTo("learn");
@@ -169,10 +176,10 @@ export function ApplicationApp() {
             >
               <p className="max-w-3xl">
                 GREAT EMPOWER is an independent financial protection education concept. It is not an
-                official Great Eastern insurance product; no partnership, authorisation or endorsement
-                is implied. Examples and calculations are illustrative, not financial advice, policy
-                terms, insurer quotations or claim decisions. Actual coverage depends on the relevant
-                policy wording and terms.
+                official Great Eastern insurance product; no partnership, authorisation or
+                endorsement is implied. Examples and calculations are illustrative, not financial
+                advice, policy terms, insurer quotations or claim decisions. Actual coverage depends
+                on the relevant policy wording and terms.
               </p>
             </footer>
           </div>

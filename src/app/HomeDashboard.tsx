@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  ArrowRight,
-  BookOpen,
-  Calculator,
-  ChartPie,
-  Compass,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, BookOpen, Calculator, ChartPie, Compass, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ListRow, SectionHeader, StatStrip } from "@/components/layout/Page";
 import { LifeTrackLauncher } from "./lifetrack/LifeTrackLauncher";
@@ -88,8 +81,9 @@ export function HomeDashboard({
               {greeting}, {profileName}.
             </h1>
             <p className="mt-4 max-w-md text-body text-white/80 sm:text-body-lg">
-              Next up: <span className="font-semibold text-white">{demoLearning.nextLesson.title}</span>{" "}
-              — {demoLearning.nextLesson.minutes} minutes.
+              Next up:{" "}
+              <span className="font-semibold text-white">{demoLearning.nextLesson.title}</span> —{" "}
+              {demoLearning.nextLesson.minutes} minutes.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button variant="inverse" trailingIcon={ArrowRight} onClick={openLesson}>
@@ -125,12 +119,17 @@ export function HomeDashboard({
         </div>
       </section>
 
-      <section aria-labelledby="week-title" className="rounded-3xl bg-paper p-6 ring-1 ring-sand-100 sm:p-8">
+      <section
+        aria-labelledby="week-title"
+        className="rounded-3xl bg-paper p-6 ring-1 ring-sand-100 sm:p-8"
+      >
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="week-title" className="text-heading text-ink">
             This week
           </h2>
-          <p className="text-caption text-ink-muted">Demo activity · illustrative, not an assessment</p>
+          <p className="text-caption text-ink-muted">
+            Demo activity · illustrative, not an assessment
+          </p>
         </div>
         <StatStrip
           items={[
@@ -140,7 +139,11 @@ export function HomeDashboard({
               hint: `${demoLearning.lessonsCompleted} of ${demoLearning.lessonsTotal} lessons`,
             },
             { label: "Wellness score", value: demoLearning.wellness, hint: "Out of 100" },
-            { label: "Quizzes", value: demoLearning.quizProgress.split(" ")[0] + "/5", hint: "Completed" },
+            {
+              label: "Quizzes",
+              value: demoLearning.quizProgress.split(" ")[0] + "/5",
+              hint: "Completed",
+            },
             {
               label: "Points",
               value: demoRewards.points.toLocaleString("en-MY"),
@@ -155,7 +158,11 @@ export function HomeDashboard({
             className="group inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-crimson-700"
           >
             Open Rewards Hub
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
+            <ArrowRight
+              size={16}
+              className="transition-transform group-hover:translate-x-0.5"
+              aria-hidden
+            />
           </button>
         </div>
       </section>

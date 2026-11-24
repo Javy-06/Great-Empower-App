@@ -207,7 +207,9 @@ export function LearnDashboard() {
                 {status}
               </Badge>
             </div>
-            <h1 className="mt-3 max-w-2xl font-brand text-serif-title md:text-serif-hero">{lesson.title}</h1>
+            <h1 className="mt-3 max-w-2xl font-brand text-serif-title md:text-serif-hero">
+              {lesson.title}
+            </h1>
             <div className="mt-3 flex flex-wrap gap-4 text-caption text-white/75">
               <span className="inline-flex items-center gap-1">
                 <Clock3 size={14} /> {lesson.minutes} min
@@ -308,7 +310,8 @@ export function LearnDashboard() {
           lede={`${category.description}.`}
           aside={
             <span className="inline-flex items-center gap-2 text-body-sm text-ink-muted">
-              <Icon size={18} aria-hidden /> {lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}
+              <Icon size={18} aria-hidden /> {lessons.length}{" "}
+              {lessons.length === 1 ? "lesson" : "lessons"}
             </span>
           }
         />
@@ -468,7 +471,10 @@ export function LearnDashboard() {
           {demoLearningCategories
             .filter((category) => category.key !== "all")
             .map((category) => (
-              <div key={category.key} className="border-b border-line last:border-b-0 md:[&:nth-last-child(2)]:border-b-0">
+              <div
+                key={category.key}
+                className="border-b border-line last:border-b-0 md:[&:nth-last-child(2)]:border-b-0"
+              >
                 <ListRow
                   icon={category.icon}
                   tone={categoryToneByKey[category.key]}

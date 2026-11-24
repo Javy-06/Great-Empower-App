@@ -193,7 +193,9 @@ export function GuideCentre() {
             <Badge tone="teal">
               {article.category} · {article.minutes} min read
             </Badge>
-            <h1 className="mt-3 font-brand text-serif-title text-navy-900 md:text-serif-hero">{article.title}</h1>
+            <h1 className="mt-3 font-brand text-serif-title text-navy-900 md:text-serif-hero">
+              {article.title}
+            </h1>
             <p className="mt-2 max-w-2xl text-body text-ink-secondary">{article.summary}</p>
             <h2 className="mt-7 text-heading text-ink">Key ideas</h2>
             <ul className="mt-3 grid gap-3">
