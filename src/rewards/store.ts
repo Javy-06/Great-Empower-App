@@ -2,17 +2,19 @@ import { createStore, useStore } from "@/state/store";
 import type { EarningKind } from "./catalogue";
 import {
   claimChallenge as claimChallengeOp,
-  claimVoucher as claimVoucherOp,
   confirmPassUsed as confirmPassUsedOp,
   earn as earnOp,
   initialRewardsState,
-  purchase as purchaseOp,
+  redeem as redeemOp,
   type Result,
   type RewardsState,
 } from "./economy";
 
-/** Single source of truth for points, vouchers, benefits and history (this device only). */
-export const rewardsStore = createStore<RewardsState>("ge-rewards-v1", initialRewardsState);
+/**
+ * Single source of truth for points, passes, benefits and history (this device only).
+ * v2 key: the direct-redemption model starts every player from a clean balance.
+ */
+export const rewardsStore = createStore<RewardsState>("ge-rewards-v2", initialRewardsState);
 
 export const useRewards = () => useStore(rewardsStore);
 
@@ -38,10 +40,8 @@ export const rewardsActions = {
   earn: (kind: EarningKind, subjectId: string) =>
     commit((s) => earnOp(s, kind, subjectId, Date.now())),
   claimChallenge: (id: string) => commit((s) => claimChallengeOp(s, id, Date.now())),
-  claimVoucher: (defId: string, reqId = requestId("vch")) =>
-    commit((s) => claimVoucherOp(s, defId, reqId, Date.now())),
-  purchase: (productId: string, voucherId: string | null, reqId = requestId("buy")) =>
-    commit((s) => purchaseOp(s, productId, voucherId, reqId, Date.now())),
+  redeem: (productId: string, welcome: boolean, reqId = requestId("redeem")) =>
+    commit((s) => redeemOp(s, productId, { welcome }, reqId, Date.now())),
   confirmPassUsed: (passId: string) => commit((s) => confirmPassUsedOp(s, passId, Date.now())),
   newRequestId: requestId,
 };

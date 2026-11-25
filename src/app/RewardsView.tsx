@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -6,10 +6,12 @@ import {
   CheckCircle2,
   ChevronRight,
   Coins,
+
   History,
   Image as ImageIcon,
   Loader2,
   ShieldCheck,
+  Sparkles,
   Store,
   Ticket,
   Wallet,
@@ -19,23 +21,17 @@ import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import {
+  WELCOME_PRICE,
   brands,
   challenges,
   findBrand,
   findProduct,
-  findVoucherDef,
+  isWelcomeEligible,
   products,
-  voucherDefinitions,
   type BrandId,
   type Product,
 } from "@/rewards/catalogue";
-import {
-  challengeProgress,
-  quote,
-  voucherEligibility,
-  voucherStatus,
-  type OwnedVoucher,
-} from "@/rewards/economy";
+import { challengeProgress, quote, welcomeAvailableFor } from "@/rewards/economy";
 import { rewardsActions, useRewards } from "@/rewards/store";
 import { PassView } from "./rewards/PassView";
 
@@ -47,6 +43,8 @@ const pts = (n: number) => `${n.toLocaleString("en-MY")} pts`;
 
 const SIMULATED_NOTE =
   "Fictional in-app items with no cash value. Brands are not real merchants; game benefits are simulated.";
+
+const foodAndDrink = products.filter(isWelcomeEligible);
 
 export function RewardsView({ route }: { route: string }) {
   const parts = route.split("/"); // app/rewards/<view>/<id>
@@ -63,21 +61,21 @@ export function RewardsView({ route }: { route: string }) {
 function RewardsHub() {
   const state = useRewards();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const available = state.vouchers.filter((v) => voucherStatus(v, Date.now()) === "available").length;
+  const ready = state.passes.filter((p) => p.status === "ready").length;
 
   return (
     <>
       <PageHero
         eyebrow="Rewards Hub"
         title="Points for progress."
-        text="Learn, plan and take action to earn points, then spend them in the Great Empower Marketplace."
+        text="Learn, plan and take action to earn points, then redeem healthy food, drinks and more."
         image="/images/lifetrack/marketplace/products/greenbowl/veggie-bowl-640.webp"
         backLabel="Rewards Hub"
         onBack={() => go("app/home")}
         titleId="rewards-title"
       />
 
-      <Container className="-mt-5 relative">
+      <Container className="relative -mt-5">
         <div className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-2xl bg-surface p-4 shadow-e2 ring-1 ring-ink/5 sm:p-5">
           <div className="flex items-center gap-3">
             <span className="inline-flex size-11 items-center justify-center rounded-xl bg-gold-50 text-gold-700">
@@ -96,31 +94,56 @@ function RewardsHub() {
             className="inline-flex h-11 items-center gap-1.5 rounded-full bg-navy-900 px-4 text-body-sm font-semibold text-white hover:bg-navy-800"
           >
             <Wallet size={16} aria-hidden /> Wallet
-            {available > 0 && (
-              <span className="ml-0.5 rounded-full bg-white/20 px-1.5 text-[11px] font-bold">{available}</span>
-            )}
+            {ready > 0 && <span className="ml-0.5 rounded-full bg-white/20 px-1.5 text-[11px] font-bold">{ready}</span>}
           </button>
         </div>
       </Container>
 
       {message && (
         <Container className="mt-4">
-          <p
-            role="status"
-            className={cn(
-              "flex items-center gap-2 rounded-xl px-4 py-3 text-body-sm font-semibold",
-              message.ok ? "bg-success-50 text-success-700" : "bg-error-50 text-error-700",
-            )}
-          >
+          <p role="status" className={cn("flex items-center gap-2 rounded-xl px-4 py-3 text-body-sm font-semibold", message.ok ? "bg-success-50 text-success-700" : "bg-error-50 text-error-700")}>
             {message.ok ? <CheckCircle2 size={18} aria-hidden /> : <XCircle size={18} aria-hidden />}
             {message.text}
           </p>
         </Container>
       )}
 
+      {/* One-time welcome offer */}
+      {!state.welcomeRedeemed && (
+        <Container className="mt-5">
+          <div className="relative overflow-hidden rounded-[1.25rem] bg-gradient-to-br from-crimson-600 to-crimson-800 p-4 text-white shadow-e2 sm:p-5">
+            <Sparkles size={64} className="absolute -right-2 -top-2 text-white/10" aria-hidden />
+            <p className="text-overline uppercase tracking-[0.2em] text-white/80">Welcome offer · one time</p>
+            <p className="mt-1 font-brand text-[1.625rem] font-semibold leading-tight">
+              Any food or drink for {WELCOME_PRICE} pts
+            </p>
+            <p className="mt-1 text-body-sm text-white/85">
+              Pick one item below and choose the welcome price at checkout. Regular prices start at 1,000 pts.
+            </p>
+          </div>
+        </Container>
+      )}
+
+      {/* Food & drink, redeemable directly */}
+      <Container className="mt-6">
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="text-heading text-navy-950">Redeem food &amp; drinks</h2>
+          <button type="button" onClick={() => go("app/rewards/marketplace")} className="inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-navy-900">
+            All items <ArrowRight size={15} aria-hidden />
+          </button>
+        </div>
+        <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {foodAndDrink.map((p) => (
+            <li key={p.id}>
+              <ProductCard product={p} welcome={welcomeAvailableFor(state, p.id)} />
+            </li>
+          ))}
+        </ul>
+      </Container>
+
       {/* Challenges */}
-      <Container className="mt-7">
-        <h2 className="text-heading text-navy-950">Challenges</h2>
+      <Container className="mt-8">
+        <h2 className="text-heading text-navy-950">Earn more points</h2>
         <ul className="mt-3 grid gap-2.5">
           {challenges.map((c) => {
             const p = challengeProgress(state, c.id);
@@ -136,9 +159,7 @@ function RewardsHub() {
                     <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-sunken">
                       <span className="block h-full rounded-full bg-crimson-600" style={{ width: `${(p.done / p.target) * 100}%` }} />
                     </span>
-                    <span className="text-caption font-semibold tabular-nums text-navy-900">
-                      {p.done}/{p.target}
-                    </span>
+                    <span className="text-caption font-semibold tabular-nums text-navy-900">{p.done}/{p.target}</span>
                   </div>
                 </div>
                 {p.claimed ? (
@@ -157,74 +178,26 @@ function RewardsHub() {
                     Claim +{c.bonus}
                   </button>
                 ) : (
-                  <span className="inline-flex h-9 items-center rounded-full bg-gold-50 px-3 text-caption font-bold text-gold-700">
-                    +{c.bonus} pts
-                  </span>
+                  <span className="inline-flex h-9 items-center rounded-full bg-gold-50 px-3 text-caption font-bold text-gold-700">+{c.bonus} pts</span>
                 )}
               </li>
             );
           })}
         </ul>
         <p className="mt-2 text-caption text-ink-muted">
-          Earn points by completing lessons and videos, studying infographics and finishing your
-          protection profile in Simulate. Each activity pays once.
+          Complete lessons and videos, study infographics and finish your protection profile. Each activity pays once.
         </p>
-      </Container>
-
-      {/* Vouchers */}
-      <Container className="mt-8">
-        <div className="flex items-end justify-between">
-          <h2 className="text-heading text-navy-950">Redeem vouchers</h2>
-        </div>
-        <ul className="-mx-5 mt-3 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 scrollbar-none">
-          {voucherDefinitions.map((def) => {
-            const brand = def.brand ? findBrand(def.brand) : undefined;
-            const affordable = state.points >= def.cost;
-            return (
-              <li key={def.id} className="w-[15.5rem] shrink-0 snap-start rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-                <div className="flex items-center gap-2">
-                  {brand ? (
-                    <img src={brand.logo} alt="" className="size-9 rounded-lg object-contain ring-1 ring-ink/5" />
-                  ) : (
-                    <span className="inline-flex size-9 items-center justify-center rounded-lg bg-success-50 text-success-700"><Ticket size={18} aria-hidden /></span>
-                  )}
-                  <span className="text-caption font-semibold uppercase tracking-[0.1em] text-ink-muted">{brand?.name ?? "Healthy food"}</span>
-                </div>
-                <p className="mt-3 text-body font-semibold text-navy-950">{def.title}</p>
-                <p className="mt-0.5 text-caption text-ink-muted">{def.description}{def.minSpend ? ` Min. spend ${def.minSpend} pts.` : ""} Valid {def.validityDays} days.</p>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-body font-bold text-crimson-600">{pts(def.cost)}</span>
-                  <button
-                    type="button"
-                    disabled={!affordable}
-                    onClick={() => {
-                      const r = rewardsActions.claimVoucher(def.id);
-                      setMessage(r.ok ? { ok: true, text: `${def.title} added to your wallet.` } : { ok: false, text: r.error });
-                    }}
-                    className="inline-flex h-10 items-center gap-1 rounded-full bg-navy-900 px-3.5 text-caption font-bold text-white hover:bg-navy-800 disabled:bg-navy-900/30"
-                  >
-                    Claim <ArrowRight size={14} aria-hidden />
-                  </button>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
       </Container>
 
       {/* Marketplace entry */}
       <Container className="mt-6">
-        <button
-          type="button"
-          onClick={() => go("app/rewards/marketplace")}
-          className="group relative w-full overflow-hidden rounded-[1.5rem] bg-navy-950 p-5 text-left text-white"
-        >
+        <button type="button" onClick={() => go("app/rewards/marketplace")} className="group relative w-full overflow-hidden rounded-[1.5rem] bg-navy-950 p-5 text-left text-white">
           <span className="text-overline uppercase tracking-[0.2em] text-teal-200">Great Empower</span>
           <span className="mt-1 flex items-center gap-2 font-brand text-[1.75rem] font-semibold">
             <Store size={22} aria-hidden /> Marketplace
           </span>
           <span className="mt-1 block max-w-[20rem] text-body-sm text-white/75">
-            Healthy meals, drinks, wellness items and in-game boosts from six fictional brands.
+            Wellness items and in-game boosts from six fictional brands.
           </span>
           <span className="mt-4 flex -space-x-2">
             {brands.map((b) => (
@@ -242,21 +215,14 @@ function RewardsHub() {
 /* ------------------------------------------------------------------------------------------ */
 
 function Marketplace({ brandId }: { brandId?: BrandId }) {
-  const { points } = useRewards();
+  const state = useRewards();
   const active = brandId && findBrand(brandId) ? brandId : null;
   const list = active ? products.filter((p) => p.brand === active) : products;
   return (
     <>
-      <PageHero
-        eyebrow="Great Empower"
-        title="Marketplace"
-        text="Spend your points on healthy choices and in-game boosts."
-        backLabel="Marketplace"
-        onBack={() => go("app/rewards")}
-        titleId="market-title"
-      >
+      <PageHero eyebrow="Great Empower" title="Marketplace" text="Redeem healthy choices, wellness items and in-game boosts." backLabel="Marketplace" onBack={() => go("app/rewards")} titleId="market-title">
         <p className="mt-4 inline-flex h-9 items-center gap-2 rounded-full bg-white/10 px-3.5 text-body-sm font-semibold">
-          <Coins size={16} className="text-gold-300" aria-hidden /> {pts(points)} available
+          <Coins size={16} className="text-gold-300" aria-hidden /> {pts(state.points)} available
         </p>
       </PageHero>
       <Container className="mt-5">
@@ -270,7 +236,7 @@ function Marketplace({ brandId }: { brandId?: BrandId }) {
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {list.map((p) => (
             <li key={p.id}>
-              <ProductCard product={p} />
+              <ProductCard product={p} welcome={welcomeAvailableFor(state, p.id)} />
             </li>
           ))}
         </ul>
@@ -310,15 +276,20 @@ function ProductVisual({ product, className }: { product: Product; className?: s
   );
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, welcome }: { product: Product; welcome: boolean }) {
   const brand = findBrand(product.brand)!;
   return (
     <button
       type="button"
       onClick={() => go(`app/rewards/product/${product.id}`)}
-      className="group flex h-full w-full flex-col overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-ink/[0.07] transition-shadow hover:shadow-e2"
+      className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-ink/[0.07] transition-shadow hover:shadow-e2"
     >
       <ProductVisual product={product} />
+      {welcome && (
+        <span className="absolute left-2 top-2 rounded-full bg-crimson-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-white shadow-e1">
+          Welcome {WELCOME_PRICE}
+        </span>
+      )}
       <span className="flex flex-1 flex-col p-3">
         <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-muted">{brand.name}</span>
         <span className="mt-0.5 line-clamp-2 text-body-sm font-semibold text-navy-950">{product.name}</span>
@@ -336,23 +307,21 @@ function ProductDetail({ id }: { id: string }) {
   const state = useRewards();
   const product = findProduct(id)!;
   const brand = findBrand(product.brand)!;
-  const now = Date.now();
-  const owned = state.vouchers.filter((v) => voucherStatus(v, now) === "available");
-  const usable = owned.filter((v) => voucherEligibility(state, v.id, id, now).ok);
-  const [voucherId, setVoucherId] = useState<string | null>(null);
+  const canWelcome = welcomeAvailableFor(state, id);
+  const [useWelcome, setUseWelcome] = useState(canWelcome);
   const [checkout, setCheckout] = useState<Checkout>({ phase: "idle" });
-  const [requestId] = useState(() => rewardsActions.newRequestId("buy"));
-  const q = quote(state, id, voucherId, now)!;
+  const [requestId] = useState(() => rewardsActions.newRequestId("redeem"));
+  const q = quote(state, id, useWelcome)!;
 
   const confirm = () => {
     if (checkout.phase === "processing") return;
     setCheckout({ phase: "processing" });
-    const r = rewardsActions.purchase(id, voucherId, requestId);
+    const r = rewardsActions.redeem(id, q.welcome, requestId);
     if (!r.ok) {
       setCheckout({ phase: "error", message: r.error });
       return;
     }
-    const pass = r.state.passes?.find((p) => p.transactionId === r.transaction.id);
+    const pass = r.state.passes.find((p) => p.transactionId === r.transaction.id);
     if (pass) go(`app/rewards/pass/${pass.id}`);
     else setCheckout({ phase: "done", total: -r.transaction.points });
   };
@@ -376,7 +345,7 @@ function ProductDetail({ id }: { id: string }) {
           <button type="button" onClick={() => go("app/rewards/wallet")} className="inline-flex h-12 items-center rounded-full bg-navy-900 px-5 text-body-sm font-semibold text-white">
             View wallet
           </button>
-          <button type="button" onClick={() => go("app/rewards/marketplace")} className="inline-flex h-12 items-center rounded-full px-5 text-body-sm font-semibold text-navy-900 ring-1 ring-ink/15">
+          <button type="button" onClick={() => go("app/rewards")} className="inline-flex h-12 items-center rounded-full px-5 text-body-sm font-semibold text-navy-900 ring-1 ring-ink/15">
             Keep browsing
           </button>
         </div>
@@ -388,12 +357,7 @@ function ProductDetail({ id }: { id: string }) {
     <div className="pb-6">
       <div className="relative">
         <ProductVisual product={product} className="max-h-[22rem] md:max-h-[26rem]" />
-        <button
-          type="button"
-          onClick={() => go(`app/rewards/marketplace/${product.brand}`)}
-          aria-label="Back to Marketplace"
-          className="absolute left-4 top-4 inline-flex size-11 items-center justify-center rounded-full bg-white/90 text-navy-950 shadow-e2 backdrop-blur"
-        >
+        <button type="button" onClick={() => go("app/rewards")} aria-label="Back to Rewards" className="absolute left-4 top-4 inline-flex size-11 items-center justify-center rounded-full bg-white/90 text-navy-950 shadow-e2 backdrop-blur">
           <ArrowLeft size={20} aria-hidden />
         </button>
       </div>
@@ -410,39 +374,31 @@ function ProductDetail({ id }: { id: string }) {
           </p>
         )}
 
-        <h2 className="mt-6 text-subheading text-navy-950">Apply a voucher</h2>
-        {owned.length === 0 ? (
-          <p className="mt-1 text-body-sm text-ink-muted">
-            You have no available vouchers. Claim one in the{" "}
-            <button type="button" className="font-semibold text-navy-900 underline" onClick={() => go("app/rewards")}>Rewards Hub</button>.
-          </p>
-        ) : (
-          <ul className="mt-2 grid gap-2">
-            <VoucherOption label="No voucher" detail="Pay the full price" selected={voucherId === null} onSelect={() => setVoucherId(null)} />
-            {owned.map((v) => {
-              const def = findVoucherDef(v.defId)!;
-              const e = voucherEligibility(state, v.id, id, now);
-              return (
-                <VoucherOption
-                  key={v.id}
-                  label={def.title}
-                  detail={e.ok ? `−${e.discount} pts · expires ${new Date(v.expiresAt).toLocaleDateString("en-MY")}` : e.reason}
-                  disabled={!e.ok}
-                  selected={voucherId === v.id}
-                  onSelect={() => setVoucherId(v.id)}
-                />
-              );
-            })}
-          </ul>
-        )}
-        {owned.length > 0 && usable.length === 0 && (
-          <p className="mt-2 text-caption text-ink-muted">None of your vouchers apply to this item.</p>
+        {isWelcomeEligible(product) && (
+          <fieldset className="mt-6">
+            <legend className="text-subheading text-navy-950">Price</legend>
+            <div className="mt-2 grid gap-2" role="radiogroup">
+              <PriceOption
+                label="Regular price"
+                detail={pts(product.price)}
+                selected={!useWelcome || !canWelcome}
+                onSelect={() => setUseWelcome(false)}
+              />
+              <PriceOption
+                label={`Welcome offer · ${pts(WELCOME_PRICE)}`}
+                detail={canWelcome ? "One-time new-player price for any food or drink item" : "Already used"}
+                selected={useWelcome && canWelcome}
+                disabled={!canWelcome}
+                onSelect={() => setUseWelcome(true)}
+              />
+            </div>
+          </fieldset>
         )}
 
         <dl className="mt-6 grid gap-2 rounded-2xl bg-surface p-4 text-body-sm ring-1 ring-ink/[0.07]">
-          <div className="flex justify-between"><dt className="text-ink-secondary">Price</dt><dd className="font-semibold tabular-nums">{pts(q.price)}</dd></div>
-          <div className="flex justify-between"><dt className="text-ink-secondary">Voucher</dt><dd className="font-semibold tabular-nums text-success-700">{q.discount ? `−${pts(q.discount)}` : "—"}</dd></div>
-          <div className="flex justify-between border-t border-ink/10 pt-2 text-body"><dt className="font-semibold text-navy-950">Total</dt><dd className="font-bold tabular-nums text-navy-950">{pts(q.total)}</dd></div>
+          <div className="flex justify-between"><dt className="text-ink-secondary">Regular price</dt><dd className={cn("font-semibold tabular-nums", q.welcome && "text-ink-muted line-through")}>{pts(q.price)}</dd></div>
+          {q.welcome && <div className="flex justify-between"><dt className="text-ink-secondary">Welcome offer</dt><dd className="font-semibold tabular-nums text-success-700">{pts(WELCOME_PRICE)}</dd></div>}
+          <div className="flex justify-between border-t border-ink/10 pt-2 text-body"><dt className="font-semibold text-navy-950">You pay</dt><dd className="font-bold tabular-nums text-navy-950">{pts(q.total)}</dd></div>
           <div className="flex justify-between text-caption"><dt className="text-ink-muted">Your balance after</dt><dd className={cn("tabular-nums", q.affordable ? "text-ink-muted" : "font-semibold text-error-700")}>{pts(state.points - q.total)}</dd></div>
         </dl>
 
@@ -455,16 +411,12 @@ function ProductDetail({ id }: { id: string }) {
         {checkout.phase === "confirm" || checkout.phase === "processing" ? (
           <div className="mt-4 rounded-2xl bg-navy-950 p-4 text-white">
             <p className="text-body font-semibold">Confirm redemption?</p>
-            <p className="mt-0.5 text-body-sm text-white/75">{pts(q.total)} will be deducted{voucherId ? " and your voucher will be used" : ""}.</p>
+            <p className="mt-0.5 text-body-sm text-white/75">
+              {pts(q.total)} will be deducted{q.welcome ? " and your one-time welcome offer will be used" : ""}.
+            </p>
             <div className="mt-3 flex gap-2">
-              <button
-                type="button"
-                onClick={confirm}
-                disabled={checkout.phase === "processing"}
-                className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-crimson-600 text-body-sm font-bold text-white hover:bg-crimson-700 disabled:opacity-70"
-              >
-                {checkout.phase === "processing" ? <Loader2 size={18} className="animate-spin" aria-hidden /> : null}
-                Confirm
+              <button type="button" onClick={confirm} disabled={checkout.phase === "processing"} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-crimson-600 text-body-sm font-bold text-white hover:bg-crimson-700 disabled:opacity-70">
+                {checkout.phase === "processing" && <Loader2 size={18} className="animate-spin" aria-hidden />} Confirm
               </button>
               <button type="button" onClick={() => setCheckout({ phase: "idle" })} className="inline-flex h-12 items-center rounded-full px-5 text-body-sm font-semibold text-white ring-1 ring-white/30">
                 Cancel
@@ -487,28 +439,26 @@ function ProductDetail({ id }: { id: string }) {
   );
 }
 
-function VoucherOption({ label, detail, selected, disabled, onSelect }: { label: string; detail: string; selected: boolean; disabled?: boolean; onSelect: () => void }) {
+function PriceOption({ label, detail, selected, disabled, onSelect }: { label: string; detail: string; selected: boolean; disabled?: boolean; onSelect: () => void }) {
   return (
-    <li>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        disabled={disabled}
-        onClick={onSelect}
-        className={cn(
-          "flex min-h-14 w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left ring-1 transition-colors",
-          selected ? "bg-navy-50 ring-navy-900" : "bg-surface ring-ink/10 hover:ring-ink/25",
-          disabled && "cursor-not-allowed opacity-55",
-        )}
-      >
-        <span className={cn("size-4 shrink-0 rounded-full ring-2", selected ? "bg-navy-900 ring-navy-900 ring-offset-2" : "ring-ink/25")} aria-hidden />
-        <span className="min-w-0">
-          <span className="block text-body-sm font-semibold text-navy-950">{label}</span>
-          <span className="block text-caption text-ink-muted">{detail}</span>
-        </span>
-      </button>
-    </li>
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      disabled={disabled}
+      onClick={onSelect}
+      className={cn(
+        "flex min-h-14 w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left ring-1 transition-colors",
+        selected ? "bg-navy-50 ring-navy-900" : "bg-surface ring-ink/10 hover:ring-ink/25",
+        disabled && "cursor-not-allowed opacity-55",
+      )}
+    >
+      <span className={cn("size-4 shrink-0 rounded-full ring-2", selected ? "bg-navy-900 ring-navy-900 ring-offset-2" : "ring-ink/25")} aria-hidden />
+      <span className="min-w-0">
+        <span className="block text-body-sm font-semibold text-navy-950">{label}</span>
+        <span className="block text-caption text-ink-muted">{detail}</span>
+      </span>
+    </button>
   );
 }
 
@@ -516,94 +466,48 @@ function VoucherOption({ label, detail, selected, disabled, onSelect }: { label:
 
 function WalletView() {
   const state = useRewards();
-  const now = Date.now();
-  const [tab, setTab] = useState<"available" | "redeemed" | "expired">("available");
-  const grouped = useMemo(() => {
-    const g: Record<string, OwnedVoucher[]> = { available: [], redeemed: [], expired: [] };
-    state.vouchers.forEach((v) => g[voucherStatus(v, now)].push(v));
-    return g;
-  }, [state.vouchers, now]);
+  const [tab, setTab] = useState<"ready" | "used">("ready");
+  const list = state.passes.filter((p) => p.status === tab);
 
   return (
     <>
-      <PageHero
-        eyebrow="Rewards"
-        title="Wallet"
-        text="Your points, vouchers, game benefits and history."
-        backLabel="Wallet"
-        onBack={() => go("app/rewards")}
-        titleId="wallet-title"
-      >
+      <PageHero eyebrow="Rewards" title="Wallet" text="Your points, redemption passes, game benefits and history." backLabel="Wallet" onBack={() => go("app/rewards")} titleId="wallet-title">
         <p className="mt-4 font-brand text-[2.5rem] font-bold leading-none tabular-nums">
           {state.points.toLocaleString("en-MY")} <span className="text-body font-semibold text-white/70">pts</span>
         </p>
       </PageHero>
 
       <Container className="mt-5">
-        <h2 className="text-heading text-navy-950">Vouchers</h2>
-        <div className="mt-3 grid grid-cols-3 rounded-full bg-sunken p-1" role="tablist" aria-label="Voucher status">
-          {(["available", "redeemed", "expired"] as const).map((k) => (
-            <button
-              key={k}
-              type="button"
-              role="tab"
-              aria-selected={tab === k}
-              onClick={() => setTab(k)}
-              className={cn("h-10 rounded-full text-caption font-bold capitalize", tab === k ? "bg-surface text-navy-950 shadow-e1" : "text-ink-muted")}
-            >
-              {k === "redeemed" ? "Used" : k} ({grouped[k].length})
+        <h2 className="text-heading text-navy-950">Redemption passes</h2>
+        <div className="mt-3 grid grid-cols-2 rounded-full bg-sunken p-1" role="tablist" aria-label="Pass status">
+          {(["ready", "used"] as const).map((k) => (
+            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn("h-10 rounded-full text-caption font-bold", tab === k ? "bg-surface text-navy-950 shadow-e1" : "text-ink-muted")}>
+              {k === "ready" ? "Ready to use" : "Used"} ({state.passes.filter((p) => p.status === k).length})
             </button>
           ))}
         </div>
-        {grouped[tab].length === 0 ? (
+        {list.length === 0 ? (
           <p className="mt-4 rounded-xl bg-surface px-4 py-6 text-center text-body-sm text-ink-muted ring-1 ring-ink/[0.07]">
-            {tab === "available" ? "No vouchers yet — claim one in the Rewards Hub." : `No ${tab === "redeemed" ? "used" : tab} vouchers.`}
+            {tab === "ready" ? "No passes yet — redeem food, drinks or wellness items in the Rewards Hub." : "No used passes yet."}
           </p>
         ) : (
           <ul className="mt-3 grid gap-2.5">
-            {grouped[tab].map((v) => {
-              const def = findVoucherDef(v.defId)!;
-              const usedOn = v.usedOnProductId ? findProduct(v.usedOnProductId)?.name : undefined;
-              return (
-                <li key={v.id} className={cn("flex items-center gap-3 rounded-2xl bg-surface p-3.5 ring-1 ring-ink/[0.07]", tab !== "available" && "opacity-70")}>
-                  <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-700"><Ticket size={20} aria-hidden /></span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-body-sm font-semibold text-navy-950">{def.title}</span>
-                    <span className="block text-caption text-ink-muted">
-                      {tab === "redeemed" && usedOn ? `Used on ${usedOn}` : `Expires ${new Date(v.expiresAt).toLocaleDateString("en-MY")}`}
-                    </span>
-                  </span>
-                  {tab === "available" && (
-                    <button type="button" onClick={() => go("app/rewards/marketplace")} className="inline-flex h-10 items-center rounded-full px-3 text-caption font-bold text-navy-900 ring-1 ring-ink/15">
-                      Use
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </Container>
-
-      <Container className="mt-7">
-        <h2 className="text-heading text-navy-950">Redemption passes</h2>
-        {(state.passes ?? []).length === 0 ? (
-          <p className="mt-2 text-body-sm text-ink-muted">Items you redeem in the Marketplace appear here as passes.</p>
-        ) : (
-          <ul className="mt-3 grid gap-2.5">
-            {(state.passes ?? []).map((p) => {
+            {list.map((p) => {
               const product = findProduct(p.productId);
-              const ready = p.status === "ready";
               return (
                 <li key={p.id}>
                   <button type="button" onClick={() => go(`app/rewards/pass/${p.id}`)} className="flex w-full items-center gap-3 rounded-2xl bg-surface p-3 text-left ring-1 ring-ink/[0.07]">
-                    {product?.image && <img src={product.image} alt="" className="ge-skeleton size-12 shrink-0 rounded-xl object-cover" />}
+                    {product?.image ? (
+                      <img src={product.image} alt="" className="ge-skeleton size-12 shrink-0 rounded-xl object-cover" />
+                    ) : (
+                      <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-700"><Ticket size={20} aria-hidden /></span>
+                    )}
                     <span className="min-w-0 flex-1">
                       <span className="block text-body-sm font-semibold text-navy-950">{product?.name}</span>
                       <span className="block font-mono text-caption text-ink-muted">{p.code}</span>
                     </span>
-                    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold", ready ? "bg-gold-50 text-gold-700" : "bg-success-50 text-success-700")}>
-                      {ready ? "Ready to use" : "Used"}
+                    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold", p.status === "ready" ? "bg-gold-50 text-gold-700" : "bg-success-50 text-success-700")}>
+                      {p.status === "ready" ? "Ready to use" : "Used"}
                     </span>
                   </button>
                 </li>
@@ -649,9 +553,8 @@ function WalletView() {
                     {t.detail ? ` · ${t.detail}` : ""}
                   </span>
                 </span>
-                <span className={cn("shrink-0 text-body-sm font-bold tabular-nums", t.points >= 0 ? "text-success-700" : "text-navy-950")}>
-                  {t.points >= 0 ? "+" : "−"}
-                  {Math.abs(t.points).toLocaleString("en-MY")}
+                <span className={cn("shrink-0 text-body-sm font-bold tabular-nums", t.points > 0 ? "text-success-700" : t.points < 0 ? "text-navy-950" : "text-ink-muted")}>
+                  {t.points === 0 ? "—" : `${t.points > 0 ? "+" : "−"}${Math.abs(t.points).toLocaleString("en-MY")}`}
                 </span>
               </li>
             ))}
@@ -662,3 +565,4 @@ function WalletView() {
     </>
   );
 }
+

@@ -1,13 +1,18 @@
 import { createStore, useStore } from "./store";
 
 /** Bookmarks and progress for lessons, videos and infographics (this device only). */
+export type LessonLanguage = "en" | "ms" | "zh" | "ta";
+
 export interface LearnProgress {
+  /** Preferred lesson language. Only content that exists in that language changes. */
+  language: LessonLanguage;
   bookmarked: string[];
   started: string[];
   completed: string[];
 }
 
 export const learnProgressStore = createStore<LearnProgress>("ge-learn-v1", () => ({
+  language: "en",
   bookmarked: ["medical-cards"],
   started: [],
   completed: [],
@@ -18,6 +23,9 @@ export const useLearnProgress = () => useStore(learnProgressStore);
 const add = (list: string[], id: string) => (list.includes(id) ? list : [...list, id]);
 
 export const learnActions = {
+  setLanguage(language: LessonLanguage) {
+    learnProgressStore.set({ ...learnProgressStore.get(), language });
+  },
   toggleBookmark(id: string) {
     const s = learnProgressStore.get();
     learnProgressStore.set({

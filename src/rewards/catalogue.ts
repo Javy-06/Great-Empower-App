@@ -1,7 +1,7 @@
 /**
  * Great Empower Marketplace catalogue. All brands, products, vouchers and benefits are FICTIONAL
  * in-game items. Nothing here is a real merchant, product, partnership, insurance cover or
- * real-world redemption. Prices are in Great Empower points (pts).
+ * real-world redemption. Prices are in Great Empower points (pts); regular prices start at 1,000 pts.
  */
 
 export type BrandId = "tubway" | "greenbowl" | "fruitfuel" | "careplus" | "shieldora" | "nestora";
@@ -48,20 +48,6 @@ export interface Product {
   benefit?: GameBenefit;
 }
 
-export interface VoucherDefinition {
-  id: string;
-  brand?: BrandId;
-  title: string;
-  description: string;
-  /** Points needed to claim the voucher from the Rewards catalogue. */
-  cost: number;
-  /** Fixed points discount applied at checkout. */
-  discount: number;
-  /** Product must carry at least one of these tags. */
-  eligibleTags: ProductTag[];
-  minSpend: number;
-  validityDays: number;
-}
 
 const brandPath = (id: string) => `/images/lifetrack/marketplace/brands/${id}-logo.png`;
 const productPath = (brand: string, file: string) =>
@@ -77,32 +63,30 @@ export const brands: Brand[] = [
 ];
 
 export const products: Product[] = [
-  { id: "tub-chicken-wholemeal", brand: "tubway", name: "Chicken Wholemeal Sandwich", description: "Grilled chicken and greens on wholemeal bread.", price: 220, tags: ["healthy-food", "wholemeal", "lean-protein"], image: productPath("tubway", "chicken-wholemeal-sandwich") },
-  { id: "tub-chicken-wrap", brand: "tubway", name: "Grilled Chicken Wrap", description: "Lean grilled chicken, salad and a light dressing in a wrap.", price: 240, tags: ["healthy-food", "wrap", "lean-protein"], image: productPath("tubway", "grilled-chicken-wrap") },
-  { id: "tub-tuna-wholemeal", brand: "tubway", name: "Tuna Wholemeal Sandwich", description: "Tuna and crunchy vegetables on wholemeal bread.", price: 220, tags: ["healthy-food", "wholemeal"], image: productPath("tubway", "tuna-wholemeal-sandwich") },
-  { id: "tub-chicken-salad", brand: "tubway", name: "Healthy Chicken Salad", description: "Mixed leaves with sliced grilled chicken.", price: 260, tags: ["healthy-food", "salad", "lean-protein"], image: productPath("tubway", "healthy-chicken-salad") },
-  { id: "grb-chicken-bowl", brand: "greenbowl", name: "Grilled Chicken Bowl", description: "Brown rice, grilled chicken and roasted vegetables.", price: 320, tags: ["healthy-food", "balanced-bowl", "lean-protein"], image: productPath("greenbowl", "grilled-chicken-bowl") },
-  { id: "grb-salmon-bowl", brand: "greenbowl", name: "Salmon Bowl", description: "Salmon, grains and fresh greens.", price: 380, tags: ["healthy-food", "balanced-bowl", "lean-protein"], image: productPath("greenbowl", "salmon-bowl") },
-  { id: "grb-veggie-bowl", brand: "greenbowl", name: "Veggie Bowl", description: "A colourful plant-based bowl.", price: 280, tags: ["healthy-food", "balanced-bowl"], image: productPath("greenbowl", "veggie-bowl") },
-  { id: "frf-smoothie", brand: "fruitfuel", name: "Fresh Fruit Smoothie", description: "Blended fresh fruit, no added syrup.", price: 160, tags: ["healthy-drink", "smoothie"], image: productPath("fruitfuel", "fresh-fruit-smoothie") },
-  { id: "frf-orange-juice", brand: "fruitfuel", name: "Fresh Orange Juice", description: "Freshly squeezed orange juice.", price: 140, tags: ["healthy-drink", "fresh-juice"], image: productPath("fruitfuel", "fresh-orange-juice") },
-  { id: "frf-infused-water", brand: "fruitfuel", name: "Low-Sugar Infused Water", description: "Fruit-infused water with no added sugar.", price: 90, tags: ["healthy-drink", "low-sugar"], image: productPath("fruitfuel", "low-sugar-infused-water") },
-  { id: "crp-wellness-pack", brand: "careplus", name: "Wellness Pack", description: "An everyday self-care set (fictional, unbranded).", price: 450, tags: ["wellness"], image: productPath("careplus", "wellness-pack") },
-  { id: "crp-basic-health-kit", brand: "careplus", name: "Basic Health Kit", description: "A basic first-aid style kit (fictional).", price: 380, tags: ["wellness"], image: productPath("careplus", "basic-health-kit") },
-  { id: "crp-health-check-kit", brand: "careplus", name: "Health Check Kit", description: "Home check essentials (fictional, no medical claims).", price: 520, tags: ["wellness"], image: productPath("careplus", "health-check-kit") },
-  { id: "shd-medical-protection", brand: "shieldora", name: "Medical Protection", description: "A simulated medical cover card for your Great Empower game.", price: 600, tags: ["game-protection"], benefit: { type: "medical-expense-reduction", effect: "Reduces one simulated medical expense in the Great Empower game." } },
-  { id: "shd-protection-upgrade", brand: "shieldora", name: "Protection Upgrade", description: "Raises your simulated protection level by one step.", price: 900, tags: ["game-protection"], benefit: { type: "protection-level", effect: "Upgrades your simulated protection level in LifeTrack by one step." } },
-  { id: "nst-emergency-boost", brand: "nestora", name: "Emergency Fund Boost", description: "Adds a simulated emergency buffer to your in-game savings.", price: 500, tags: ["game-savings"], benefit: { type: "emergency-fund", effect: "Adds a simulated emergency fund at the start of a Great Empower game." } },
-  { id: "nst-savings-bonus", brand: "nestora", name: "Savings Bonus", description: "A one-time simulated savings bonus.", price: 400, tags: ["game-savings"], benefit: { type: "savings-bonus", effect: "Grants a one-time simulated savings bonus in the Great Empower game." } },
+  { id: "tub-chicken-wholemeal", brand: "tubway", name: "Chicken Wholemeal Sandwich", description: "Grilled chicken and greens on wholemeal bread.", price: 1200, tags: ["healthy-food", "wholemeal", "lean-protein"], image: productPath("tubway", "chicken-wholemeal-sandwich") },
+  { id: "tub-chicken-wrap", brand: "tubway", name: "Grilled Chicken Wrap", description: "Lean grilled chicken, salad and a light dressing in a wrap.", price: 1300, tags: ["healthy-food", "wrap", "lean-protein"], image: productPath("tubway", "grilled-chicken-wrap") },
+  { id: "tub-tuna-wholemeal", brand: "tubway", name: "Tuna Wholemeal Sandwich", description: "Tuna and crunchy vegetables on wholemeal bread.", price: 1200, tags: ["healthy-food", "wholemeal"], image: productPath("tubway", "tuna-wholemeal-sandwich") },
+  { id: "tub-chicken-salad", brand: "tubway", name: "Healthy Chicken Salad", description: "Mixed leaves with sliced grilled chicken.", price: 1400, tags: ["healthy-food", "salad", "lean-protein"], image: productPath("tubway", "healthy-chicken-salad") },
+  { id: "grb-chicken-bowl", brand: "greenbowl", name: "Grilled Chicken Bowl", description: "Brown rice, grilled chicken and roasted vegetables.", price: 1600, tags: ["healthy-food", "balanced-bowl", "lean-protein"], image: productPath("greenbowl", "grilled-chicken-bowl") },
+  { id: "grb-salmon-bowl", brand: "greenbowl", name: "Salmon Bowl", description: "Salmon, grains and fresh greens.", price: 1900, tags: ["healthy-food", "balanced-bowl", "lean-protein"], image: productPath("greenbowl", "salmon-bowl") },
+  { id: "grb-veggie-bowl", brand: "greenbowl", name: "Veggie Bowl", description: "A colourful plant-based bowl.", price: 1500, tags: ["healthy-food", "balanced-bowl"], image: productPath("greenbowl", "veggie-bowl") },
+  { id: "frf-smoothie", brand: "fruitfuel", name: "Fresh Fruit Smoothie", description: "Blended fresh fruit, no added syrup.", price: 1100, tags: ["healthy-drink", "smoothie"], image: productPath("fruitfuel", "fresh-fruit-smoothie") },
+  { id: "frf-orange-juice", brand: "fruitfuel", name: "Fresh Orange Juice", description: "Freshly squeezed orange juice.", price: 1000, tags: ["healthy-drink", "fresh-juice"], image: productPath("fruitfuel", "fresh-orange-juice") },
+  { id: "frf-infused-water", brand: "fruitfuel", name: "Low-Sugar Infused Water", description: "Fruit-infused water with no added sugar.", price: 1000, tags: ["healthy-drink", "low-sugar"], image: productPath("fruitfuel", "low-sugar-infused-water") },
+  { id: "crp-wellness-pack", brand: "careplus", name: "Wellness Pack", description: "An everyday self-care set (fictional, unbranded).", price: 2400, tags: ["wellness"], image: productPath("careplus", "wellness-pack") },
+  { id: "crp-basic-health-kit", brand: "careplus", name: "Basic Health Kit", description: "A basic first-aid style kit (fictional).", price: 2000, tags: ["wellness"], image: productPath("careplus", "basic-health-kit") },
+  { id: "crp-health-check-kit", brand: "careplus", name: "Health Check Kit", description: "Home check essentials (fictional, no medical claims).", price: 2800, tags: ["wellness"], image: productPath("careplus", "health-check-kit") },
+  { id: "shd-medical-protection", brand: "shieldora", name: "Medical Protection", description: "A simulated medical cover card for your Great Empower game.", price: 3000, tags: ["game-protection"], benefit: { type: "medical-expense-reduction", effect: "Reduces one simulated medical expense in the Great Empower game." } },
+  { id: "shd-protection-upgrade", brand: "shieldora", name: "Protection Upgrade", description: "Raises your simulated protection level by one step.", price: 4500, tags: ["game-protection"], benefit: { type: "protection-level", effect: "Upgrades your simulated protection level in LifeTrack by one step." } },
+  { id: "nst-emergency-boost", brand: "nestora", name: "Emergency Fund Boost", description: "Adds a simulated emergency buffer to your in-game savings.", price: 2500, tags: ["game-savings"], benefit: { type: "emergency-fund", effect: "Adds a simulated emergency fund at the start of a Great Empower game." } },
+  { id: "nst-savings-bonus", brand: "nestora", name: "Savings Bonus", description: "A one-time simulated savings bonus.", price: 2000, tags: ["game-savings"], benefit: { type: "savings-bonus", effect: "Grants a one-time simulated savings bonus in the Great Empower game." } },
 ];
 
-export const voucherDefinitions: VoucherDefinition[] = [
-  { id: "v-healthy-meal-80", title: "Healthy Meal · 80 pts off", description: "For sandwiches, wraps, salads and balanced bowls.", cost: 50, discount: 80, eligibleTags: ["healthy-food"], minSpend: 200, validityDays: 30 },
-  { id: "v-fresh-drink-50", brand: "fruitfuel", title: "Fresh Drink · 50 pts off", description: "For smoothies, fresh juice and low-sugar drinks.", cost: 30, discount: 50, eligibleTags: ["healthy-drink"], minSpend: 0, validityDays: 30 },
-  { id: "v-wellness-120", brand: "careplus", title: "Wellness · 120 pts off", description: "For CarePlus wellness items.", cost: 80, discount: 120, eligibleTags: ["wellness"], minSpend: 380, validityDays: 30 },
-  { id: "v-shield-200", brand: "shieldora", title: "Shieldora · 200 pts off", description: "For simulated protection benefits.", cost: 120, discount: 200, eligibleTags: ["game-protection"], minSpend: 600, validityDays: 30 },
-  { id: "v-nest-150", brand: "nestora", title: "Nestora · 150 pts off", description: "For simulated savings boosts.", cost: 90, discount: 150, eligibleTags: ["game-savings"], minSpend: 400, validityDays: 30 },
-];
+/** Food and drink tags that qualify for the one-time welcome redemption. */
+export const WELCOME_TAGS: ProductTag[] = ["healthy-food", "healthy-drink"];
+/** One-time new-player price for any eligible food or drink item. */
+export const WELCOME_PRICE = 200;
+export const isWelcomeEligible = (p: Product) => p.tags.some((t) => WELCOME_TAGS.includes(t));
 
 /**
  * Points for real activity in this app. Each activity pays once. These rates are new — the
@@ -124,5 +108,4 @@ export const challenges = [
 ];
 
 export const findProduct = (id: string) => products.find((p) => p.id === id);
-export const findVoucherDef = (id: string) => voucherDefinitions.find((v) => v.id === id);
 export const findBrand = (id: string) => brands.find((b) => b.id === id);

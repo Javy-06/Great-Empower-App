@@ -157,7 +157,7 @@ export function ApplicationApp() {
         <main
           id="main-content"
           tabIndex={-1}
-          className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-[calc(3.5rem+env(safe-area-inset-top))] outline-none md:pb-0 md:pt-0"
+          className="pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-[calc(3.5rem+env(safe-area-inset-top))] outline-none md:pb-0 md:pt-0"
         >
           {/* Keyed by destination (not full hash) so in-page sub-routes keep their state. */}
           <div key={newsStory ? `news-${newsStory.id}` : destination} className="ge-enter">
@@ -179,8 +179,9 @@ export function ApplicationApp() {
           </Container>
         </main>
 
-        <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden">
-          <BottomNav active={activePrimary} onChange={navigate} className="shadow-e2" />
+        {/* Floating glass nav: 12px from the screen edge, or above the home indicator. */}
+        <div className="fixed inset-x-3 bottom-[max(0.75rem,calc(env(safe-area-inset-bottom)+0.375rem))] z-40 md:hidden">
+          <BottomNav active={activePrimary} onChange={navigate} />
         </div>
       </div>
     </>

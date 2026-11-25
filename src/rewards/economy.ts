@@ -1,27 +1,21 @@
 /**
  * Great Empower rewards economy — pure, framework-free state transitions.
  * Every operation validates first and returns either a complete new state or an error;
- * a failed operation never changes balance, vouchers or history (all-or-nothing).
+ * a failed operation never changes balance, passes, benefits or history (all-or-nothing).
+ *
+ * Model (v2): Marketplace items are redeemed directly with points. A new player can redeem ONE
+ * eligible food or drink item at the welcome price, once. Food, drink and wellness redemptions
+ * issue a pass ("ready") that the player later confirms as "used"; game benefits are stored.
  */
 import {
   challenges,
   earningRules,
   findProduct,
-  findVoucherDef,
+  isWelcomeEligible,
+  WELCOME_PRICE,
   type EarningKind,
   type GameBenefit,
 } from "./catalogue.ts";
-
-export type VoucherStatus = "available" | "redeemed" | "expired";
-
-export interface OwnedVoucher {
-  id: string;
-  defId: string;
-  acquiredAt: number;
-  expiresAt: number;
-  usedAt?: number;
-  usedOnProductId?: string;
-}
 
 export interface OwnedBenefit {
   id: string;
@@ -30,19 +24,6 @@ export interface OwnedBenefit {
   acquiredAt: number;
   /** Benefits are stored until the Great Empower game is connected and can apply them. */
   status: "stored";
-}
-
-export type TransactionKind = "earn" | "challenge" | "voucher-claim" | "purchase" | "pass-used";
-
-export interface Transaction {
-  id: string;
-  requestId: string;
-  kind: TransactionKind;
-  at: number;
-  /** Signed points change. */
-  points: number;
-  title: string;
-  detail?: string;
 }
 
 /**
@@ -60,16 +41,30 @@ export interface RedemptionPass {
   usedAt?: number;
 }
 
-export interface RewardsState {
-  version: 1;
+export type TransactionKind = "earn" | "challenge" | "redeem" | "pass-used";
+
+export interface Transaction {
+  id: string;
+  requestId: string;
+  kind: TransactionKind;
+  at: number;
+  /** Signed points change. */
   points: number;
-  vouchers: OwnedVoucher[];
+  title: string;
+  detail?: string;
+}
+
+export interface RewardsState {
+  version: 2;
+  points: number;
   benefits: OwnedBenefit[];
   passes: RedemptionPass[];
   transactions: Transaction[];
   /** Activity keys already paid (e.g. "lesson-complete:hospital-bills"). */
   earned: string[];
   claimedChallenges: string[];
+  /** True once the one-time welcome redemption has been used. */
+  welcomeRedeemed: boolean;
 }
 
 export type Result = { ok: true; state: RewardsState; transaction: Transaction } | { ok: false; error: string };
@@ -78,23 +73,15 @@ export type Result = { ok: true; state: RewardsState; transaction: Transaction }
 export const STARTING_POINTS = 2450;
 
 export const initialRewardsState = (): RewardsState => ({
-  version: 1,
+  version: 2,
   points: STARTING_POINTS,
-  vouchers: [],
   benefits: [],
   passes: [],
   transactions: [],
   earned: [],
   claimedChallenges: [],
+  welcomeRedeemed: false,
 });
-
-const DAY = 24 * 60 * 60 * 1000;
-
-export function voucherStatus(v: OwnedVoucher, now: number): VoucherStatus {
-  if (v.usedAt) return "redeemed";
-  if (now > v.expiresAt) return "expired";
-  return "available";
-}
 
 const duplicate = (state: RewardsState, requestId: string) =>
   state.transactions.some((t) => t.requestId === requestId);
@@ -104,13 +91,10 @@ const tx = (state: RewardsState, t: Omit<Transaction, "id">): Transaction => ({
   id: `tx-${state.transactions.length + 1}-${t.at}`,
 });
 
+const fmt = (n: number) => n.toLocaleString("en-MY");
+
 /** Pay points once for a real in-app activity. */
-export function earn(
-  state: RewardsState,
-  kind: EarningKind,
-  subjectId: string,
-  now: number,
-): Result {
+export function earn(state: RewardsState, kind: EarningKind, subjectId: string, now: number): Result {
   const key = `${kind}:${subjectId}`;
   if (state.earned.includes(key)) return { ok: false, error: "Already rewarded for this activity." };
   const rule = earningRules[kind];
@@ -170,105 +154,48 @@ export function claimChallenge(state: RewardsState, challengeId: string, now: nu
   };
 }
 
-/** Spend points to claim a voucher into the wallet. */
-export function claimVoucher(
-  state: RewardsState,
-  defId: string,
-  requestId: string,
-  now: number,
-): Result {
-  if (duplicate(state, requestId)) return { ok: false, error: "This request was already processed." };
-  const def = findVoucherDef(defId);
-  if (!def) return { ok: false, error: "This voucher is not available." };
-  if (state.points < def.cost)
-    return { ok: false, error: `You need ${def.cost - state.points} more points for this voucher.` };
-  const voucher: OwnedVoucher = {
-    id: `vch-${state.vouchers.length + 1}-${now}`,
-    defId,
-    acquiredAt: now,
-    expiresAt: now + def.validityDays * DAY,
-  };
-  const transaction = tx(state, {
-    requestId,
-    kind: "voucher-claim",
-    at: now,
-    points: -def.cost,
-    title: `Claimed voucher: ${def.title}`,
-  });
-  return {
-    ok: true,
-    transaction,
-    state: {
-      ...state,
-      points: state.points - def.cost,
-      vouchers: [voucher, ...state.vouchers],
-      transactions: [transaction, ...state.transactions],
-    },
-  };
-}
-
-/** Why a voucher can or cannot be used on a product (shown in the UI and enforced at checkout). */
-export function voucherEligibility(
-  state: RewardsState,
-  voucherId: string,
-  productId: string,
-  now: number,
-): { ok: true; discount: number } | { ok: false; reason: string } {
-  const v = state.vouchers.find((x) => x.id === voucherId);
-  if (!v) return { ok: false, reason: "You don't own this voucher." };
-  const status = voucherStatus(v, now);
-  if (status === "redeemed") return { ok: false, reason: "This voucher has already been used." };
-  if (status === "expired") return { ok: false, reason: "This voucher has expired." };
-  const def = findVoucherDef(v.defId);
+/** Whether the one-time welcome price can be applied to this product right now. */
+export function welcomeAvailableFor(state: RewardsState, productId: string) {
   const product = findProduct(productId);
-  if (!def || !product) return { ok: false, reason: "This voucher can't be applied here." };
-  if (!product.tags.some((t) => def.eligibleTags.includes(t)))
-    return { ok: false, reason: "Not eligible for this item." };
-  if (product.price < def.minSpend)
-    return { ok: false, reason: `Needs a minimum spend of ${def.minSpend} pts.` };
-  return { ok: true, discount: Math.min(def.discount, product.price) };
+  return !!product && !state.welcomeRedeemed && isWelcomeEligible(product);
 }
 
-export function quote(state: RewardsState, productId: string, voucherId: string | null, now: number) {
+/** Price breakdown shown before confirming; mirrors exactly what `redeem` will charge. */
+export function quote(state: RewardsState, productId: string, useWelcome: boolean) {
   const product = findProduct(productId);
   if (!product) return null;
-  let discount = 0;
-  let voucherError: string | undefined;
-  if (voucherId) {
-    const e = voucherEligibility(state, voucherId, productId, now);
-    if (e.ok) discount = e.discount;
-    else voucherError = e.reason;
-  }
-  const total = product.price - discount;
-  return { price: product.price, discount, total, affordable: state.points >= total, voucherError };
+  const welcome = useWelcome && welcomeAvailableFor(state, productId);
+  const total = welcome ? WELCOME_PRICE : product.price;
+  return { price: product.price, total, welcome, affordable: state.points >= total };
 }
 
-/** Buy a Marketplace item, optionally applying one owned voucher. */
-export function purchase(
+/** Redeem a Marketplace item directly with points (optionally at the one-time welcome price). */
+export function redeem(
   state: RewardsState,
   productId: string,
-  voucherId: string | null,
+  options: { welcome: boolean },
   requestId: string,
   now: number,
 ): Result {
-  if (duplicate(state, requestId)) return { ok: false, error: "This purchase was already processed." };
+  if (duplicate(state, requestId)) return { ok: false, error: "This redemption was already processed." };
   const product = findProduct(productId);
   if (!product) return { ok: false, error: "This item is not available." };
-  let discount = 0;
-  if (voucherId) {
-    const e = voucherEligibility(state, voucherId, productId, now);
-    if (!e.ok) return { ok: false, error: e.reason };
-    discount = e.discount;
+  if (options.welcome) {
+    if (state.welcomeRedeemed) return { ok: false, error: "Your welcome redemption has already been used." };
+    if (!isWelcomeEligible(product))
+      return { ok: false, error: "The welcome price applies to food and drink items only." };
   }
-  const total = product.price - discount;
-  if (state.points < total)
-    return { ok: false, error: `You need ${total - state.points} more points.` };
+  const total = options.welcome ? WELCOME_PRICE : product.price;
+  if (state.points < total) return { ok: false, error: `You need ${fmt(total - state.points)} more points.` };
 
-  const vouchers = voucherId
-    ? state.vouchers.map((v) =>
-        v.id === voucherId ? { ...v, usedAt: now, usedOnProductId: productId } : v,
-      )
-    : state.vouchers;
+  const transaction = tx(state, {
+    requestId,
+    kind: "redeem",
+    at: now,
+    points: -total,
+    title: product.name,
+    detail: options.welcome ? `Welcome offer · regular ${fmt(product.price)} pts` : undefined,
+  });
   const benefits = product.benefit
     ? [
         {
@@ -281,26 +208,18 @@ export function purchase(
         ...state.benefits,
       ]
     : state.benefits;
-  const transaction = tx(state, {
-    requestId,
-    kind: "purchase",
-    at: now,
-    points: -total,
-    title: product.name,
-    detail: discount ? `Voucher applied: −${discount} pts` : undefined,
-  });
   const passes = product.benefit
-    ? state.passes ?? []
+    ? state.passes
     : [
         {
-          id: `pass-${(state.passes ?? []).length + 1}-${now}`,
+          id: `pass-${state.passes.length + 1}-${now}`,
           code: passCode(requestId, now),
           productId,
           transactionId: transaction.id,
           issuedAt: now,
           status: "ready" as const,
         },
-        ...(state.passes ?? []),
+        ...state.passes,
       ];
   return {
     ok: true,
@@ -308,9 +227,9 @@ export function purchase(
     state: {
       ...state,
       points: state.points - total,
-      vouchers,
       benefits,
       passes,
+      welcomeRedeemed: state.welcomeRedeemed || options.welcome,
       transactions: [transaction, ...state.transactions],
     },
   };
@@ -332,7 +251,7 @@ export function passCode(seed: string, now: number) {
 
 /** Final, explicit "I used this" step. Applies exactly once; points never change here. */
 export function confirmPassUsed(state: RewardsState, passId: string, now: number): Result {
-  const pass = (state.passes ?? []).find((p) => p.id === passId);
+  const pass = state.passes.find((p) => p.id === passId);
   if (!pass) return { ok: false, error: "This pass was not found." };
   if (pass.status === "used") return { ok: false, error: "This pass was already marked as used." };
   const requestId = `pass-used:${passId}`;

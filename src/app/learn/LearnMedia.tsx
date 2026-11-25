@@ -22,8 +22,10 @@ import {
   findInfographic,
   findMedia,
   findVideo,
+  editionFor,
   formatDuration,
   infographics,
+  languageLabels,
   mediaTopicLabels,
   videos,
   type InfographicResource,
@@ -32,6 +34,7 @@ import {
 import { learnActions, useLearnProgress } from "@/state/learnProgress";
 import { LessonGlyph } from "./LessonGlyph";
 import { CaptionControl } from "./CaptionControl";
+import { LanguageSelector } from "./LanguageSelector";
 import { rewardsActions } from "@/rewards/store";
 import type { LearningCategoryKey } from "@/types/learning";
 
@@ -55,6 +58,9 @@ export function LearnHome() {
   const [category, setCategory] = useState<LearningCategoryKey | "all">("all");
   const longForm = videos.find((v) => v.format === "long-form")!;
   const shorts = videos.filter((v) => v.format === "short");
+  const lang = progress.language;
+  const longEdition = editionFor(longForm, lang);
+  const longShown = longEdition ?? editionFor(longForm, "en")!;
   const next = demoLessons.find((l) => l.id === "hospital-bills");
   const lessons = category === "all" ? demoLessons : demoLessons.filter((l) => l.category === category);
 
@@ -127,24 +133,32 @@ export function LearnHome() {
       <Container className="mt-8" >
         <section id="learn-videos" className="scroll-mt-20" aria-labelledby="videos-title">
           <h2 id="videos-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">Video lessons</h2>
+          <LanguageSelector className="mt-2" />
+          {lang !== "en" && (
+            <p className="mt-2 text-caption text-ink-muted">
+              {longEdition
+                ? `The foundation lesson is available in ${languageLabels[lang].label}. Quick explainers and text lessons are in English for now.`
+                : `Not yet available in ${languageLabels[lang].label}.`}
+            </p>
+          )}
           <button
             type="button"
             onClick={() => go(`app/learn/video/${longForm.id}`)}
             className="group mt-3 block w-full overflow-hidden rounded-[1.25rem] bg-surface text-left shadow-e1 ring-1 ring-ink/[0.06]"
           >
             <span className="relative block aspect-video">
-              <img src={longForm.poster} alt="" className="ge-skeleton h-full w-full object-cover" />
+              <img src={longShown.poster} alt="" className="ge-skeleton h-full w-full object-cover" />
               <span className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent" aria-hidden />
               <span className="absolute left-3 top-3 rounded-md bg-crimson-600 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">Foundation lesson</span>
               <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 text-caption font-semibold text-white">
-                <Clock3 size={12} aria-hidden /> {formatDuration(longForm.seconds)}
+                <Clock3 size={12} aria-hidden /> {formatDuration(longShown.seconds)} · {languageLabels[longShown.lang].native}
               </span>
               <span className="absolute left-1/2 top-1/2 inline-flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-navy-950 shadow-e3 transition-transform group-hover:scale-105">
                 <Play size={24} className="ml-1" aria-hidden />
               </span>
             </span>
             <span className="block p-4">
-              <span className="block font-brand text-[1.5rem] font-semibold leading-tight text-navy-950">{longForm.title}</span>
+              <span lang={languageLabels[longShown.lang].htmlLang} className="block font-brand text-[1.5rem] font-semibold leading-tight text-navy-950">{longShown.title}</span>
               <span className="mt-1 block text-body-sm text-ink-secondary">{longForm.description}</span>
             </span>
           </button>
@@ -162,6 +176,11 @@ export function LearnHome() {
                     </span>
                     {progress.completed.includes(v.id) && (
                       <CheckCircle2 size={20} className="absolute right-2 top-2 text-success-600 drop-shadow" aria-label="Watched" />
+                    )}
+                    {lang !== "en" && (
+                      <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-white">
+                        English only
+                      </span>
                     )}
                   </span>
                   <span className="mt-2 line-clamp-2 block text-body-sm font-semibold text-navy-950">{v.title}</span>
@@ -272,6 +291,10 @@ export function VideoLessonView({ id }: { id: string }) {
   const [earned, setEarned] = useState<string | null>(null);
   const done = progress.completed.includes(id);
   const portrait = video.orientation === "portrait";
+  const lang = progress.language;
+  const selected = editionFor(video, lang);
+  const playing = selected ?? editionFor(video, "en")!;
+  const missing = !selected;
 
   const onEnded = () => {
     learnActions.complete(id);
@@ -291,20 +314,33 @@ export function VideoLessonView({ id }: { id: string }) {
         </button>
       </Container>
 
+      <Container className={cn("pt-1", portrait ? "max-w-[22rem]" : "max-w-[60rem]")}>
+        <LanguageSelector dark={portrait} />
+        {missing && (
+          <p
+            role="status"
+            className={cn("mt-2 rounded-xl px-3 py-2 text-caption font-semibold", portrait ? "bg-white/10 text-white" : "bg-gold-50 text-gold-700")}
+          >
+            This video isn't available in {languageLabels[lang].label}. You're watching the English version.
+          </p>
+        )}
+      </Container>
+
       <div className={cn(portrait ? "mx-auto mt-2 w-full max-w-[22rem] px-5" : "mx-auto mt-2 w-full max-w-[60rem] sm:px-8 lg:px-12")}>
         <video
           ref={videoRef}
-          key={video.id}
+          key={`${video.id}-${playing.lang}`}
+          lang={languageLabels[playing.lang].htmlLang}
           controls
           crossOrigin="anonymous"
           playsInline
           preload="metadata"
-          poster={video.poster}
+          poster={playing.poster}
           onPlay={() => learnActions.start(id)}
           onEnded={onEnded}
           className={cn("block w-full bg-black", portrait ? "aspect-[9/16] rounded-[1.25rem]" : "aspect-video sm:rounded-[1.25rem]")}
         >
-          <source src={video.src} type="video/mp4" />
+          <source src={playing.src} type="video/mp4" />
           {video.captions?.map((c, i) => (
             <track key={c.src} kind="subtitles" src={c.src} srcLang={c.lang} label={c.label} default={i === 0 && c.default} />
           ))}
@@ -314,10 +350,14 @@ export function VideoLessonView({ id }: { id: string }) {
 
       <Container className={cn("max-w-[44rem] pt-5", portrait && "text-white")}>
         <p className={cn("text-overline uppercase tracking-[0.2em]", portrait ? "text-teal-200" : "text-teal-700")}>
-          {video.format === "long-form" ? "Foundation lesson" : "Quick explainer"} · {mediaTopicLabels[video.topic]} · {formatDuration(video.seconds)}
+          {video.format === "long-form" ? "Foundation lesson" : "Quick explainer"} · {mediaTopicLabels[video.topic]} · {formatDuration(playing.seconds)} · {languageLabels[playing.lang].native}
         </p>
-        <h1 className={cn("mt-2 font-brand text-[2rem] font-semibold leading-tight", portrait ? "text-white" : "text-navy-950")}>{video.title}</h1>
-        <p className={cn("mt-2 text-body", portrait ? "text-white/80" : "text-ink-secondary")}>{video.description}</p>
+        <h1 className={cn("mt-2 font-brand text-[2rem] font-semibold leading-tight", portrait ? "text-white" : "text-navy-950")}><span lang={languageLabels[playing.lang].htmlLang}>{playing.title}</span></h1>
+        <p className={cn("mt-2 text-body", portrait ? "text-white/80" : "text-ink-secondary")}>
+          {playing.lang === "en"
+            ? video.description
+            : `Foundation lesson in ${languageLabels[playing.lang].label}: an introduction to insurance in Malaysia.`}
+        </p>
         <div className="mt-3">
           <CaptionControl videoRef={videoRef} dark={portrait} />
         </div>
@@ -328,7 +368,14 @@ export function VideoLessonView({ id }: { id: string }) {
         )}
       </Container>
 
-      {video.summary && (
+      {video.summary && playing.lang !== "en" && (
+        <Container className="max-w-[44rem] pt-6">
+          <p className="rounded-2xl bg-surface p-4 text-body-sm text-ink-secondary ring-1 ring-ink/[0.07]">
+            Key takeaways are written for the English video only. This {languageLabels[playing.lang].label} edition is a separate recording.
+          </p>
+        </Container>
+      )}
+      {video.summary && playing.lang === "en" && (
         <Container className="max-w-[44rem] pt-6">
           <section className="rounded-2xl bg-surface p-5 ring-1 ring-ink/[0.07]">
             <h2 className="text-subheading text-navy-950">Key takeaways</h2>

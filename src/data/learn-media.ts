@@ -14,6 +14,24 @@ export const mediaTopicLabels: Record<MediaTopic, string> = {
   accident: "Personal accident",
 };
 
+export type MediaLanguage = "en" | "ms" | "zh" | "ta";
+
+export const languageLabels: Record<MediaLanguage, { label: string; native: string; htmlLang: string }> = {
+  en: { label: "English", native: "English", htmlLang: "en" },
+  ms: { label: "Bahasa Melayu", native: "Bahasa Melayu", htmlLang: "ms" },
+  zh: { label: "Chinese", native: "中文", htmlLang: "zh-Hant" },
+  ta: { label: "Tamil", native: "தமிழ்", htmlLang: "ta" },
+};
+
+/** One language edition of a video. Editions are separate recordings, not dubbed copies. */
+export interface VideoEdition {
+  title: string;
+  src: string;
+  poster: string;
+  seconds: number;
+  sourceFile: string;
+}
+
 export interface VideoResource {
   id: string;
   kind: "video";
@@ -29,6 +47,8 @@ export interface VideoResource {
   orientation: "portrait" | "landscape";
   format: "short" | "long-form";
   sourceFile: string;
+  /** Other-language editions, keyed by language. English is the base entry itself. */
+  editions?: Partial<Record<Exclude<MediaLanguage, "en">, VideoEdition>>;
   /**
    * Authored WebVTT caption files (e.g. /media/learn/captions/<id>.en.vtt). None exist yet:
    * add a track here once a reviewed transcript or translation is available.
@@ -69,6 +89,11 @@ export const videos: VideoResource[] = [
     orientation: "landscape",
     format: "long-form",
     sourceFile: "What_Is_Insurance_.mp4",
+    editions: {
+      ms: { title: "Insurans di Malaysia", src: "/media/learn/videos/foundation-ms.mp4", poster: "/media/learn/videos/foundation-ms-poster.webp", seconds: 473, sourceFile: "Insurans_di_Malaysia.mp4" },
+      zh: { title: "財務保護藍圖：馬來西亞保險指南", src: "/media/learn/videos/foundation-zh.mp4", poster: "/media/learn/videos/foundation-zh-poster.webp", seconds: 576, sourceFile: "財務保護藍圖：馬來西亞保險指南.mp4" },
+      ta: { title: "மலேசியாவில் காப்பீடு", src: "/media/learn/videos/foundation-ta.mp4", poster: "/media/learn/videos/foundation-ta-poster.webp", seconds: 342, sourceFile: "மலேசியாவில்_காப்பீடு.mp4" },
+    },
     summary: [
       "Insurance is a contract: you pay premiums and an insurer agrees to pay for covered losses.",
       "Premiums from many people are pooled, so one person's large loss is shared across the group.",
@@ -145,3 +170,16 @@ export const findInfographic = (id: string) => infographics.find((i) => i.id ===
 export const findMedia = (id: string) => findVideo(id) ?? findInfographic(id);
 
 export const formatDuration = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+/** The edition to play for a language, or null when no edition exists in that language. */
+export function editionFor(video: VideoResource, lang: MediaLanguage): (VideoEdition & { lang: MediaLanguage }) | null {
+  if (lang === "en")
+    return { lang, title: video.title, src: video.src, poster: video.poster, seconds: video.seconds, sourceFile: video.sourceFile };
+  const e = video.editions?.[lang];
+  return e ? { ...e, lang } : null;
+}
+
+export const availableLanguages = (video: VideoResource): MediaLanguage[] => [
+  "en",
+  ...(Object.keys(video.editions ?? {}) as MediaLanguage[]),
+];

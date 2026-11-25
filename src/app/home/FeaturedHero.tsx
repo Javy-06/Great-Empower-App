@@ -217,8 +217,10 @@ export function FeaturedHero({
                   }}
                 />
               </div>
+              {/* Bottom of the hero dissolves into the page, as in the homepage reference. */}
+              <div className="ge-hero-fade pointer-events-none absolute inset-x-0 bottom-0 -z-[5]" aria-hidden />
 
-              <Container className="ge-slide-text pb-16 pt-6 sm:pt-9 md:pb-20 md:pt-14">
+              <Container className="ge-slide-text pb-24 pt-6 sm:pt-9 md:pb-28 md:pt-14">
                 <div className="max-w-[63%] sm:max-w-[26rem] md:max-w-[30rem]">
                   <p className="text-overline uppercase tracking-[0.22em] text-teal-200">
                     {slide.eyebrow}
@@ -249,12 +251,12 @@ export function FeaturedHero({
       </div>
 
       {/* Pager inside the hero, on navy */}
-      <div className="absolute inset-x-0 bottom-2 z-10 flex items-center justify-center gap-0.5 text-white">
+      <div className="absolute inset-x-0 bottom-1 z-10 flex items-center justify-center gap-0.5 text-navy-900">
         <button
           type="button"
           onClick={() => goTo(index - 1)}
           aria-label="Previous featured story"
-          className="inline-flex size-11 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+          className="inline-flex size-11 items-center justify-center rounded-full text-navy-900/70 hover:bg-navy-900/5 hover:text-navy-900"
         >
           <ChevronLeft size={18} aria-hidden />
         </button>
@@ -273,7 +275,7 @@ export function FeaturedHero({
                 <span
                   className={cn(
                     "block h-2 rounded-full transition-all duration-300",
-                    active ? "w-6 bg-white" : "w-2 bg-white/35 group-hover:bg-white/60",
+                    active ? "w-6 bg-navy-900" : "w-2 bg-navy-900/25 group-hover:bg-navy-900/50",
                   )}
                 />
               </button>
@@ -284,7 +286,7 @@ export function FeaturedHero({
           type="button"
           onClick={() => goTo(index + 1)}
           aria-label="Next featured story"
-          className="inline-flex size-11 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+          className="inline-flex size-11 items-center justify-center rounded-full text-navy-900/70 hover:bg-navy-900/5 hover:text-navy-900"
         >
           <ChevronRight size={18} aria-hidden />
         </button>
@@ -294,7 +296,7 @@ export function FeaturedHero({
             onClick={() => setUserPaused((paused) => !paused)}
             aria-label={userPaused ? "Play featured stories" : "Pause featured stories"}
             aria-pressed={userPaused}
-            className="absolute right-3 inline-flex size-11 items-center justify-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+            className="absolute right-3 inline-flex size-11 items-center justify-center rounded-full text-navy-900/60 hover:bg-navy-900/5 hover:text-navy-900"
           >
             {userPaused ? <Play size={14} aria-hidden /> : <Pause size={14} aria-hidden />}
           </button>

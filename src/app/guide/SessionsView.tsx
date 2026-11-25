@@ -38,8 +38,12 @@ const topics = [
 const areas = ["Kuala Lumpur", "Petaling Jaya", "Penang", "Johor Bahru", "Kota Kinabalu"];
 const slotTimes = ["10:00", "11:30", "14:00", "15:30", "17:00"];
 
-/** Fictional guide profiles — prototype only, not real people or licensed agents. */
-const guides = [
+/**
+ * Fictional guide profiles — prototype only, not real people or licensed agents.
+ * `portrait` is ready for owner-supplied images (e.g. "/advisor/<file>.jpg"); until one is set,
+ * the initials avatar is shown.
+ */
+const guides: Array<{ id: string; initials: string; name: string; focus: string; tone: string; portrait?: string }> = [
   { id: "g1", initials: "NA", name: "Nadia A.", focus: "Medical protection basics", tone: "bg-teal-100 text-teal-800" },
   { id: "g2", initials: "JL", name: "Jason L.", focus: "Budgeting & first jobs", tone: "bg-gold-100 text-gold-700" },
   { id: "g3", initials: "PR", name: "Priya R.", focus: "Family & income protection", tone: "bg-crimson-100 text-crimson-700" },
@@ -262,7 +266,7 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
                 <div className="mt-2 grid gap-2">
                   <GuideOption selected={guide === "any"} onSelect={() => setGuide("any")} initials="★" tone="bg-navy-100 text-navy-800" name="Any available guide" focus="Fastest match" />
                   {guides.map((g) => (
-                    <GuideOption key={g.id} selected={guide === g.id} onSelect={() => setGuide(g.id)} initials={g.initials} tone={g.tone} name={g.name} focus={g.focus} />
+                    <GuideOption key={g.id} selected={guide === g.id} onSelect={() => setGuide(g.id)} initials={g.initials} tone={g.tone} name={g.name} focus={g.focus} portrait={g.portrait} />
                   ))}
                 </div>
                 <p className="mt-2 text-caption text-ink-muted">Fictional prototype profiles — not real people or licensed agents.</p>
@@ -335,10 +339,14 @@ function Choice({ selected, onSelect, icon: Icon, label, hint }: { selected: boo
   );
 }
 
-function GuideOption({ selected, onSelect, initials, tone, name, focus }: { selected: boolean; onSelect: () => void; initials: string; tone: string; name: string; focus: string }) {
+function GuideOption({ selected, onSelect, initials, tone, name, focus, portrait }: { selected: boolean; onSelect: () => void; initials: string; tone: string; name: string; focus: string; portrait?: string }) {
   return (
     <button type="button" role="radio" aria-checked={selected} onClick={onSelect} className={cn("flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 py-2 text-left ring-1", selected ? "bg-navy-50 ring-navy-900" : "bg-surface ring-ink/10")}>
-      <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-full text-body-sm font-bold", tone)} aria-hidden>{initials}</span>
+      {portrait ? (
+        <img src={portrait} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+      ) : (
+        <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-full text-body-sm font-bold", tone)} aria-hidden>{initials}</span>
+      )}
       <span className="min-w-0 flex-1">
         <span className="block text-body-sm font-semibold text-navy-950">{name}</span>
         <span className="block text-caption text-ink-muted">{focus}</span>
