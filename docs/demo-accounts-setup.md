@@ -31,6 +31,11 @@ password, OAuth, phone or OTP, and no identity is verified. Every cloud account 
   `supabase.auth.signOut()` (that would permanently lock an anonymous user out of their data).
 * **Reset demo** (account menu → confirm) re-seeds only the demo account, server-side in one
   transaction. It never runs automatically.
+* **Cloud saves that fail** (connection lost) are kept in this browser, shown as an amber dot on
+  the account button plus a note in the account menu (with *Retry now*), and retried automatically
+  (5 s, 15 s, 30 s, then every 60 s). If you sign out before they succeed, they are recorded per
+  account and sent **before** the next pull when the account is reopened, so they are never
+  overwritten; reopening is blocked (with *Try again*) until the cloud is reachable.
 * **No cloud configured / cloud unreachable.** Without the env vars, accounts are device-only and the
   UI says so. If the cloud can't be reached, the app shows an error with *Try again*; creating an
   account offers an explicit *Continue in this browser only* — it never pretends to be synced.
@@ -63,17 +68,28 @@ One time per account: any **food or drink** item for **200 points**, chosen on t
 Wellness and in-game items are never eligible. Eligibility is a generated database column
 (`category in ('food','drink')`) and the app uses the same rule. After use, all items are full price.
 
-## Supabase setup (manual, Free plan)
+## Supabase setup checklist (manual, Free plan) — not done yet
 
-1. Create a project at supabase.com (Free plan is enough; 2 active free projects max).
-2. **Enable anonymous sign-ins** in the Auth providers settings (Authentication → Sign In / Providers; menu labels may differ slightly).
-3. Run the migration: SQL Editor → paste `supabase/migrations/20261126000000_demo_accounts.sql` →
-   Run (or `supabase db push` with the Supabase CLI if you use it).
-4. Project Settings → API Keys: copy the **Project URL** and the **publishable** key
-   (`sb_publishable_…`). Never use a secret / `service_role` key in the app.
-5. Local: copy `.env.example` to `.env.local` and fill both values. Restart `pnpm dev`.
-6. Vercel: add the same two variables to the **Preview** environment only, then redeploy the
-   preview. Do not add them to Production unless you decide to.
+The code works without Supabase (accounts are then saved in this browser only, and the app says
+so). To turn on cloud saving, do these steps **in order**:
+
+1. **Review the migration before running it.** File:
+   `supabase/migrations/20261126000000_demo_accounts.sql`. It creates 8 tables, RLS policies, a
+   private `ge_private` schema and 6 RPCs, and seeds the reward catalogue. It does not touch any
+   existing table. Running it twice fails (tables already exist) rather than changing data.
+2. **Create a Supabase project** on the Free plan (2 active free projects max per account).
+3. **Enable anonymous sign-ins** in the Auth providers settings (Authentication → Sign In /
+   Providers; menu labels may differ slightly). No email/SMS provider is needed.
+4. **Run the migration**: SQL Editor → paste the whole file → Run. Confirm it finishes without
+   errors (or use `supabase db push` if you use the Supabase CLI).
+5. **Copy two public values** from Project Settings → API Keys: the **Project URL** and the
+   **publishable** key (`sb_publishable_…`). Never use a secret (`sb_secret_…`) or legacy
+   `service_role` key in the app.
+6. **Local**: copy `.env.example` to `.env.local` (gitignored) and set
+   `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Restart `pnpm dev`. The Welcome screen
+   stops showing "Cloud saving isn't set up", and accounts show "Saved to the cloud · this browser".
+7. **Vercel Preview**: add the same two variables to the **Preview** environment only, then
+   redeploy the preview. Do not add them to Production unless you decide to.
 
 ### Before a live demo
 

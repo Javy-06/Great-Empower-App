@@ -7,6 +7,7 @@ import { learnProgressStore, type LearnProgress, type LessonLanguage } from "@/s
 import { bookingStore, type Booking } from "@/app/guide/SessionsView";
 import { checklistStore } from "@/app/GuideCentre";
 import { readStore as notificationsReadStore } from "@/data/notifications";
+import { readDirty, syncStatusStore, writeDirty } from "./syncStatus";
 
 /**
  * Supabase side of a cloud demo account.
@@ -99,6 +100,15 @@ export async function activateCloud(accountId: string, expectedUid: string, type
   if (!init.ok) throw new CloudError(init.error ?? "Account setup failed.", "server");
 
   active = { accountId, client, uid: expectedUid };
+  try {
+    // Local changes that never reached the cloud (e.g. signed out offline) go up before the pull,
+    // so the pull can't overwrite them. If this fails, nothing is overwritten: opening stops.
+    await replayDirty(accountId);
+  } catch {
+    active = null;
+    client.auth.stopAutoRefresh();
+    throw new CloudError("Couldn't reach the cloud to save your latest changes. Try again when you're online.", "network");
+  }
   const profile = await pullAll();
   startSync();
   setRewardsBackend(cloudRewards);
@@ -239,30 +249,68 @@ async function pullAll() {
  * Push (stores → server), debounced. Only low-risk progress is written directly (RLS-scoped).
  * ---------------------------------------------------------------------------------------- */
 
-const pending = new Map<string, () => Promise<void>>();
-let timer: number | undefined;
-let unsubscribers: Array<() => void> = [];
-export let lastSyncError: string | null = null;
+type JobName = "learn" | "language" | "bookings" | "app-state";
+const jobs: Record<JobName, () => Promise<void>> = {
+  learn: () => pushLearn(),
+  language: () => pushLanguage(learnProgressStore.get().language),
+  bookings: () => pushBookings(),
+  "app-state": () => pushAppState(),
+};
+const isJob = (name: string): name is JobName => name in jobs;
 
-function schedule(name: string, job: () => Promise<void>) {
+// Jobs re-read the current store state when they run, so a retry always sends the latest data.
+const pending = new Set<JobName>();
+let timer: number | undefined;
+let retryTimer: number | undefined;
+let retryAttempt = 0;
+let unsubscribers: Array<() => void> = [];
+const RETRY_DELAYS_MS = [5_000, 15_000, 30_000, 60_000];
+
+const persistDirty = () => {
+  if (active) writeDirty(active.accountId, [...pending]);
+};
+
+function schedule(name: JobName) {
   if (suppress || !active) return;
-  pending.set(name, job);
+  pending.add(name);
+  persistDirty();
+  syncStatusStore.set({ state: "saving" });
   window.clearTimeout(timer);
   timer = window.setTimeout(() => void flushSync(), 500);
 }
 
+/** Sends queued changes. Failed jobs stay queued (and recorded) and are retried with backoff. */
 export async function flushSync() {
   window.clearTimeout(timer);
-  const jobs = [...pending.values()];
+  window.clearTimeout(retryTimer);
+  if (!active || pending.size === 0) return;
+  const names = [...pending];
   pending.clear();
-  for (const job of jobs) {
+  const failed: JobName[] = [];
+  for (const name of names) {
     try {
-      await job();
-      lastSyncError = null;
+      await jobs[name]();
     } catch {
-      lastSyncError = "Some recent progress couldn't be saved to the cloud.";
+      failed.push(name);
     }
   }
+  failed.forEach((name) => pending.add(name));
+  persistDirty();
+  if (failed.length) {
+    syncStatusStore.set({ state: "error" });
+    const delay = RETRY_DELAYS_MS[Math.min(retryAttempt++, RETRY_DELAYS_MS.length - 1)];
+    retryTimer = window.setTimeout(() => void flushSync(), delay);
+  } else if (pending.size === 0) {
+    retryAttempt = 0;
+    syncStatusStore.set({ state: "idle" });
+  }
+}
+
+/** Pushes changes left unsaved by an earlier session (e.g. signed out while offline). */
+async function replayDirty(accountId: string) {
+  const names = readDirty(accountId).filter(isJob);
+  for (const name of names) await jobs[name]();
+  writeDirty(accountId, []);
 }
 
 const check = async (p: PromiseLike<{ error: unknown }>) => {
@@ -276,21 +324,25 @@ function startSync() {
   unsubscribers = [
     learnProgressStore.subscribe(() => {
       const next = learnProgressStore.get();
-      if (next.language !== prevLearn.language) schedule("language", () => pushLanguage(next.language));
+      if (next.language !== prevLearn.language) schedule("language");
       prevLearn = next;
-      schedule("learn", pushLearn);
+      schedule("learn");
     }),
-    bookingStore.subscribe(() => schedule("bookings", pushBookings)),
-    checklistStore.subscribe(() => schedule("app-state", pushAppState)),
-    notificationsReadStore.subscribe(() => schedule("app-state", pushAppState)),
+    bookingStore.subscribe(() => schedule("bookings")),
+    checklistStore.subscribe(() => schedule("app-state")),
+    notificationsReadStore.subscribe(() => schedule("app-state")),
   ];
 }
 
+/** Stops listening. Unsent jobs remain recorded for this account and are replayed next time. */
 function stopSync() {
   unsubscribers.forEach((u) => u());
   unsubscribers = [];
   window.clearTimeout(timer);
+  window.clearTimeout(retryTimer);
   pending.clear();
+  retryAttempt = 0;
+  syncStatusStore.set({ state: "idle" });
 }
 
 async function pushLanguage(language: LessonLanguage) {

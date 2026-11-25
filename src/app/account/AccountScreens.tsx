@@ -14,6 +14,7 @@ import {
   startDemo,
   useSession,
 } from "@/account/session";
+import { useSyncStatus } from "@/account/syncStatus";
 
 const initials = (a: DeviceAccount) =>
   a.type === "legacy" ? "EP" : (a.displayName?.trim()[0] ?? (a.type === "demo" ? "D" : "N")).toUpperCase();
@@ -188,18 +189,21 @@ export function WelcomeScreen() {
 export function AccountButton({ tone = "dark" }: { tone?: "dark" | "light" }) {
   const session = useSession();
   const { accounts } = useRegistry();
+  const sync = useSyncStatus();
   const [open, setOpen] = useState(false);
   if (session.kind !== "ready") return null;
   const a = session.account;
+  const syncError = a.mode === "cloud" && sync.state === "error";
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={`Account: ${accountLabel(a, accounts)}`}
+        aria-label={`Account: ${accountLabel(a, accounts)}${syncError ? " (some changes not saved yet)" : ""}`}
         aria-haspopup="dialog"
-        className="inline-flex size-11 shrink-0 items-center justify-center rounded-full"
+        className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full"
       >
+        {syncError && <span className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-gold-500 ring-2 ring-navy-950" aria-hidden />}
         <span className={cn("inline-flex size-8 items-center justify-center rounded-full text-caption font-bold", tone === "dark" ? "bg-white/15 text-white ring-1 ring-white/25" : "bg-navy-900 text-white")}>
           {initials(a)}
         </span>
@@ -259,6 +263,7 @@ function AccountSheet({ account, label, onClose }: { account: DeviceAccount; lab
         </div>
 
         <p className="mt-3 text-caption text-ink-secondary">Demo account — not a verified identity. It can only be reopened in this browser.</p>
+        {account.mode === "cloud" && <SyncLine />}
 
         {state.message && (
           <p role={state.error ? "alert" : "status"} className={cn("mt-3 rounded-xl px-3 py-2 text-body-sm font-semibold", state.error ? "bg-error-50 text-error-700" : "bg-success-50 text-success-700")}>
@@ -295,6 +300,25 @@ function AccountSheet({ account, label, onClose }: { account: DeviceAccount; lab
           <p className="text-caption text-ink-muted">Signing out keeps this account's data. Reopen it any time from the account list.</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Cloud save status with a manual retry (automatic retries also run in the background). */
+function SyncLine() {
+  const sync = useSyncStatus();
+  if (sync.state === "idle") return <p className="mt-2 text-caption text-success-700">All changes are saved to the cloud.</p>;
+  if (sync.state === "saving") return <p className="mt-2 text-caption text-ink-muted">Saving to the cloud…</p>;
+  return (
+    <div role="status" className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-gold-50 px-3 py-2 text-caption text-gold-700">
+      <span>Some recent progress isn't saved to the cloud yet. It's kept in this browser and retried automatically.</span>
+      <button
+        type="button"
+        onClick={() => void import("@/account/cloud").then((m) => m.flushSync())}
+        className="inline-flex h-9 shrink-0 items-center rounded-full bg-white px-3 font-bold ring-1 ring-gold-700/30"
+      >
+        Retry now
+      </button>
     </div>
   );
 }
