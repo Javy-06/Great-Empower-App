@@ -248,12 +248,70 @@ function Field({ icon: Icon, label, prefix, suffix, children }: { icon: typeof W
   );
 }
 
+const tools = [
+  { id: "tool-bill", title: "Medical bill simulator", hint: "How a hospital bill is shared between you, an employer and a plan", icon: HeartPulse },
+  { id: "tool-fund", title: "Emergency fund", hint: "How many months your savings could cover essentials", icon: Wallet },
+];
+
+const keyTerms = [
+  { term: "Deductible", text: "A fixed amount you pay first before the plan pays." },
+  { term: "Co-insurance", text: "A percentage of the eligible bill you share, e.g. 20%." },
+  { term: "Co-payment", text: "The umbrella term BNM uses for any amount or share you pay yourself, including deductibles and co-insurance." },
+  { term: "Annual limit", text: "The most a plan pays in one policy year." },
+];
+
 function NeedsStep({ onNext }: { onNext: () => void }) {
   return (
     <>
-      <Container className="max-w-[1040px] pt-6">
+      <Container className="max-w-[44rem] pt-6">
+        <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">Explore your needs</h2>
+        <p className="mt-1 text-body-sm text-ink-secondary">Two tools. Pick one, enter your own numbers, and see the result.</p>
+        <ol className="mt-3 grid gap-2.5 sm:grid-cols-2">
+          {tools.map((t, i) => (
+            <li key={t.id}>
+              <button
+                type="button"
+                onClick={() => document.getElementById(t.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                className="flex min-h-16 w-full items-center gap-3 rounded-2xl bg-surface p-3.5 text-left shadow-e1 ring-1 ring-ink/[0.06]"
+              >
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-white">
+                  <t.icon size={20} aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-caption font-bold text-crimson-600">Tool {i + 1}</span>
+                  <span className="block text-body font-semibold text-navy-950">{t.title}</span>
+                  <span className="block text-caption text-ink-muted">{t.hint}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ol>
+        <details className="group mt-3 rounded-2xl bg-navy-50 px-4">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between text-body-sm font-semibold text-navy-900">
+            Key terms used in the simulator
+            <ArrowRight size={16} className="rotate-90 transition-transform group-open:-rotate-90" aria-hidden />
+          </summary>
+          <dl className="grid gap-2 pb-4">
+            {keyTerms.map((k) => (
+              <div key={k.term}>
+                <dt className="text-body-sm font-semibold text-navy-950">{k.term}</dt>
+                <dd className="text-body-sm text-ink-secondary">{k.text}</dd>
+              </div>
+            ))}
+            <p className="text-caption text-ink-muted">
+              Sources:{" "}
+              <a className="underline" href="https://www.bnm.gov.my/documents/20124/938039/pd_mhit_dec25.pdf" target="_blank" rel="noreferrer">BNM MHIT policy document</a>
+              {" · "}
+              <a className="underline" href="https://insuranceinfo.com.my/learn-the-basics/insurance-glossary/" target="_blank" rel="noreferrer">InsuranceInfo glossary</a>
+              . Plans differ — check your own policy wording.
+            </p>
+          </dl>
+        </details>
+      </Container>
+
+      <Container className="max-w-[1040px] scroll-mt-20 pt-7" id="tool-bill">
         <div className="flex flex-wrap items-baseline gap-2">
-          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">Medical bill simulator</h2>
+          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">1 · Medical bill simulator</h2>
           <span className="rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-bold text-white">Interactive</span>
         </div>
         <p className="mt-1 text-body-sm text-ink-secondary">
@@ -264,9 +322,10 @@ function NeedsStep({ onNext }: { onNext: () => void }) {
         </div>
       </Container>
 
-      <Container className="mt-10 grid gap-6 lg:grid-cols-[5fr_7fr] lg:items-start">
+      <Container className="mt-10 grid scroll-mt-20 gap-6 lg:grid-cols-[5fr_7fr] lg:items-start" id="tool-fund">
         <div>
-          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">How long would your savings last?</h2>
+          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">2 · Emergency fund</h2>
+          <p className="mt-1 text-body font-semibold text-navy-900">How long would your savings last?</p>
           <p className="mt-1 text-body-sm text-ink-secondary">Months of essentials your savings could cover. A rule of thumb, not a target.</p>
           <a href="#app/guide/article/emergency-fund" className="mt-2 inline-flex min-h-11 items-center text-body-sm font-semibold text-navy-800 underline underline-offset-4">
             Read “Building an emergency fund”
@@ -339,6 +398,9 @@ function PlanStep({ onBack }: { onBack: () => void }) {
           GREAT EMPOWER does not connect you to agents or provide quotes. For personal advice, speak
           to a licensed insurance or takaful adviser and bring this summary with you.
         </p>
+        <button type="button" onClick={() => go("app/guide/sessions")} className="mt-3 inline-flex min-h-11 items-center gap-1.5 font-semibold text-crimson-600">
+          Try a guidance session (prototype) <ArrowRight size={15} aria-hidden />
+        </button>
       </section>
       <p className="mt-4 text-caption text-ink-muted">
         This plan is educational. It is not an insurance quotation, recommendation or approval, and

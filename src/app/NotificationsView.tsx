@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowRight, ArrowUpRight, BellOff, BookOpen, Check, Gamepad2, Gift, Megaphone } from "lucide-react";
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
+import { goBack } from "@/lib/nav";
 import {
   markAllNotificationsRead,
   markNotificationRead,
@@ -58,7 +59,7 @@ export function NotificationsView() {
         title="Notifications"
         text="News, learning updates and rewards in one place."
         backLabel="Back"
-        onBack={() => history.back()}
+        onBack={() => goBack("app/home")}
         titleId="notifications-title"
       >
         <button

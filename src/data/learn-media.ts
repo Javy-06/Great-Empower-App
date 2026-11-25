@@ -29,6 +29,11 @@ export interface VideoResource {
   orientation: "portrait" | "landscape";
   format: "short" | "long-form";
   sourceFile: string;
+  /**
+   * Authored WebVTT caption files (e.g. /media/learn/captions/<id>.en.vtt). None exist yet:
+   * add a track here once a reviewed transcript or translation is available.
+   */
+  captions?: Array<{ lang: string; label: string; src: string; default?: boolean }>;
   /** GREAT EMPOWER summary of what the lesson covers — clearly not a transcript. */
   summary?: string[];
   related: string[];

@@ -19,6 +19,7 @@ import { GameShell } from "./game/GameShell";
 import { exitGame, GAME_HASH, gameReturnScroll, LEGACY_GAME_HASH } from "./game/gameRoute";
 import { NewsArticle } from "./news/NewsArticle";
 import { findStory, NEWS_HASH_PREFIX } from "@/data/news";
+import { goBack } from "@/lib/nav";
 
 const destinations: DashboardDestination[] = [
   "home",
@@ -53,7 +54,7 @@ function DestinationView({
   route: string;
 }) {
   const story = destination === "home" ? readStory(route) : undefined;
-  if (story) return <NewsArticle story={story} onBack={() => navigateTo("home")} />;
+  if (story) return <NewsArticle story={story} onBack={() => goBack("app/home")} />;
   if (destination === "rewards") return <RewardsView route={route} />;
   if (destination === "learn") return <LearnDashboard />;
   if (destination === "simulate") return <SimulateHub />;
@@ -143,7 +144,7 @@ export function ApplicationApp() {
         </header>
 
         {/* Phone: one compact navy app bar on every screen */}
-        <header className="fixed left-0 right-0 top-0 z-30 pt-[env(safe-area-inset-top)] md:hidden">
+        <header className="fixed left-0 right-0 top-0 z-30 bg-navy-950 pt-[env(safe-area-inset-top)] md:hidden">
           <AppTopBar
             points={points}
             unread={unread}

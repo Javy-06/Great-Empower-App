@@ -21,6 +21,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import { guideCategories, guides, readinessChecklist, type Guide, type GuideCategory } from "@/data/guides";
 import { createStore, useStore } from "@/state/store";
+import { SessionsView } from "./guide/SessionsView";
 
 const checklistStore = createStore<{ done: string[] }>("ge-guide-checklist-v1", () => ({ done: [] }));
 
@@ -50,9 +51,10 @@ const go = (hash: string) => {
 };
 
 function readRoute() {
-  const m = /^#app\/guide\/(article|checklist)(?:\/([^/?#]+))?$/.exec(window.location.hash);
+  const m = /^#app\/guide\/(article|checklist|sessions)(?:\/([^/?#]+))?$/.exec(window.location.hash);
   if (!m) return { view: "home" as const };
   if (m[1] === "checklist") return { view: "checklist" as const };
+  if (m[1] === "sessions") return { view: "sessions" as const };
   return guides.some((g) => g.id === m[2]) ? { view: "article" as const, id: m[2]! } : { view: "home" as const };
 }
 
@@ -65,6 +67,7 @@ export function GuideCentre() {
   }, []);
   if (route.view === "article") return <GuideArticle guide={guides.find((g) => g.id === route.id)!} />;
   if (route.view === "checklist") return <ChecklistView />;
+  if (route.view === "sessions") return <SessionsView />;
   return <GuideHome />;
 }
 
@@ -211,6 +214,22 @@ function GuideHome() {
               <span className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-crimson-600 px-4 text-body-sm font-semibold text-white">
                 View <ArrowRight size={16} aria-hidden />
               </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => go("app/guide/sessions")}
+              className="mt-3 flex w-full items-center gap-4 rounded-[1.25rem] bg-navy-950 p-4 text-left text-white shadow-e2"
+            >
+              <span className="flex -space-x-2" aria-hidden>
+                {["NA", "JL", "PR"].map((x, k) => (
+                  <span key={x} className={cn("inline-flex size-10 items-center justify-center rounded-full text-caption font-bold ring-2 ring-navy-950", ["bg-teal-100 text-teal-800", "bg-gold-100 text-gold-700", "bg-crimson-100 text-crimson-700"][k])}>{x}</span>
+                ))}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-subheading">Book a guidance session</span>
+                <span className="block text-body-sm text-white/70">Talk through protection basics · prototype</span>
+              </span>
+              <ArrowRight size={18} className="shrink-0" aria-hidden />
             </button>
           </Container>
         </>

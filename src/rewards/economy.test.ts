@@ -5,6 +5,7 @@ import {
   claimChallenge,
   claimVoucher,
   earn,
+  confirmPassUsed,
   initialRewardsState,
   purchase,
   quote,
@@ -109,4 +110,27 @@ test("Shieldora / Nestora purchases store a simulated game benefit", () => {
   assert.equal(s.benefits.length, 1);
   assert.equal(s.benefits[0].benefit.type, "emergency-fund");
   assert.equal(s.transactions[0].points, -500);
+});
+
+test("food purchase issues a ready pass; only explicit confirmation marks it used, once", () => {
+  let s = initialRewardsState();
+  s = ok(purchase(s, "frf-smoothie", null, "p1", NOW));
+  assert.equal(s.passes.length, 1);
+  const pass = s.passes[0];
+  assert.equal(pass.status, "ready");
+  assert.match(pass.code, /^GE-[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}$/);
+  const pointsAfterBuy = s.points;
+  s = ok(confirmPassUsed(s, pass.id, NOW + 1000));
+  assert.equal(s.passes[0].status, "used");
+  assert.equal(s.points, pointsAfterBuy, "confirming use never changes points");
+  const again = confirmPassUsed(s, pass.id, NOW + 2000);
+  assert.equal(again.ok, false);
+  assert.equal(confirmPassUsed(s, "pass-nope", NOW).ok, false);
+});
+
+test("game-benefit purchases store a benefit and issue no pass", () => {
+  let s = initialRewardsState();
+  s = ok(purchase(s, "shd-medical-protection", null, "p1", NOW));
+  assert.equal(s.passes.length, 0);
+  assert.equal(s.benefits.length, 1);
 });

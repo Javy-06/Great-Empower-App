@@ -1,5 +1,6 @@
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
+import { goBack } from "@/lib/nav";
 
 /** About & legal: the full independence and education notice, kept out of every page footer. */
 export function AboutView() {
@@ -10,7 +11,7 @@ export function AboutView() {
         title="About GREAT EMPOWER"
         text="Empowering you to protect your tomorrow."
         backLabel="Back"
-        onBack={() => history.back()}
+        onBack={() => goBack("app/home")}
         titleId="about-title"
       />
       <Container className="max-w-[44rem] py-8">

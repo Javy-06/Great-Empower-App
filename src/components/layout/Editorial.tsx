@@ -17,9 +17,17 @@ const bandTone: Record<BandTone, string> = {
   sand: "bg-sand-50 text-ink",
 };
 
-export function Container({ children, className }: { children: ReactNode; className?: string }) {
+export function Container({
+  children,
+  className,
+  id,
+}: {
+  children: ReactNode;
+  className?: string;
+  id?: string;
+}) {
   return (
-    <div className={cn("mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-12", className)}>
+    <div id={id} className={cn("mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-12", className)}>
       {children}
     </div>
   );

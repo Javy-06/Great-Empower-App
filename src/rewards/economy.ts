@@ -32,7 +32,7 @@ export interface OwnedBenefit {
   status: "stored";
 }
 
-export type TransactionKind = "earn" | "challenge" | "voucher-claim" | "purchase";
+export type TransactionKind = "earn" | "challenge" | "voucher-claim" | "purchase" | "pass-used";
 
 export interface Transaction {
   id: string;
@@ -45,11 +45,27 @@ export interface Transaction {
   detail?: string;
 }
 
+/**
+ * A redemption pass for a Marketplace item (food, drink, wellness). Redeeming spends the points
+ * and issues the pass as "ready"; it only becomes "used" when the player explicitly confirms
+ * they used it at the (fictional) shop. The code is a random in-game token — no personal data.
+ */
+export interface RedemptionPass {
+  id: string;
+  code: string;
+  productId: string;
+  transactionId: string;
+  issuedAt: number;
+  status: "ready" | "used";
+  usedAt?: number;
+}
+
 export interface RewardsState {
   version: 1;
   points: number;
   vouchers: OwnedVoucher[];
   benefits: OwnedBenefit[];
+  passes: RedemptionPass[];
   transactions: Transaction[];
   /** Activity keys already paid (e.g. "lesson-complete:hospital-bills"). */
   earned: string[];
@@ -66,6 +82,7 @@ export const initialRewardsState = (): RewardsState => ({
   points: STARTING_POINTS,
   vouchers: [],
   benefits: [],
+  passes: [],
   transactions: [],
   earned: [],
   claimedChallenges: [],
@@ -272,6 +289,19 @@ export function purchase(
     title: product.name,
     detail: discount ? `Voucher applied: −${discount} pts` : undefined,
   });
+  const passes = product.benefit
+    ? state.passes ?? []
+    : [
+        {
+          id: `pass-${(state.passes ?? []).length + 1}-${now}`,
+          code: passCode(requestId, now),
+          productId,
+          transactionId: transaction.id,
+          issuedAt: now,
+          status: "ready" as const,
+        },
+        ...(state.passes ?? []),
+      ];
   return {
     ok: true,
     transaction,
@@ -280,6 +310,48 @@ export function purchase(
       points: state.points - total,
       vouchers,
       benefits,
+      passes,
+      transactions: [transaction, ...state.transactions],
+    },
+  };
+}
+
+/** Non-sensitive in-game token, e.g. "GE-7K3F-92QD". Derived from the request ID and time. */
+export function passCode(seed: string, now: number) {
+  let h = 2166136261;
+  for (const ch of `${seed}:${now}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+  const alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+  let out = "";
+  let x = h;
+  for (let i = 0; i < 8; i++) {
+    out += alphabet[x % alphabet.length];
+    x = (Math.floor(x / alphabet.length) ^ Math.imul(x + i, 2654435761)) >>> 0;
+  }
+  return `GE-${out.slice(0, 4)}-${out.slice(4)}`;
+}
+
+/** Final, explicit "I used this" step. Applies exactly once; points never change here. */
+export function confirmPassUsed(state: RewardsState, passId: string, now: number): Result {
+  const pass = (state.passes ?? []).find((p) => p.id === passId);
+  if (!pass) return { ok: false, error: "This pass was not found." };
+  if (pass.status === "used") return { ok: false, error: "This pass was already marked as used." };
+  const requestId = `pass-used:${passId}`;
+  if (duplicate(state, requestId)) return { ok: false, error: "This pass was already marked as used." };
+  const product = findProduct(pass.productId);
+  const transaction = tx(state, {
+    requestId,
+    kind: "pass-used",
+    at: now,
+    points: 0,
+    title: `Used: ${product?.name ?? "Marketplace item"}`,
+    detail: `Pass ${pass.code}`,
+  });
+  return {
+    ok: true,
+    transaction,
+    state: {
+      ...state,
+      passes: state.passes.map((p) => (p.id === passId ? { ...p, status: "used", usedAt: now } : p)),
       transactions: [transaction, ...state.transactions],
     },
   };

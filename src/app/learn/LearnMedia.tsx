@@ -30,6 +30,8 @@ import {
   type VideoResource,
 } from "@/data/learn-media";
 import { learnActions, useLearnProgress } from "@/state/learnProgress";
+import { LessonGlyph } from "./LessonGlyph";
+import { CaptionControl } from "./CaptionControl";
 import { rewardsActions } from "@/rewards/store";
 import type { LearningCategoryKey } from "@/types/learning";
 
@@ -230,14 +232,12 @@ export function LearnHome() {
               return (
                 <li key={lesson.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-ink/[0.07]">
                   <button type="button" onClick={() => go(`app/learn/lesson/${lesson.id}`)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                    <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-700">
-                      <FileText size={22} aria-hidden />
-                    </span>
+                    <LessonGlyph id={lesson.id} category={lesson.category} className="size-14 shrink-0" />
                     <span className="min-w-0">
-                      <span className="inline-flex rounded-md bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-teal-700">Lesson</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-muted">{lesson.categoryLabel}</span>
                       <span className="mt-0.5 block font-brand text-[1.1875rem] font-semibold leading-tight text-navy-950">{lesson.title}</span>
                       <span className="mt-0.5 flex items-center gap-1.5 text-caption text-ink-muted">
-                        {lesson.categoryLabel} · <Clock3 size={12} aria-hidden /> {lesson.minutes} min
+                        <Clock3 size={12} aria-hidden /> {lesson.minutes} min read
                         {done && <span className="ml-1 inline-flex items-center gap-0.5 font-semibold text-success-700"><CheckCircle2 size={12} aria-hidden /> Completed</span>}
                       </span>
                     </span>
@@ -267,6 +267,7 @@ export function LearnHome() {
 
 export function VideoLessonView({ id }: { id: string }) {
   const video = findVideo(id)!;
+  const videoRef = useRef<HTMLVideoElement>(null);
   const progress = useLearnProgress();
   const [earned, setEarned] = useState<string | null>(null);
   const done = progress.completed.includes(id);
@@ -292,8 +293,10 @@ export function VideoLessonView({ id }: { id: string }) {
 
       <div className={cn(portrait ? "mx-auto mt-2 w-full max-w-[22rem] px-5" : "mx-auto mt-2 w-full max-w-[60rem] sm:px-8 lg:px-12")}>
         <video
+          ref={videoRef}
           key={video.id}
           controls
+          crossOrigin="anonymous"
           playsInline
           preload="metadata"
           poster={video.poster}
@@ -302,6 +305,9 @@ export function VideoLessonView({ id }: { id: string }) {
           className={cn("block w-full bg-black", portrait ? "aspect-[9/16] rounded-[1.25rem]" : "aspect-video sm:rounded-[1.25rem]")}
         >
           <source src={video.src} type="video/mp4" />
+          {video.captions?.map((c, i) => (
+            <track key={c.src} kind="subtitles" src={c.src} srcLang={c.lang} label={c.label} default={i === 0 && c.default} />
+          ))}
           Your browser can't play this video.
         </video>
       </div>
@@ -312,6 +318,9 @@ export function VideoLessonView({ id }: { id: string }) {
         </p>
         <h1 className={cn("mt-2 font-brand text-[2rem] font-semibold leading-tight", portrait ? "text-white" : "text-navy-950")}>{video.title}</h1>
         <p className={cn("mt-2 text-body", portrait ? "text-white/80" : "text-ink-secondary")}>{video.description}</p>
+        <div className="mt-3">
+          <CaptionControl videoRef={videoRef} dark={portrait} />
+        </div>
         {(done || earned) && (
           <p className={cn("mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption font-bold", portrait ? "bg-white/10 text-white" : "bg-success-50 text-success-700")} role="status">
             <CheckCircle2 size={14} aria-hidden /> {earned ?? "Watched"}

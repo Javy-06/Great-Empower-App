@@ -309,11 +309,13 @@
   .ge-hero-art {
     right: 0;
     bottom: 0;
-    width: 46%;
-    height: 76%;
-    opacity: 0.9;
-    --ge-ha-x: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.5) 28%, #000 62%, rgb(0 0 0 / 0.85) 100%);
-    --ge-ha-y: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 0.6) 22%, #000 48%, rgb(0 0 0 / 0.55) 82%, transparent 100%);
+    width: 54%;
+    height: 84%;
+    opacity: 0.85;
+    /* Left edge dissolves into the text column; lower edge melts into the navy well before the
+       hero ends, so there is never a visible image boundary. */
+    --ge-ha-x: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.35) 24%, rgb(0 0 0 / 0.85) 55%, #000 75%, rgb(0 0 0 / 0.7) 100%);
+    --ge-ha-y: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 0.55) 22%, #000 46%, rgb(0 0 0 / 0.6) 66%, rgb(0 0 0 / 0.2) 82%, transparent 94%);
     -webkit-mask-image: var(--ge-ha-x), var(--ge-ha-y);
     -webkit-mask-composite: source-in;
     mask-image: var(--ge-ha-x), var(--ge-ha-y);
@@ -329,7 +331,7 @@
   }
   @media (min-width: 768px) {
     .ge-hero-art {
-      width: 46%;
+      width: 50%;
       height: 100%;
     }
   }

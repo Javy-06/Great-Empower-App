@@ -3,6 +3,7 @@ import type { EarningKind } from "./catalogue";
 import {
   claimChallenge as claimChallengeOp,
   claimVoucher as claimVoucherOp,
+  confirmPassUsed as confirmPassUsedOp,
   earn as earnOp,
   initialRewardsState,
   purchase as purchaseOp,
@@ -41,5 +42,6 @@ export const rewardsActions = {
     commit((s) => claimVoucherOp(s, defId, reqId, Date.now())),
   purchase: (productId: string, voucherId: string | null, reqId = requestId("buy")) =>
     commit((s) => purchaseOp(s, productId, voucherId, reqId, Date.now())),
+  confirmPassUsed: (passId: string) => commit((s) => confirmPassUsedOp(s, passId, Date.now())),
   newRequestId: requestId,
 };

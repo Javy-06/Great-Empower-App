@@ -1,47 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+
+/** Minimum time the brand reveal stays visible, measured from the first paint of the page. */
+const MIN_VISIBLE_MS = 700;
+/** Never hold the app longer than this, even if fonts are slow or fail. */
+const MAX_VISIBLE_MS = 2200;
 
 /**
- * App entry: a brief brand reveal that stays only while real initialisation is happening
- * (web fonts loading), capped so it never blocks the app. No artificial delay; shown once
- * per session.
+ * Dismisses the opening splash painted by index.html (#ge-boot) once the app has mounted and
+ * web fonts are ready. Shown once per session; if anything fails, the cap removes it.
  */
 export function AppSplash() {
-  const [done, setDone] = useState(() => sessionStorage.getItem("ge-splash-seen") === "1");
-  const [gone, setGone] = useState(done);
-
   useEffect(() => {
-    if (done) return;
-    let finished = false;
+    const el = document.getElementById("ge-boot");
+    if (!el) return;
+    let done = false;
     const finish = () => {
-      if (finished) return;
-      finished = true;
-      sessionStorage.setItem("ge-splash-seen", "1");
-      setDone(true);
-      window.setTimeout(() => setGone(true), 400);
+      if (done) return;
+      done = true;
+      try {
+        sessionStorage.setItem("ge-splash-seen", "1");
+      } catch {
+        /* ignore */
+      }
+      el.setAttribute("data-done", "");
+      window.setTimeout(() => el.remove(), 450);
     };
-    const cap = window.setTimeout(finish, 1500);
-    (document.fonts?.ready ?? Promise.resolve()).then(finish);
+    const elapsed = performance.now();
+    const fonts = (document.fonts?.ready ?? Promise.resolve()).catch(() => undefined);
+    const minWait = new Promise((r) => setTimeout(r, Math.max(0, MIN_VISIBLE_MS - elapsed)));
+    Promise.all([fonts, minWait]).then(finish);
+    const cap = window.setTimeout(finish, Math.max(0, MAX_VISIBLE_MS - elapsed));
     return () => window.clearTimeout(cap);
-  }, [done]);
-
-  if (gone) return null;
-  return (
-    <div
-      className="ge-splash fixed inset-0 z-[90] flex items-center justify-center bg-navy-950"
-      data-done={done}
-      aria-hidden
-    >
-      <div className="ge-splash-mark flex flex-col items-center gap-5">
-        <img
-          src="/images/great-empower-horizontal-white.png"
-          alt=""
-          width={220}
-          className="h-auto w-[220px]"
-        />
-        <span className="h-0.5 w-16 overflow-hidden rounded-full bg-white/15">
-          <span className="block h-full w-1/2 animate-pulse rounded-full bg-crimson-500" />
-        </span>
-      </div>
-    </div>
-  );
+  }, []);
+  return null;
 }

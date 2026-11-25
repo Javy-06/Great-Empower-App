@@ -37,6 +37,7 @@ import {
   type OwnedVoucher,
 } from "@/rewards/economy";
 import { rewardsActions, useRewards } from "@/rewards/store";
+import { PassView } from "./rewards/PassView";
 
 const go = (hash: string) => {
   window.location.hash = hash;
@@ -53,6 +54,7 @@ export function RewardsView({ route }: { route: string }) {
   if (view === "marketplace") return <Marketplace brandId={parts[3] as BrandId | undefined} />;
   if (view === "product" && parts[3] && findProduct(parts[3])) return <ProductDetail id={parts[3]} />;
   if (view === "wallet") return <WalletView />;
+  if (view === "pass" && parts[3]) return <PassView id={parts[3]} />;
   return <RewardsHub />;
 }
 
@@ -346,7 +348,13 @@ function ProductDetail({ id }: { id: string }) {
     if (checkout.phase === "processing") return;
     setCheckout({ phase: "processing" });
     const r = rewardsActions.purchase(id, voucherId, requestId);
-    setCheckout(r.ok ? { phase: "done", total: -r.transaction.points } : { phase: "error", message: r.error });
+    if (!r.ok) {
+      setCheckout({ phase: "error", message: r.error });
+      return;
+    }
+    const pass = r.state.passes?.find((p) => p.transactionId === r.transaction.id);
+    if (pass) go(`app/rewards/pass/${pass.id}`);
+    else setCheckout({ phase: "done", total: -r.transaction.points });
   };
 
   if (checkout.phase === "done") {
@@ -570,6 +578,34 @@ function WalletView() {
                       Use
                     </button>
                   )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Container>
+
+      <Container className="mt-7">
+        <h2 className="text-heading text-navy-950">Redemption passes</h2>
+        {(state.passes ?? []).length === 0 ? (
+          <p className="mt-2 text-body-sm text-ink-muted">Items you redeem in the Marketplace appear here as passes.</p>
+        ) : (
+          <ul className="mt-3 grid gap-2.5">
+            {(state.passes ?? []).map((p) => {
+              const product = findProduct(p.productId);
+              const ready = p.status === "ready";
+              return (
+                <li key={p.id}>
+                  <button type="button" onClick={() => go(`app/rewards/pass/${p.id}`)} className="flex w-full items-center gap-3 rounded-2xl bg-surface p-3 text-left ring-1 ring-ink/[0.07]">
+                    {product?.image && <img src={product.image} alt="" className="ge-skeleton size-12 shrink-0 rounded-xl object-cover" />}
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-body-sm font-semibold text-navy-950">{product?.name}</span>
+                      <span className="block font-mono text-caption text-ink-muted">{p.code}</span>
+                    </span>
+                    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold", ready ? "bg-gold-50 text-gold-700" : "bg-success-50 text-success-700")}>
+                      {ready ? "Ready to use" : "Used"}
+                    </span>
+                  </button>
                 </li>
               );
             })}

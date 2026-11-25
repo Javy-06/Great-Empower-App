@@ -33,7 +33,7 @@ import {
 
 const steps = [
   "Introduction",
-  "Scenario",
+  "Visit & cover",
   "Medical bill",
   "Eligibility",
   "Employer",
@@ -370,7 +370,7 @@ export function MedicalClaimSimulator() {
     setStep(item.step);
   };
 
-  const entryButtonLabel = hasDraft ? "Continue your draft" : "Start a scenario";
+  const entryButtonLabel = hasDraft ? "Continue your draft" : "Start the bill simulator";
 
   return (
     <section
@@ -415,7 +415,7 @@ export function MedicalClaimSimulator() {
           </div>
           <ol className="flex flex-col justify-center border-t border-ink/15 lg:border-l lg:border-t-0 lg:pl-12">
             {[
-              { icon: FileText, text: "Set up a hypothetical scenario" },
+              { icon: FileText, text: "Choose the visit type and whether it's covered" },
               { icon: Hospital, text: "Describe bill lines and assumptions" },
               { icon: BriefcaseBusiness, text: "Review payer and cost-sharing choices" },
             ].map(({ text }, index) => (
@@ -504,13 +504,13 @@ export function MedicalClaimSimulator() {
                 {step === 0 &&
                   "Learn what this educational prototype can and cannot tell you before entering a scenario."}
                 {step === 1 &&
-                  "Choose a care setting and the hypothetical gate scenario you want to explore."}
+                  "Choose the type of visit and whether the policy is assumed to cover it."}
                 {step === 2 &&
                   "Enter a total bill and describe the individual charges. Amounts remain text in this draft."}
                 {step === 3 &&
                   "Select an explicit educational eligibility assumption for each bill line."}
                 {step === 4 &&
-                  "Describe the employer scenario that matches the gate choice you selected."}
+                  "Describe any employer support, matching the coverage choice you made earlier."}
                 {step === 5 &&
                   "Review possible cost-sharing inputs. Nothing is preselected or calculated."}
                 {step === 6 && "Review your assumptions and calculate the educational scenario."}
@@ -602,29 +602,29 @@ export function MedicalClaimSimulator() {
                   />
                   <ChoiceGroup
                     name="coverage-gate"
-                    label="Scenario gate"
-                    help="Choose a hypothetical path. This does not confirm real waiting periods or exclusions."
+                    label="Does the policy cover this visit?"
+                    help="Pick an assumption to explore. This does not check real waiting periods or exclusions."
                     value={draft.coverageGate}
                     onChange={(value) => updateDraft("coverageGate", value)}
                     error={fieldError("coverageGate")}
                     options={[
                       {
                         value: "PROCEED_WITHOUT_GATE_ASSUMPTION",
-                        label: "Continue without a gate assumption",
+                        label: "Assume it's covered",
                         description:
-                          "Continue the hypothetical personal-policy stages; this is not a real coverage finding.",
+                          "Continue to deductible, co-payment and limits. This is an assumption, not a real coverage finding.",
                       },
                       {
                         value: "APPLY_WAITING_PERIOD",
-                        label: "Apply a waiting-period gate",
+                        label: "Not covered yet — waiting period",
                         description:
-                          "Explore a gated scenario where personal-policy stages are not modeled.",
+                          "Explore a bill during a waiting period. Your personal policy is left out of the calculation.",
                       },
                       {
                         value: "APPLY_EXCLUSION",
-                        label: "Apply an exclusion gate",
+                        label: "Not covered — exclusion",
                         description:
-                          "Explore a gated scenario where personal-policy stages are not modeled.",
+                          "Explore a bill for an excluded condition. Your personal policy is left out of the calculation.",
                       },
                     ]}
                   />

@@ -28,11 +28,12 @@ export function NewsArticle({ story, onBack }: { story: NewsStory; onBack: () =>
             <button
               type="button"
               onClick={onBack}
-              className="-ml-1 hidden min-h-11 items-center gap-2 text-body-sm font-semibold text-white/70 hover:text-white md:inline-flex"
+              aria-label="Back"
+              className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-body-sm font-semibold text-white/80 hover:text-white"
             >
-              <ArrowLeft size={16} aria-hidden /> Home
+              <ArrowLeft size={18} aria-hidden /> Back
             </button>
-            <p className="text-overline uppercase tracking-[0.2em] text-teal-200 md:mt-6">
+            <p className="mt-3 text-overline uppercase tracking-[0.2em] text-teal-200 md:mt-6">
               News · Medical protection
             </p>
             <h1
