@@ -293,6 +293,211 @@
     }
   }
 
+  /*
+   * Home hero: navy "dusk" that resolves into the page canvas. The photograph is masked, never
+   * boxed — its top edge dissolves into navy and its lower edge into the canvas below.
+   */
+  .ge-hero {
+    background:
+      radial-gradient(80% 60% at 100% 10%, rgb(41 126 133 / 0.16), transparent 60%),
+      linear-gradient(180deg, var(--color-navy-950) 0%, #0c2240 100%);
+  }
+  /*
+   * Hero artwork: a SMALL cropped image on the lower right (about a third of the hero), masked
+   * so it dissolves into the navy on every edge. Text and CTA stay the primary content.
+   */
+  .ge-hero-art {
+    right: 0;
+    bottom: 0;
+    width: 46%;
+    height: 76%;
+    opacity: 0.9;
+    --ge-ha-x: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.5) 28%, #000 62%, rgb(0 0 0 / 0.85) 100%);
+    --ge-ha-y: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 0.6) 22%, #000 48%, rgb(0 0 0 / 0.55) 82%, transparent 100%);
+    -webkit-mask-image: var(--ge-ha-x), var(--ge-ha-y);
+    -webkit-mask-composite: source-in;
+    mask-image: var(--ge-ha-x), var(--ge-ha-y);
+    mask-composite: intersect;
+  }
+  /* MediAsas infographic as atmosphere: smaller presence, softened and dimmed. */
+  .ge-hero-art--infographic {
+    opacity: 0.55;
+  }
+  .ge-hero-art--infographic img {
+    filter: blur(1.5px) saturate(1.1);
+    transform: scale(1.15);
+  }
+  @media (min-width: 768px) {
+    .ge-hero-art {
+      width: 46%;
+      height: 100%;
+    }
+  }
+
+  .ge-input {
+    min-width: 0;
+    width: 100%;
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    background: var(--color-sunken);
+    padding: 0 0.75rem;
+    font-size: 1rem;
+    color: var(--color-ink);
+  }
+  .ge-input:focus-visible {
+    outline: 2px solid var(--color-teal-600);
+    outline-offset: 1px;
+  }
+
+  .ge-update-card {
+    background:
+      radial-gradient(60% 90% at 100% 100%, rgb(198 211 230 / 0.45), transparent 70%),
+      linear-gradient(135deg, #ffffff 0%, var(--color-navy-50) 100%);
+  }
+
+  /* Page hero: navy, with a small masked photo on the right that dissolves into it. */
+  .ge-pagehero {
+    background:
+      radial-gradient(90% 70% at 100% 0%, rgb(41 126 133 / 0.18), transparent 60%),
+      linear-gradient(180deg, var(--color-navy-950) 0%, #0d2342 100%);
+  }
+  .ge-pagehero-art {
+    opacity: 0.85;
+    --ge-pa-x: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 30%, #000 65%);
+    --ge-pa-y: linear-gradient(to bottom, rgb(0 0 0 / 0.6) 0%, #000 25%, #000 60%, transparent 100%);
+    -webkit-mask-image: var(--ge-pa-x), var(--ge-pa-y);
+    -webkit-mask-composite: source-in;
+    mask-image: var(--ge-pa-x), var(--ge-pa-y);
+    mask-composite: intersect;
+  }
+
+  /* App entry splash — brand reveal while fonts and first content load. */
+  .ge-splash {
+    transition: opacity 360ms ease, visibility 0s linear 360ms;
+  }
+  .ge-splash[data-done="true"] {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .ge-splash-mark {
+    animation: ge-splash-in 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes ge-splash-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94);
+      filter: blur(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+  .ge-skeleton {
+    background: linear-gradient(90deg, var(--color-sunken) 25%, #e9eef4 37%, var(--color-sunken) 63%);
+    background-size: 400% 100%;
+    animation: ge-shimmer 1.4s ease infinite;
+  }
+  @keyframes ge-shimmer {
+    from {
+      background-position: 100% 50%;
+    }
+    to {
+      background-position: 0 50%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ge-splash-mark,
+    .ge-skeleton {
+      animation: none;
+    }
+  }
+
+  /*
+   * Game shell — the game's own atmosphere, scoped here so it never leaks into the app.
+   * Leaf green comes from the new LifeTrack build's palette.
+   */
+  .ge-game-shell {
+    --game-leaf: #16845b;
+    --game-night: #06131f;
+    background: var(--game-night);
+  }
+  .ge-game-backdrop {
+    background:
+      radial-gradient(120% 70% at 50% 0%, rgb(22 132 91 / 0.45), transparent 60%),
+      radial-gradient(90% 60% at 100% 100%, rgb(200 16 46 / 0.25), transparent 60%),
+      linear-gradient(180deg, rgb(6 19 31 / 0.55), var(--game-night) 85%),
+      url("/images/lifetrack/lifetrack-cover-960.webp") center / cover no-repeat;
+    filter: saturate(1.15);
+  }
+  .ge-game-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    background: rgb(6 19 31 / 0.55);
+  }
+  .ge-game-wordmark {
+    background: linear-gradient(90deg, #ffe08a, #ffffff 55%, #9be7c4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .ge-game-enter {
+    animation: ge-game-enter 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes ge-game-enter {
+    from {
+      opacity: 0;
+      transform: scale(1.04);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes ge-pager-fill {
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  /* Featured hero carousel: slides cross-fade; no sliding. */
+  .ge-slide {
+    transition:
+      opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      visibility 0s linear 700ms;
+  }
+  .ge-slide[data-active="true"] {
+    transition:
+      opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      visibility 0s;
+  }
+  .ge-slide .ge-slide-text {
+    transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform: translateY(8px);
+  }
+  .ge-slide[data-active="true"] .ge-slide-text {
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ge-game-enter {
+      animation: none;
+    }
+    .ge-slide,
+    .ge-slide[data-active="true"],
+    .ge-slide .ge-slide-text {
+      transition: none;
+      transform: none;
+    }
+  }
+
   /* Linked surface: lifts 2px; a photo inside zooms within its frame. */
   .ge-lift {
     transition:

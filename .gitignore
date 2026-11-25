@@ -19,3 +19,8 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+# Owner source media (web copies live in public/)
+/ui reference/
+/insurance study video/
+/insurance infographic/

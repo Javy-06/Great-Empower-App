@@ -1,107 +1,349 @@
-import { useEffect, useState } from "react";
+import { useState, type ReactNode } from "react";
+import {
+  Accessibility,
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  Check,
+  CheckCircle2,
+  HeartPulse,
+  Info,
+  ShieldPlus,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { EmergencyFundCalculator } from "@/components/cards/SimulateCards";
-import { Band, Chapter, Container } from "@/components/layout/Editorial";
+import { Container } from "@/components/layout/Editorial";
+import { PageHero } from "@/components/layout/PageHero";
+import { cn } from "@/lib/cn";
+import {
+  areaLabels,
+  profileCompleteness,
+  profileStore,
+  useProfile,
+  type CoverageAnswer,
+  type ProtectionArea,
+  type ProtectionProfile,
+} from "@/state/profile";
+import { rewardsActions } from "@/rewards/store";
 import { MedicalClaimSimulator } from "./MedicalClaimSimulator";
-import { LIFETRACK_HASH, LifeTrackPoster, LifeTrackScreen } from "./lifetrack/LifeTrackLauncher";
 
-const isGameRoute = () => window.location.hash.replace(/^#/, "") === LIFETRACK_HASH;
+const go = (hash: string) => {
+  window.location.hash = hash;
+  window.scrollTo({ top: 0 });
+};
 
-const moments = [
-  { title: "Sudden hospital stay", status: "Try it above" },
-  { title: "Your first car loan", status: "Coming soon" },
-  { title: "Cracked phone screen", status: "Coming soon" },
-  { title: "What-if comparisons", status: "Coming soon" },
+const areas: Array<{ key: ProtectionArea; icon: typeof HeartPulse; hint: string; tone: string }> = [
+  { key: "medical", icon: HeartPulse, hint: "Help with hospital and treatment costs.", tone: "bg-crimson-500/20 text-crimson-200" },
+  { key: "critical", icon: ShieldPlus, hint: "A lump sum if you're diagnosed with a major illness.", tone: "bg-navy-400/25 text-navy-100" },
+  { key: "life", icon: Users, hint: "Support for people who depend on your income.", tone: "bg-gold-500/20 text-gold-100" },
+  { key: "accident", icon: Accessibility, hint: "Protection for injuries and accidental disability.", tone: "bg-teal-400/20 text-teal-100" },
 ];
 
-/** Simulate destination. The LifeTrack game is a separate screen, mounted only on its own route. */
-export function SimulateHub() {
-  const [inGame, setInGame] = useState(isGameRoute);
-  useEffect(() => {
-    const onHash = () => setInGame(isGameRoute());
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
+const steps = ["Profile", "Needs", "Plan"] as const;
 
-  if (inGame) return <LifeTrackScreen />;
+/** Simulate: a three-step personal protection planner around the existing calculators. */
+export function SimulateHub() {
+  const [step, setStep] = useState(0);
+  const toStep = (n: number) => {
+    setStep(n);
+    window.scrollTo({ top: 0 });
+  };
 
   return (
     <>
-      <Band tone="night" labelledBy="simulate-title" className="!pb-12 sm:!pb-14 lg:!pb-16">
-        <Container>
-          <Chapter
-            as="h1"
-            label="Simulate"
-            id="simulate-title"
-            onDark
-            title="Rehearse the hard moments."
-            lede="Hypothetical scenarios, real arithmetic. Every figure here is illustrative."
-          />
-        </Container>
-      </Band>
+      <PageHero
+        eyebrow="Personal protection planner"
+        title="Plan protection around your life."
+        text="Understand what you may need, explore real scenarios and see what fits your budget."
+        image="/images/pexels/young-asian-students-learning-together.webp"
+        imagePosition="65% 25%"
+        backLabel="Simulate"
+        onBack={() => go("app/home")}
+        titleId="simulate-title"
+      />
 
-      {/* The functional centre of the product: the claim simulator on its own stage. */}
-      <Band tone="paper" labelledBy="claim-stage-title" className="!pt-12 sm:!pt-14 lg:!pt-16">
-        <Container className="max-w-[1040px]">
-          <p className="mb-6 flex items-center gap-3 text-overline uppercase text-teal-700">
-            <span className="tabular-nums">01</span>
-            <span className="h-px w-8 bg-ink/20" aria-hidden />
-            Medical claim
-          </p>
-          <h2 id="claim-stage-title" className="sr-only">
-            Medical claim simulator
-          </h2>
-          <MedicalClaimSimulator />
-        </Container>
-      </Band>
+      <Container className="relative -mt-5">
+        <ol className="flex items-center justify-between gap-1 rounded-full bg-surface p-1.5 shadow-e2 ring-1 ring-ink/[0.06]">
+          {steps.map((label, i) => {
+            const active = i === step;
+            const done = i < step;
+            return (
+              <li key={label} className="min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() => toStep(i)}
+                  aria-current={active ? "step" : undefined}
+                  className={cn(
+                    "flex h-11 w-full items-center justify-center gap-1.5 rounded-full px-1 text-[11px] font-bold uppercase tracking-[0.03em] transition-colors sm:text-caption",
+                    active ? "bg-crimson-50 text-crimson-600" : "text-navy-900",
+                  )}
+                >
+                  <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[11px]", active ? "bg-crimson-600 text-white" : done ? "bg-navy-900 text-white" : "bg-sunken text-navy-900")}>
+                    {done ? <Check size={13} aria-hidden /> : i + 1}
+                  </span>
+                  <span className="truncate">{label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </Container>
 
-      <Band tone="canvas" id="simulate-calculators" labelledBy="fund-title">
-        <Container className="grid gap-12 lg:grid-cols-[5fr_7fr] lg:items-start">
-          <div className="lg:sticky lg:top-28">
-            <Chapter
-              number="02"
-              label="Emergency fund"
-              id="fund-title"
-              title="How long would your savings last?"
-              lede="Months of essentials your savings could cover. A rule of thumb, not a target."
-            />
-            <a
-              href="#app/guide/article/emergency-fund"
-              className="mt-6 inline-flex min-h-11 items-center text-body-sm font-semibold text-navy-800 underline underline-offset-4 hover:text-navy-950"
-            >
-              Read “Building an emergency fund”
-            </a>
+      {step === 0 && <ProfileStep onNext={() => toStep(1)} />}
+      {step === 1 && <NeedsStep onNext={() => toStep(2)} />}
+      {step === 2 && <PlanStep onBack={() => toStep(0)} />}
+    </>
+  );
+}
+
+function ProfileStep({ onNext }: { onNext: () => void }) {
+  const saved = useProfile();
+  const [p, setP] = useState<ProtectionProfile>(saved);
+  const set = (patch: Partial<ProtectionProfile>) => setP((cur) => ({ ...cur, ...patch }));
+  const completeness = profileCompleteness(p);
+
+  const save = () => {
+    profileStore.set({ ...p, savedAt: Date.now() });
+    if (completeness.done === completeness.total) rewardsActions.earn("profile-complete", "profile");
+    onNext();
+  };
+
+  return (
+    <Container className="max-w-[44rem] pt-5">
+      <section className="rounded-2xl bg-surface p-4 shadow-e1 ring-1 ring-ink/[0.06] sm:p-5" aria-labelledby="budget-label">
+        <div className="flex items-start gap-3">
+          <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-crimson-50 text-crimson-600">
+            <Wallet size={22} aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p id="budget-label" className="text-body font-semibold text-navy-950">Your monthly protection budget</p>
+            <p className="font-brand text-[2.5rem] font-bold leading-none text-crimson-600">
+              <span className="text-body font-semibold text-navy-950">RM </span>
+              {p.monthlyBudget}
+              {p.monthlyBudget >= 500 && "+"}
+              <span className="text-body font-medium text-ink-muted"> / month</span>
+            </p>
           </div>
-          <EmergencyFundCalculator />
-        </Container>
-      </Band>
+        </div>
+        <input
+          type="range"
+          min={50}
+          max={500}
+          step={10}
+          value={p.monthlyBudget}
+          onChange={(e) => set({ monthlyBudget: Number(e.target.value) })}
+          aria-labelledby="budget-label"
+          className="ge-range mt-2"
+          style={{ ["--fill" as string]: `${((p.monthlyBudget - 50) / 450) * 100}%` }}
+        />
+        <div className="flex justify-between text-caption text-ink-muted"><span>RM 50</span><span>RM 500+</span></div>
+      </section>
 
-      <div id="simulate-game" className="scroll-mt-16">
-        <LifeTrackPoster number="03" />
+      <section className="mt-4 rounded-2xl bg-navy-950 p-4 text-white sm:p-5" aria-labelledby="priorities-title">
+        <h2 id="priorities-title" className="font-brand text-[1.625rem] font-semibold">Protection priorities</h2>
+        <ul className="mt-2 divide-y divide-white/10">
+          {areas.map(({ key, icon: Icon, hint, tone }) => {
+            const on = p.priorities.includes(key);
+            return (
+              <li key={key}>
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={on}
+                  onClick={() =>
+                    setP((cur) => ({
+                      ...cur,
+                      priorities: cur.priorities.includes(key) ? cur.priorities.filter((x) => x !== key) : [...cur.priorities, key],
+                    }))
+                  }
+                  className="flex min-h-16 w-full items-center gap-3 py-2.5 text-left"
+                >
+                  <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-xl", tone)}><Icon size={20} aria-hidden /></span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-body font-semibold">{areaLabels[key]}</span>
+                    <span className="block text-caption text-white/70">{hint}</span>
+                  </span>
+                  <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-md ring-2", on ? "bg-teal-500 ring-teal-500" : "ring-white/40")}>
+                    {on && <Check size={15} aria-hidden />}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section className="mt-4 rounded-2xl bg-surface p-4 shadow-e1 ring-1 ring-ink/[0.06] sm:p-5" aria-labelledby="profile-title">
+        <div className="flex items-baseline justify-between">
+          <h2 id="profile-title" className="font-brand text-[1.625rem] font-semibold text-navy-950">Your profile</h2>
+          <span className="text-caption text-ink-muted">{completeness.done}/{completeness.total} complete</span>
+        </div>
+        <div className="mt-3 grid gap-3">
+          <Field icon={Calendar} label="Age" suffix="years">
+            <input inputMode="numeric" value={p.age} onChange={(e) => set({ age: e.target.value.replace(/\D/g, "").slice(0, 3) })} className="ge-input" placeholder="e.g. 24" />
+          </Field>
+          <Field icon={Wallet} label="Monthly income" prefix="RM">
+            <input inputMode="numeric" value={p.monthlyIncome} onChange={(e) => set({ monthlyIncome: e.target.value.replace(/\D/g, "").slice(0, 7) })} className="ge-input" placeholder="e.g. 3000" />
+          </Field>
+          <Field icon={Wallet} label="Monthly expenses" prefix="RM">
+            <input inputMode="numeric" value={p.monthlyExpenses} onChange={(e) => set({ monthlyExpenses: e.target.value.replace(/\D/g, "").slice(0, 7) })} className="ge-input" placeholder="e.g. 1800" />
+          </Field>
+          <Field icon={Users} label="Dependants">
+            <select value={p.dependants} onChange={(e) => set({ dependants: e.target.value as ProtectionProfile["dependants"] })} className="ge-input">
+              <option value="">Select</option>
+              <option value="none">None</option>
+              <option value="parents">Parents</option>
+              <option value="partner">Partner</option>
+              <option value="children">Children</option>
+            </select>
+          </Field>
+        </div>
+        <h3 className="mt-5 text-body font-semibold text-navy-950">Do you already have this cover?</h3>
+        <p className="text-caption text-ink-muted">Your own answer — GREAT EMPOWER does not check it.</p>
+        <ul className="mt-2 grid gap-2.5">
+          {areas.map(({ key }) => (
+            <li key={key} className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-body-sm text-navy-950">{areaLabels[key]}</span>
+              <span className="flex gap-1" role="radiogroup" aria-label={`${areaLabels[key]} cover`}>
+                {(["yes", "no", "not-sure"] as CoverageAnswer[]).map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    role="radio"
+                    aria-checked={p.coverage[key] === a}
+                    onClick={() => setP((cur) => ({ ...cur, coverage: { ...cur.coverage, [key]: a } }))}
+                    className={cn("h-11 rounded-full px-3.5 text-caption font-semibold capitalize", p.coverage[key] === a ? "bg-navy-900 text-white" : "bg-sunken text-navy-900")}
+                  >
+                    {a.replace("-", " ")}
+                  </button>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <button type="button" onClick={save} className="mt-5 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-bold text-white hover:bg-crimson-700">
+        Save and explore my needs <ArrowRight size={18} aria-hidden />
+      </button>
+      <p className="mt-2 flex items-center justify-center gap-1.5 text-caption text-ink-muted">
+        <Info size={13} aria-hidden /> Educational estimate · Not a quote or approval · Saved on this device
+      </p>
+    </Container>
+  );
+}
+
+function Field({ icon: Icon, label, prefix, suffix, children }: { icon: typeof Wallet; label: string; prefix?: string; suffix?: string; children: ReactNode }) {
+  return (
+    <label className="flex min-h-12 items-center gap-3 border-b border-ink/10 pb-2">
+      <Icon size={20} className="shrink-0 text-navy-700" aria-hidden />
+      <span className="w-32 shrink-0 text-body-sm text-navy-950 sm:w-36">{label}</span>
+      <span className="flex min-w-0 flex-1 items-center gap-1.5">
+        {prefix && <span className="text-body-sm font-semibold text-ink-muted">{prefix}</span>}
+        {children}
+        {suffix && <span className="text-caption text-ink-muted">{suffix}</span>}
+      </span>
+    </label>
+  );
+}
+
+function NeedsStep({ onNext }: { onNext: () => void }) {
+  return (
+    <>
+      <Container className="max-w-[1040px] pt-6">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">Medical bill simulator</h2>
+          <span className="rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-bold text-white">Interactive</span>
+        </div>
+        <p className="mt-1 text-body-sm text-ink-secondary">
+          See how deductibles, co-payments and limits share the cost of a hospital bill. Every figure is illustrative.
+        </p>
+        <div className="mt-4">
+          <MedicalClaimSimulator />
+        </div>
+      </Container>
+
+      <Container className="mt-10 grid gap-6 lg:grid-cols-[5fr_7fr] lg:items-start">
+        <div>
+          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">How long would your savings last?</h2>
+          <p className="mt-1 text-body-sm text-ink-secondary">Months of essentials your savings could cover. A rule of thumb, not a target.</p>
+          <a href="#app/guide/article/emergency-fund" className="mt-2 inline-flex min-h-11 items-center text-body-sm font-semibold text-navy-800 underline underline-offset-4">
+            Read “Building an emergency fund”
+          </a>
+        </div>
+        <EmergencyFundCalculator />
+      </Container>
+
+      <Container className="max-w-[44rem] pt-6">
+        <button type="button" onClick={onNext} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-bold text-white hover:bg-crimson-700">
+          See my protection plan <ArrowRight size={18} aria-hidden />
+        </button>
+      </Container>
+    </>
+  );
+}
+
+function PlanStep({ onBack }: { onBack: () => void }) {
+  const p = useProfile();
+  const completeness = profileCompleteness(p);
+  const chosen = areas.filter((a) => p.priorities.includes(a.key));
+  return (
+    <Container className="max-w-[44rem] pt-6">
+      <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">Your protection plan</h2>
+      <p className="mt-1 text-body-sm text-ink-secondary">
+        Based on what you told us: a budget of RM {p.monthlyBudget}
+        {p.monthlyBudget >= 500 ? "+" : ""} a month and {chosen.length} {chosen.length === 1 ? "priority" : "priorities"}.
+      </p>
+
+      {completeness.done < completeness.total && (
+        <button type="button" onClick={onBack} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-gold-50 p-4 text-left text-body-sm text-gold-700 ring-1 ring-gold-100">
+          <Info size={18} className="shrink-0" aria-hidden />
+          <span className="flex-1">Your profile is {completeness.percent}% complete. Finish it for a clearer picture.</span>
+          <ArrowLeft size={16} aria-hidden />
+        </button>
+      )}
+
+      <ul className="mt-4 grid gap-2.5">
+        {chosen.map(({ key, icon: Icon }) => {
+          const answer = p.coverage[key];
+          const status = answer === "yes" ? "You said you have this cover" : answer === "no" ? "You said you don't have this cover" : answer === "not-sure" ? "You're not sure yet" : "Not answered yet";
+          return (
+            <li key={key} className="flex items-center gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
+              <Icon size={22} className="shrink-0 text-navy-800" aria-hidden />
+              <span className="min-w-0 flex-1">
+                <span className="block text-body font-semibold text-navy-950">{areaLabels[key]}</span>
+                <span className="block text-caption text-ink-muted">{status}</span>
+              </span>
+              {answer === "yes" && <CheckCircle2 size={20} className="text-success-600" aria-label="Has cover (self-reported)" />}
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
+        {[
+          { label: "See your analysis", href: "app/analyze" },
+          { label: "Learn the basics", href: "app/learn" },
+          { label: "Practical guides", href: "app/guide" },
+        ].map((l) => (
+          <button key={l.href} type="button" onClick={() => go(l.href)} className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-navy-900 px-4 text-body-sm font-semibold text-white">
+            {l.label} <ArrowRight size={16} aria-hidden />
+          </button>
+        ))}
       </div>
 
-      <Band tone="paper" id="simulate-scenarios" labelledBy="moments-title">
-        <Container>
-          <Chapter
-            number="04"
-            label="Life moments"
-            id="moments-title"
-            title="More walkthroughs are on the way."
-          />
-          <ul className="mt-10 border-t border-ink/15">
-            {moments.map(({ title, status }) => (
-              <li
-                key={title}
-                className="flex items-baseline justify-between gap-6 border-b border-ink/15 py-5"
-              >
-                <span className="font-brand text-serif-title text-navy-950">{title}</span>
-                <span className="shrink-0 text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted">
-                  {status}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Container>
-      </Band>
-    </>
+      <section className="mt-6 rounded-2xl bg-navy-50 p-4 text-body-sm text-navy-900">
+        <p className="font-semibold">Talking to an adviser</p>
+        <p className="mt-1 text-ink-secondary">
+          GREAT EMPOWER does not connect you to agents or provide quotes. For personal advice, speak
+          to a licensed insurance or takaful adviser and bring this summary with you.
+        </p>
+      </section>
+      <p className="mt-4 text-caption text-ink-muted">
+        This plan is educational. It is not an insurance quotation, recommendation or approval, and
+        actual policy terms differ.
+      </p>
+    </Container>
   );
 }

@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, Clock3 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, CheckCircle2, Clock3 } from "lucide-react";
 import { ProgressBar } from "@/components/ui/Progress";
 import { LessonArt } from "@/components/cards/LearnCards";
 import { Band, Chapter, Container, TextLink } from "@/components/layout/Editorial";
+import { PageHero } from "@/components/layout/PageHero";
 import { demoLearning } from "@/data/demo-learning";
 import { demoLearningCategories, demoLessons, protectionPurposes } from "@/data/demo-courses";
 import type { LearningCategoryKey, LearningLesson } from "@/types/learning";
+import { findInfographic, findVideo } from "@/data/learn-media";
+import { learnActions, useLearnProgress } from "@/state/learnProgress";
+import { rewardsActions } from "@/rewards/store";
+import { InfographicDetailView, LearnHome, VideoLessonView } from "./learn/LearnMedia";
 import { cn } from "@/lib/cn";
 
 type LearnRoute =
   | { view: "dashboard" }
+  | { view: "video"; id: string }
+  | { view: "infographic"; id: string }
   | { view: "category"; category: LearningCategoryKey }
   | { view: "lesson"; lessonId: string };
 
@@ -21,6 +28,10 @@ function readLearnRoute(): LearnRoute {
       const category = demoLearningCategories.find((item) => item.key === segments[3]);
       if (category) return { view: "category", category: category.key };
     }
+    if (segments[2] === "video" && segments[3] && findVideo(segments[3]))
+      return { view: "video", id: segments[3] };
+    if (segments[2] === "infographic" && segments[3] && findInfographic(segments[3]))
+      return { view: "infographic", id: segments[3] };
     if (segments[2] === "lesson" && segments[3]) {
       if (demoLessons.some((lesson) => lesson.id === segments[3])) {
         return { view: "lesson", lessonId: segments[3] };
@@ -79,6 +90,37 @@ const lessonKeyPoints: Record<string, string[]> = {
     "Limits and exclusions can also affect what a plan pays.",
     "Definitions and amounts vary. Check the policy or certificate wording for the specific arrangement.",
   ],
+};
+
+
+type RelatedLink = { kind: string; label: string; href: string };
+const defaultRelated: RelatedLink[] = [
+  { kind: "Video", label: "What is insurance?", href: "app/learn/video/what-is-insurance" },
+];
+/** Links each text lesson to the most relevant video, infographic or guide. */
+const lessonRelated: Record<string, RelatedLink[]> = {
+  "hospital-bills": [
+    { kind: "Infographic", label: "Medical insurance in Malaysia", href: "app/learn/infographic/medical-insurance-malaysia" },
+    { kind: "Guide", label: "How to make a medical claim", href: "app/guide/article/make-a-claim" },
+  ],
+  "medical-cards": [
+    { kind: "Infographic", label: "Medical insurance in Malaysia", href: "app/learn/infographic/medical-insurance-malaysia" },
+    { kind: "Video", label: "How insurance actually works in Malaysia", href: "app/learn/video/how-insurance-works-in-malaysia" },
+  ],
+  deductibles: [
+    { kind: "Guide", label: "Deductible, co-payment and annual limit explained", href: "app/guide/article/cost-sharing-explained" },
+    { kind: "Simulate", label: "Try the medical bill simulator", href: "app/simulate" },
+  ],
+  "income-replacement": [
+    { kind: "Infographic", label: "Life insurance in Malaysia", href: "app/learn/infographic/life-insurance-malaysia" },
+    { kind: "Infographic", label: "Critical illness insurance in Malaysia", href: "app/learn/infographic/critical-illness-malaysia" },
+  ],
+  "emergency-fund": [
+    { kind: "Guide", label: "Building an emergency fund", href: "app/guide/article/emergency-fund" },
+    { kind: "Simulate", label: "Size your emergency fund", href: "app/simulate" },
+  ],
+  "first-salary": [{ kind: "Guide", label: "Starting your first job", href: "app/guide/article/first-job" }],
+  "money-talks": [{ kind: "Video", label: "How risk pooling powers insurance", href: "app/learn/video/risk-pooling-powers-insurance" }],
 };
 
 /** Topic index: text tabs, not tiles. */
@@ -201,9 +243,10 @@ function LessonIndex({
 
 export function LearnDashboard() {
   const [route, setRoute] = useState<LearnRoute>(readLearnRoute);
-  const [bookmarked, setBookmarked] = useState<Set<string>>(new Set(["medical-cards"]));
-  const [started, setStarted] = useState<Set<string>>(new Set());
-  const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const learnProgress = useLearnProgress();
+  const bookmarked = new Set(learnProgress.bookmarked);
+  const started = new Set(learnProgress.started);
+  const completed = new Set(learnProgress.completed);
   const [featurePhotoUnavailable, setFeaturePhotoUnavailable] = useState(false);
 
   useEffect(() => {
@@ -212,18 +255,15 @@ export function LearnDashboard() {
     return () => window.removeEventListener("hashchange", updateRoute);
   }, []);
 
-  const toggleBookmark = (lessonId: string) => {
-    setBookmarked((current) => {
-      const next = new Set(current);
-      next.has(lessonId) ? next.delete(lessonId) : next.add(lessonId);
-      return next;
-    });
-  };
-  const startLesson = (lessonId: string) => setStarted((current) => new Set(current).add(lessonId));
+  const toggleBookmark = (lessonId: string) => learnActions.toggleBookmark(lessonId);
+  const startLesson = (lessonId: string) => learnActions.start(lessonId);
   const completeLesson = (lessonId: string) => {
-    setStarted((current) => new Set(current).add(lessonId));
-    setCompleted((current) => new Set(current).add(lessonId));
+    learnActions.complete(lessonId);
+    rewardsActions.earn("lesson-complete", lessonId);
   };
+
+  if (route.view === "video") return <VideoLessonView id={route.id} />;
+  if (route.view === "infographic") return <InfographicDetailView id={route.id} />;
 
   /* ---------- Lesson: a reading layout ---------- */
   if (route.view === "lesson") {
@@ -238,65 +278,59 @@ export function LearnDashboard() {
           : 0;
     const points = lessonKeyPoints[lesson.id] ?? [];
     return (
-      <Band tone="paper" label={lesson.title} className="!pt-10 sm:!pt-14">
-        <Container className="max-w-[860px]">
-          <button
-            type="button"
-            onClick={() => navigateToLearn({ view: "category", category: lesson.category })}
-            className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-navy-800 hover:text-navy-950"
-          >
-            <ArrowLeft size={16} aria-hidden /> Back to category
-          </button>
-          <p className="mt-8 text-overline uppercase text-teal-700">
-            {lesson.categoryLabel} · {lesson.minutes} min · demo lesson
-          </p>
-          <h1 className="mt-4 font-brand text-mega text-navy-950">{lesson.title}</h1>
-          <div className="mt-10 aspect-[21/9] overflow-hidden">
+      <article aria-labelledby="lesson-title">
+        <PageHero
+          eyebrow={`${lesson.categoryLabel} · ${lesson.minutes} min lesson`}
+          title={lesson.title}
+          backLabel="Learn"
+          onBack={() => navigateToLearn({ view: "dashboard" })}
+          titleId="lesson-title"
+        />
+        <Container className="max-w-[44rem] pt-5">
+          <div className="aspect-[21/9] overflow-hidden rounded-2xl">
             <LessonArt art={lesson.art ?? "shield"} tone={lesson.tone ?? "teal"} />
           </div>
-          <p className="mt-10 max-w-2xl text-lede text-ink-secondary">
-            Three ideas to take away. General examples only — not personal financial, insurance or
-            medical advice.
+          <h2 className="mt-6 text-subheading text-navy-950">Key points</h2>
+          <p className="text-caption text-ink-muted">
+            General examples only — not personal financial, insurance or medical advice.
           </p>
-          <ol className="mt-8 border-t border-ink/15">
+          <ol className="mt-3 grid gap-2.5">
             {points.map((point, index) => (
-              <li
-                key={point}
-                className="grid grid-cols-[3.5rem_1fr] gap-4 border-b border-ink/15 py-6"
-              >
-                <span className="font-brand text-chapter leading-none text-teal-700 tabular-nums">
+              <li key={point} className="flex gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
+                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-900 text-body-sm font-bold text-white">
                   {index + 1}
                 </span>
-                <span className="text-lede text-ink">{point}</span>
+                <span className="text-body text-ink">{point}</span>
               </li>
             ))}
           </ol>
-          <div className="mt-10 grid gap-6 sm:grid-cols-[1fr_auto] sm:items-end">
+
+          <div className="mt-6 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
             <ProgressBar
               value={progress}
               tone="teal"
               size="sm"
-              label={`Demo lesson progress · ${status}`}
+              label={`Lesson progress · ${status}`}
               valueLabel={`${progress}%`}
             />
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-4 flex flex-wrap gap-2.5">
               {status === "Completed" ? (
-                <span className="inline-flex h-12 items-center rounded-full bg-teal-50 px-6 text-body-sm font-semibold text-teal-800">
-                  Lesson completed
+                <span className="inline-flex h-12 items-center gap-1.5 rounded-full bg-success-50 px-5 text-body-sm font-semibold text-success-700">
+                  <CheckCircle2 size={16} aria-hidden /> Lesson completed
                 </span>
               ) : started.has(lesson.id) || (lesson.progress ?? 0) > 0 ? (
                 <button
                   type="button"
                   onClick={() => completeLesson(lesson.id)}
-                  className="inline-flex h-12 items-center rounded-full bg-navy-950 px-6 text-body-sm font-semibold text-white hover:bg-navy-800"
+                  className="inline-flex h-12 items-center rounded-full bg-crimson-600 px-6 text-body-sm font-semibold text-white hover:bg-crimson-700"
                 >
-                  Mark demo lesson complete
+                  Mark lesson complete
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => startLesson(lesson.id)}
-                  className="inline-flex h-12 items-center rounded-full bg-navy-950 px-6 text-body-sm font-semibold text-white hover:bg-navy-800"
+                  className="inline-flex h-12 items-center rounded-full bg-crimson-600 px-6 text-body-sm font-semibold text-white hover:bg-crimson-700"
                 >
                   Start lesson
                 </button>
@@ -305,15 +339,45 @@ export function LearnDashboard() {
                 type="button"
                 aria-pressed={bookmarked.has(lesson.id)}
                 onClick={() => toggleBookmark(lesson.id)}
-                className="inline-flex h-12 items-center gap-2 rounded-full border border-ink/20 px-5 text-body-sm font-semibold text-navy-900 hover:border-navy-400"
+                className="inline-flex h-12 items-center gap-2 rounded-full px-5 text-body-sm font-semibold text-navy-900 ring-1 ring-ink/20 hover:ring-navy-400"
               >
-                <Bookmark size={16} aria-hidden />{" "}
+                {bookmarked.has(lesson.id) ? (
+                  <BookmarkCheck size={16} className="text-crimson-600" aria-hidden />
+                ) : (
+                  <Bookmark size={16} aria-hidden />
+                )}
                 {bookmarked.has(lesson.id) ? "Saved" : "Save lesson"}
               </button>
             </div>
           </div>
+
+          {(lessonRelated[lesson.id] ?? defaultRelated).length > 0 && (
+            <section className="mt-7">
+              <h2 className="text-subheading text-navy-950">Keep learning</h2>
+              <ul className="mt-2 grid gap-2">
+                {(lessonRelated[lesson.id] ?? defaultRelated).map((r) => (
+                  <li key={r.href}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        window.location.hash = r.href;
+                        window.scrollTo({ top: 0 });
+                      }}
+                      className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl bg-navy-50 px-4 text-left text-body-sm font-semibold text-navy-900"
+                    >
+                      <span>
+                        <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-teal-700">{r.kind}</span>
+                        {r.label}
+                      </span>
+                      <ArrowRight size={16} aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </Container>
-      </Band>
+      </article>
     );
   }
 
@@ -391,91 +455,6 @@ export function LearnDashboard() {
     );
   }
 
-  /* ---------- Dashboard: featured lesson + index ---------- */
-  const nextLesson = demoLessons.find((lesson) => lesson.id === "hospital-bills");
-  return (
-    <>
-      <Band tone="paper" labelledBy="learn-title" flush>
-        <div className="grid lg:grid-cols-[6fr_6fr]">
-          <div className="flex flex-col justify-center px-5 py-14 sm:px-8 sm:py-20 lg:py-24 lg:pl-[max(3rem,calc((100vw-1200px)/2+3rem))] lg:pr-16">
-            <Chapter
-              as="h1"
-              label="Learn"
-              id="learn-title"
-              title="Money basics, made clear."
-              lede="Short lessons on saving, health costs and protection."
-            />
-            <div className="mt-10 max-w-md border-t border-ink/15 pt-6">
-              <p className="text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted">
-                Continue · {demoLearning.courseName}
-              </p>
-              <p className="mt-2 font-brand text-serif-title text-navy-950">
-                {nextLesson?.title ?? demoLearning.nextLesson.title}
-              </p>
-              <div className="mt-4">
-                <ProgressBar
-                  value={demoLearning.completionPercent}
-                  tone="teal"
-                  size="sm"
-                  label="Course progress · demo"
-                  valueLabel={`${demoLearning.lessonsCompleted} of ${demoLearning.lessonsTotal}`}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => navigateToLearn({ view: "lesson", lessonId: "hospital-bills" })}
-                className="group mt-6 inline-flex h-14 items-center gap-3 rounded-full bg-navy-950 px-7 text-body font-semibold text-white hover:bg-navy-800"
-              >
-                Continue lesson
-                <ArrowRight
-                  size={20}
-                  className="transition-transform group-hover:translate-x-1"
-                  aria-hidden
-                />
-              </button>
-            </div>
-          </div>
-          <div className="relative min-h-[320px] overflow-hidden bg-sand-100 lg:min-h-[640px]">
-            {!featurePhotoUnavailable && (
-              <img
-                src="/images/pexels/learning-academy-students-in-library.webp"
-                alt="Two students studying together in a library with books and a laptop."
-                width={1800}
-                height={1200}
-                loading="eager"
-                decoding="async"
-                onError={() => setFeaturePhotoUnavailable(true)}
-                className="absolute inset-0 h-full w-full object-cover object-[center_45%]"
-              />
-            )}
-          </div>
-        </div>
-      </Band>
-
-      <Band tone="canvas" labelledBy="index-title">
-        <Container>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <h2 id="index-title" className="font-brand text-chapter text-navy-950">
-              All lessons
-            </h2>
-            <TextLink onClick={() => navigateToLearn({ view: "category", category: "protection" })}>
-              The eight protection purposes
-            </TextLink>
-          </div>
-          <div className="mt-8">
-            <TopicTabs active={null} />
-          </div>
-          <div className="mt-6">
-            <LessonIndex
-              lessons={demoLessons}
-              bookmarked={bookmarked}
-              onBookmark={toggleBookmark}
-              started={started}
-              completed={completed}
-            />
-          </div>
-        </Container>
-      </Band>
-    </>
-  );
+  /* ---------- Dashboard ---------- */
+  return <LearnHome />;
 }

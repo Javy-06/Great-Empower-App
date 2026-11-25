@@ -166,7 +166,7 @@ export function IconButton({ icon: Icon, label, variant = 'ghost', size = 'md', 
       type={type}
       aria-label={label}
       title={label}
-      className={cn(buttonClasses(variant, 'md'), 'shrink-0', size === 'md' ? 'size-12 px-0' : 'size-10 px-0', className)}
+      className={cn(buttonClasses(variant, 'md'), 'shrink-0', size === 'md' ? 'size-12 !px-0' : 'size-10 !px-0', className)}
       {...rest}
     >
       <Icon size={20} strokeWidth={1.75} aria-hidden />

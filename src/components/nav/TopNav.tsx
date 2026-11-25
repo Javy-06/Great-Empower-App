@@ -1,4 +1,4 @@
-import { Gift } from "lucide-react";
+import { Bell, Gift } from "lucide-react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { primaryNav, type NavKey } from "./navItems";
 import { cn } from "@/lib/cn";
@@ -14,6 +14,8 @@ export function TopNav({
   onRewards,
   points,
   rewardsActive,
+  onNotifications,
+  unread = 0,
 }: {
   active: NavKey | null;
   onChange: (key: NavKey) => void;
@@ -21,6 +23,8 @@ export function TopNav({
   onRewards: () => void;
   points: number;
   rewardsActive?: boolean;
+  onNotifications?: () => void;
+  unread?: number;
 }) {
   return (
     <div className="mx-auto flex h-[72px] w-full max-w-[1200px] items-center gap-6 px-5 sm:px-8 lg:px-12">
@@ -79,8 +83,26 @@ export function TopNav({
       >
         <Gift size={16} className={rewardsActive ? "text-white" : "text-crimson-600"} aria-hidden />
         {points.toLocaleString("en-MY")}
-        <span className="sr-only">demo points — open Rewards Hub</span>
+        <span className="sr-only">points — open Rewards Hub</span>
       </button>
+      {onNotifications && (
+        <button
+          type="button"
+          onClick={onNotifications}
+          aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
+          className="relative -ml-2 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-navy-900 hover:bg-navy-900/5"
+        >
+          <Bell size={20} strokeWidth={1.75} aria-hidden />
+          {unread > 0 && (
+            <span
+              className="absolute right-1.5 top-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-crimson-600 px-1 text-[10px] font-bold leading-4 text-white"
+              aria-hidden
+            >
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </button>
+      )}
     </div>
   );
 }

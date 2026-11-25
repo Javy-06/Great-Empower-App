@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { Accessibility, ArrowRight, ChevronDown, HeartPulse, ShieldPlus, Users } from "lucide-react";
+import { PageHero } from "@/components/layout/PageHero";
+import {
+  areaLabels,
+  profileCompleteness,
+  useProfile,
+  type ProtectionArea,
+  type ProtectionProfile,
+} from "@/state/profile";
 import { Band, Chapter, Container } from "@/components/layout/Editorial";
 import { cn } from "@/lib/cn";
 
@@ -16,29 +24,14 @@ const spending = [
 ];
 const SAVINGS_GUIDELINE = 20; // the common 50/30/20 guideline, as stated on the original screen
 
-export function AnalyzeView() {
+/** The original illustrative sample analysis — unchanged figures, shown on request. */
+function SampleAnalysis() {
   const [showAbout, setShowAbout] = useState(false);
   const pct = Math.round((incomeProtection.current / incomeProtection.reference) * 100);
   const gap = incomeProtection.reference - incomeProtection.current;
 
   return (
     <>
-      <Band tone="night" labelledBy="analyze-title" className="!pb-12 sm:!pb-14">
-        <Container className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <Chapter
-            as="h1"
-            label="Analyze"
-            id="analyze-title"
-            onDark
-            title="Where you stand, in two numbers."
-          />
-          <p className="shrink-0 border-l-2 border-teal-300 pl-4 text-body-sm text-white/75">
-            Sample young-adult profile
-            <br />
-            Not your account
-          </p>
-        </Container>
-      </Band>
 
       {/* Story 1 — the protection gap */}
       <Band tone="paper" labelledBy="gap-heading">
@@ -179,6 +172,190 @@ export function AnalyzeView() {
           </div>
         </Container>
       </Band>
+    </>
+  );
+}
+
+/* ========================================================================================== */
+/* Personal protection dashboard                                                               */
+/* ========================================================================================== */
+
+type AreaStatus = "covered" | "review" | "gap" | "not-assessed";
+
+const statusStyle: Record<AreaStatus, { label: string; cls: string }> = {
+  covered: { label: "Covered", cls: "bg-success-50 text-success-700" },
+  review: { label: "Review", cls: "bg-gold-50 text-gold-700" },
+  gap: { label: "Gap", cls: "bg-crimson-50 text-crimson-700" },
+  "not-assessed": { label: "Not assessed", cls: "bg-sunken text-ink-muted" },
+};
+
+const areaMeta: Record<ProtectionArea, { icon: typeof HeartPulse; tone: string; what: string }> = {
+  medical: { icon: HeartPulse, tone: "bg-crimson-50 text-crimson-600", what: "Hospitalisation, surgery & medical costs" },
+  critical: { icon: ShieldPlus, tone: "bg-navy-50 text-navy-700", what: "Financial support for major illnesses" },
+  life: { icon: Users, tone: "bg-gold-50 text-gold-700", what: "Income support for people who depend on you" },
+  accident: { icon: Accessibility, tone: "bg-teal-50 text-teal-700", what: "Protection for injuries and disability" },
+};
+
+/**
+ * Transparent, rule-based status per area — no score. Inputs are only the user's own answers:
+ *  - said "yes" to having cover            -> Covered (self-reported, not verified)
+ *  - said "no" and marked it a priority   -> Gap
+ *  - said "no" (not a priority) or unsure -> Review
+ *  - no answer                            -> Not assessed
+ */
+function assess(
+  area: ProtectionArea,
+  p: ProtectionProfile,
+): { status: AreaStatus; why: string; next: { label: string; href: string } } {
+  const answer = p.coverage[area];
+  const priority = p.priorities.includes(area);
+  if (answer === "yes")
+    return {
+      status: "covered",
+      why: "You told us you have this cover. GREAT EMPOWER hasn't checked the policy — review its limits and exclusions.",
+      next: { label: "Deductibles & limits explained", href: "app/guide/article/cost-sharing-explained" },
+    };
+  if (answer === "no" && priority)
+    return {
+      status: "gap",
+      why: "You marked this as a priority but said you don't have cover for it yet.",
+      next: { label: "Explore it in Simulate", href: "app/simulate" },
+    };
+  if (answer === "no")
+    return {
+      status: "review",
+      why: "You don't have this cover and haven't marked it as a priority. Worth a second look as your life changes.",
+      next: { label: "How much cover do I need?", href: "app/guide/article/how-much-cover" },
+    };
+  if (answer === "not-sure")
+    return {
+      status: "review",
+      why: "You're not sure whether you have this cover. Check your existing policies and employer benefits.",
+      next: { label: "Learn the basics", href: "app/learn" },
+    };
+  return {
+    status: "not-assessed",
+    why: "Answer this in your protection profile to see a finding.",
+    next: { label: "Complete your profile", href: "app/simulate" },
+  };
+}
+
+const goHash = (hash: string) => {
+  window.location.hash = hash;
+  window.scrollTo({ top: 0 });
+};
+
+export function AnalyzeView() {
+  const p = useProfile();
+  const completeness = profileCompleteness(p);
+  const results = (Object.keys(areaMeta) as ProtectionArea[]).map((area) => ({ area, ...assess(area, p) }));
+  const gaps = results.filter((r) => r.status === "gap");
+  const hasData = completeness.done > 0;
+
+  return (
+    <>
+      <PageHero
+        eyebrow="Your protection analysis"
+        title="Understand your protection today."
+        text="A personal view of your coverage and gaps, based on what you tell us."
+        image="/images/pexels/young-professional-savings-planning.webp"
+        imagePosition="60% 25%"
+        backLabel="Analyze"
+        onBack={() => goHash("app/home")}
+        titleId="analyze-title"
+      />
+
+      <Container className="relative -mt-5">
+        <section className="rounded-2xl bg-surface p-4 shadow-e2 ring-1 ring-ink/[0.06] sm:p-5" aria-labelledby="completeness-title">
+          <div className="flex items-center gap-4">
+            <div
+              className="relative size-20 shrink-0 rounded-full"
+              style={{ background: `conic-gradient(var(--color-teal-600) ${completeness.percent * 3.6}deg, var(--color-sunken) 0deg)` }}
+              role="img"
+              aria-label={`Profile ${completeness.percent}% complete`}
+            >
+              <span className="absolute inset-2 flex items-center justify-center rounded-full bg-surface text-heading font-bold tabular-nums text-navy-950">
+                {completeness.percent}%
+              </span>
+            </div>
+            <div className="min-w-0">
+              <h2 id="completeness-title" className="text-subheading text-navy-950">Data completeness</h2>
+              <p className="text-body-sm text-ink-secondary">
+                {completeness.done} of {completeness.total} answers. Findings use only what you entered and aren't verified.
+              </p>
+            </div>
+          </div>
+          {completeness.done < completeness.total && (
+            <button type="button" onClick={() => goHash("app/simulate")} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-navy-900 text-body-sm font-semibold text-white">
+              {hasData ? "Complete your profile" : "Start your profile"} <ArrowRight size={16} aria-hidden />
+            </button>
+          )}
+        </section>
+      </Container>
+
+      <Container className="mt-7">
+        <h2 className="text-heading text-navy-950">Coverage analysis</h2>
+        <ul className="mt-3 grid gap-2.5">
+          {results.map(({ area, status, why, next }) => {
+            const meta = areaMeta[area];
+            const Icon = meta.icon;
+            return (
+              <li key={area} className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
+                <div className="flex items-center gap-3">
+                  <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-xl", meta.tone)}>
+                    <Icon size={20} aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-body font-semibold text-navy-950">{areaLabels[area]}</span>
+                    <span className="block text-caption text-ink-muted">{meta.what}</span>
+                  </span>
+                  <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-caption font-bold", statusStyle[status].cls)}>
+                    {statusStyle[status].label}
+                  </span>
+                </div>
+                <p className="mt-2.5 text-body-sm text-ink-secondary">{why}</p>
+                <button type="button" onClick={() => goHash(next.href)} className="mt-1 inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-crimson-600">
+                  {next.label} <ArrowRight size={15} aria-hidden />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </Container>
+
+      {hasData && (
+        <Container className="mt-7">
+          <h2 className="text-heading text-navy-950">What to do next</h2>
+          <div className="mt-3 rounded-2xl bg-navy-950 p-5 text-white">
+            <p className="font-brand text-[1.5rem] font-semibold leading-tight">
+              {gaps.length
+                ? `${gaps.length} priority ${gaps.length === 1 ? "area has" : "areas have"} no cover yet.`
+                : "No priority gaps from your answers."}
+            </p>
+            <p className="mt-1 text-body-sm text-white/75">
+              {gaps.length
+                ? `Start with ${gaps.map((g) => areaLabels[g.area].toLowerCase()).join(" and ")} — explore costs in Simulate and read the practical guides.`
+                : "Keep reviewing as your income, commitments and life stage change."}
+            </p>
+            <button type="button" onClick={() => goHash("app/simulate")} className="mt-4 inline-flex h-12 items-center gap-2 rounded-full bg-crimson-600 px-5 text-body-sm font-bold text-white">
+              Improve my protection plan <ArrowRight size={16} aria-hidden />
+            </button>
+          </div>
+        </Container>
+      )}
+
+      <Container className="mt-7">
+        <details className="group rounded-2xl bg-surface ring-1 ring-ink/[0.07]">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between px-4 text-body-sm font-semibold text-navy-900">
+            See a sample analysis (illustrative profile)
+            <ChevronDown size={18} className="transition-transform group-open:rotate-180" aria-hidden />
+          </summary>
+          <SampleAnalysis />
+        </details>
+        <p className="mt-3 text-caption text-ink-muted">
+          Educational assessment only. It does not verify any policy and is not financial advice.
+        </p>
+      </Container>
     </>
   );
 }

@@ -1,0 +1,442 @@
+import { useEffect, useRef, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bookmark,
+  BookmarkCheck,
+  CheckCircle2,
+  Clock3,
+  FileText,
+  Image as ImageIcon,
+  Layers,
+  Maximize2,
+  Play,
+  X,
+} from "lucide-react";
+import { Container } from "@/components/layout/Editorial";
+import { PageHero } from "@/components/layout/PageHero";
+import { cn } from "@/lib/cn";
+import { demoLearning } from "@/data/demo-learning";
+import { demoLearningCategories, demoLessons } from "@/data/demo-courses";
+import {
+  findInfographic,
+  findMedia,
+  findVideo,
+  formatDuration,
+  infographics,
+  mediaTopicLabels,
+  videos,
+  type InfographicResource,
+  type VideoResource,
+} from "@/data/learn-media";
+import { learnActions, useLearnProgress } from "@/state/learnProgress";
+import { rewardsActions } from "@/rewards/store";
+import type { LearningCategoryKey } from "@/types/learning";
+
+const go = (hash: string) => {
+  window.location.hash = hash;
+  window.scrollTo({ top: 0 });
+};
+const scrollToId = (id: string) =>
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+const lessonImages: Record<string, string> = {
+  "hospital-bills": "/images/pexels/everyday-health-wellbeing.webp",
+};
+
+/* ========================================================================================== */
+/* LEARN HOME                                                                                  */
+/* ========================================================================================== */
+
+export function LearnHome() {
+  const progress = useLearnProgress();
+  const [category, setCategory] = useState<LearningCategoryKey | "all">("all");
+  const longForm = videos.find((v) => v.format === "long-form")!;
+  const shorts = videos.filter((v) => v.format === "short");
+  const next = demoLessons.find((l) => l.id === "hospital-bills");
+  const lessons = category === "all" ? demoLessons : demoLessons.filter((l) => l.category === category);
+
+  return (
+    <>
+      <PageHero
+        eyebrow="Learn"
+        title="Money basics, made clear."
+        text="Short lessons, videos and visual guides on saving, health costs and protection."
+        image="/images/pexels/learning-academy-students-in-library.webp"
+        imagePosition="60% 30%"
+        backLabel="Learn"
+        onBack={() => go("app/home")}
+        titleId="learn-title"
+      />
+
+      {/* Format shortcuts */}
+      <Container className="-mt-4 relative">
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { label: "Videos", hint: "Watch & learn", icon: Play, tone: "bg-crimson-50 text-crimson-600", target: "learn-videos" },
+            { label: "Infographics", hint: "At a glance", icon: ImageIcon, tone: "bg-navy-50 text-navy-700", target: "learn-infographics" },
+            { label: "Lessons", hint: "Read & reflect", icon: Layers, tone: "bg-teal-50 text-teal-700", target: "learn-lessons" },
+          ].map(({ label, hint, icon: Icon, tone, target }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => scrollToId(target)}
+              className="flex min-h-[4.5rem] flex-col items-start gap-1.5 rounded-2xl bg-surface p-3 text-left shadow-e1 ring-1 ring-ink/[0.06] sm:flex-row sm:items-center"
+            >
+              <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-xl", tone)}>
+                <Icon size={18} aria-hidden />
+              </span>
+              <span>
+                <span className="block text-body-sm font-semibold text-navy-950">{label}</span>
+                <span className="block text-[11px] text-ink-muted">{hint}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </Container>
+
+      {/* Continue learning */}
+      {next && (
+        <Container className="mt-5">
+          <button
+            type="button"
+            onClick={() => go(`app/learn/lesson/${next.id}`)}
+            className="group flex w-full items-center gap-4 rounded-[1.25rem] bg-navy-950 p-3.5 text-left text-white shadow-e2"
+          >
+            <img src={lessonImages[next.id]} alt="" className="size-20 shrink-0 rounded-xl object-cover" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-200">Continue learning</span>
+              <span className="mt-0.5 block font-brand text-[1.375rem] font-semibold leading-tight">{next.title}</span>
+              <span className="mt-1.5 flex items-center gap-2 text-caption text-white/70">
+                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15">
+                  <span className="block h-full rounded-full bg-teal-300" style={{ width: `${demoLearning.completionPercent}%` }} />
+                </span>
+                {demoLearning.lessonsCompleted} of {demoLearning.lessonsTotal}
+              </span>
+            </span>
+            <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-navy-950">
+              <Play size={18} className="ml-0.5" aria-hidden />
+            </span>
+          </button>
+        </Container>
+      )}
+
+      {/* Featured long-form lesson */}
+      <Container className="mt-8" >
+        <section id="learn-videos" className="scroll-mt-20" aria-labelledby="videos-title">
+          <h2 id="videos-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">Video lessons</h2>
+          <button
+            type="button"
+            onClick={() => go(`app/learn/video/${longForm.id}`)}
+            className="group mt-3 block w-full overflow-hidden rounded-[1.25rem] bg-surface text-left shadow-e1 ring-1 ring-ink/[0.06]"
+          >
+            <span className="relative block aspect-video">
+              <img src={longForm.poster} alt="" className="ge-skeleton h-full w-full object-cover" />
+              <span className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent" aria-hidden />
+              <span className="absolute left-3 top-3 rounded-md bg-crimson-600 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">Foundation lesson</span>
+              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 text-caption font-semibold text-white">
+                <Clock3 size={12} aria-hidden /> {formatDuration(longForm.seconds)}
+              </span>
+              <span className="absolute left-1/2 top-1/2 inline-flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-navy-950 shadow-e3 transition-transform group-hover:scale-105">
+                <Play size={24} className="ml-1" aria-hidden />
+              </span>
+            </span>
+            <span className="block p-4">
+              <span className="block font-brand text-[1.5rem] font-semibold leading-tight text-navy-950">{longForm.title}</span>
+              <span className="mt-1 block text-body-sm text-ink-secondary">{longForm.description}</span>
+            </span>
+          </button>
+
+          <h3 className="mt-6 text-subheading text-navy-950">Quick explainers</h3>
+          <ul className="-mx-5 mt-3 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 scrollbar-none">
+            {shorts.map((v) => (
+              <li key={v.id} className="w-[9.5rem] shrink-0 snap-start sm:w-[11rem]">
+                <button type="button" onClick={() => go(`app/learn/video/${v.id}`)} className="group block w-full text-left">
+                  <span className="relative block aspect-[9/16] overflow-hidden rounded-2xl bg-navy-900">
+                    <img src={v.poster} alt="" loading="lazy" className="ge-skeleton h-full w-full object-cover" />
+                    <span className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-transparent" aria-hidden />
+                    <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 text-caption font-semibold text-white">
+                      <Play size={12} aria-hidden /> {formatDuration(v.seconds)}
+                    </span>
+                    {progress.completed.includes(v.id) && (
+                      <CheckCircle2 size={20} className="absolute right-2 top-2 text-success-600 drop-shadow" aria-label="Watched" />
+                    )}
+                  </span>
+                  <span className="mt-2 line-clamp-2 block text-body-sm font-semibold text-navy-950">{v.title}</span>
+                  <span className="text-caption text-ink-muted">{mediaTopicLabels[v.topic]}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </Container>
+
+      {/* Infographics */}
+      <Container className="mt-8">
+        <section id="learn-infographics" className="scroll-mt-20" aria-labelledby="ig-title">
+          <h2 id="ig-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">Infographics</h2>
+          <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {infographics.map((g) => (
+              <li key={g.id}>
+                <button type="button" onClick={() => go(`app/learn/infographic/${g.id}`)} className="group block w-full text-left">
+                  <span className="ge-skeleton relative block aspect-[4/5] overflow-hidden rounded-2xl ring-1 ring-ink/[0.06]">
+                    <img
+                      src={g.thumb}
+                      alt=""
+                      loading="lazy"
+                      className={cn("h-full w-full transition-transform duration-500 group-hover:scale-[1.03]", g.orientation === "portrait" ? "object-cover object-top" : "object-contain p-2")}
+                    />
+                    {progress.completed.includes(g.id) && (
+                      <CheckCircle2 size={20} className="absolute right-2 top-2 rounded-full bg-white text-success-600" aria-label="Viewed" />
+                    )}
+                  </span>
+                  <span className="mt-2 line-clamp-2 block text-body-sm font-semibold text-navy-950">{g.title}</span>
+                  <span className="text-caption text-ink-muted">{mediaTopicLabels[g.topic]}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </Container>
+
+      {/* All lessons */}
+      <Container className="mt-8">
+        <section id="learn-lessons" className="scroll-mt-20" aria-labelledby="lessons-title">
+          <h2 id="lessons-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">All lessons</h2>
+          <div className="-mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-none" role="tablist" aria-label="Lesson topics">
+            {[{ key: "all" as const, label: "All" }, ...demoLearningCategories.filter((c) => c.key !== "all").map((c) => ({ key: c.key, label: c.label }))].map((c) => {
+              const count = c.key === "all" ? demoLessons.length : demoLessons.filter((l) => l.category === c.key).length;
+              if (!count) return null;
+              const selected = category === c.key;
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => setCategory(c.key)}
+                  className={cn("inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-body-sm font-semibold", selected ? "bg-navy-900 text-white" : "bg-surface text-navy-900 ring-1 ring-ink/10")}
+                >
+                  {c.label}
+                  <span className={cn("text-caption", selected ? "text-white/70" : "text-ink-muted")}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+          <ul className="mt-3 grid gap-2.5">
+            {lessons.map((lesson) => {
+              const done = progress.completed.includes(lesson.id) || lesson.progress === 100;
+              const saved = progress.bookmarked.includes(lesson.id);
+              return (
+                <li key={lesson.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-ink/[0.07]">
+                  <button type="button" onClick={() => go(`app/learn/lesson/${lesson.id}`)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                    <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-700">
+                      <FileText size={22} aria-hidden />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="inline-flex rounded-md bg-teal-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-teal-700">Lesson</span>
+                      <span className="mt-0.5 block font-brand text-[1.1875rem] font-semibold leading-tight text-navy-950">{lesson.title}</span>
+                      <span className="mt-0.5 flex items-center gap-1.5 text-caption text-ink-muted">
+                        {lesson.categoryLabel} · <Clock3 size={12} aria-hidden /> {lesson.minutes} min
+                        {done && <span className="ml-1 inline-flex items-center gap-0.5 font-semibold text-success-700"><CheckCircle2 size={12} aria-hidden /> Completed</span>}
+                      </span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => learnActions.toggleBookmark(lesson.id)}
+                    aria-pressed={saved}
+                    aria-label={saved ? `Remove ${lesson.title} from saved` : `Save ${lesson.title}`}
+                    className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-navy-900 hover:bg-navy-50"
+                  >
+                    {saved ? <BookmarkCheck size={20} className="text-crimson-600" aria-hidden /> : <Bookmark size={20} aria-hidden />}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      </Container>
+    </>
+  );
+}
+
+/* ========================================================================================== */
+/* VIDEO LESSON                                                                                */
+/* ========================================================================================== */
+
+export function VideoLessonView({ id }: { id: string }) {
+  const video = findVideo(id)!;
+  const progress = useLearnProgress();
+  const [earned, setEarned] = useState<string | null>(null);
+  const done = progress.completed.includes(id);
+  const portrait = video.orientation === "portrait";
+
+  const onEnded = () => {
+    learnActions.complete(id);
+    const r = rewardsActions.earn("video-finished", id);
+    if (r.ok) setEarned(`+${r.transaction.points} pts for finishing this video`);
+  };
+
+  return (
+    <div className={cn("pb-4", portrait ? "bg-navy-950" : "")}>
+      <Container className={cn("pt-4", portrait && "text-white")}>
+        <button
+          type="button"
+          onClick={() => go("app/learn")}
+          className={cn("-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-body-sm font-semibold", portrait ? "text-white/80 hover:text-white" : "text-navy-900")}
+        >
+          <ArrowLeft size={18} aria-hidden /> Learn
+        </button>
+      </Container>
+
+      <div className={cn(portrait ? "mx-auto mt-2 w-full max-w-[22rem] px-5" : "mx-auto mt-2 w-full max-w-[60rem] sm:px-8 lg:px-12")}>
+        <video
+          key={video.id}
+          controls
+          playsInline
+          preload="metadata"
+          poster={video.poster}
+          onPlay={() => learnActions.start(id)}
+          onEnded={onEnded}
+          className={cn("block w-full bg-black", portrait ? "aspect-[9/16] rounded-[1.25rem]" : "aspect-video sm:rounded-[1.25rem]")}
+        >
+          <source src={video.src} type="video/mp4" />
+          Your browser can't play this video.
+        </video>
+      </div>
+
+      <Container className={cn("max-w-[44rem] pt-5", portrait && "text-white")}>
+        <p className={cn("text-overline uppercase tracking-[0.2em]", portrait ? "text-teal-200" : "text-teal-700")}>
+          {video.format === "long-form" ? "Foundation lesson" : "Quick explainer"} · {mediaTopicLabels[video.topic]} · {formatDuration(video.seconds)}
+        </p>
+        <h1 className={cn("mt-2 font-brand text-[2rem] font-semibold leading-tight", portrait ? "text-white" : "text-navy-950")}>{video.title}</h1>
+        <p className={cn("mt-2 text-body", portrait ? "text-white/80" : "text-ink-secondary")}>{video.description}</p>
+        {(done || earned) && (
+          <p className={cn("mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption font-bold", portrait ? "bg-white/10 text-white" : "bg-success-50 text-success-700")} role="status">
+            <CheckCircle2 size={14} aria-hidden /> {earned ?? "Watched"}
+          </p>
+        )}
+      </Container>
+
+      {video.summary && (
+        <Container className="max-w-[44rem] pt-6">
+          <section className="rounded-2xl bg-surface p-5 ring-1 ring-ink/[0.07]">
+            <h2 className="text-subheading text-navy-950">Key takeaways</h2>
+            <p className="text-caption text-ink-muted">Lesson summary by GREAT EMPOWER — not a transcript.</p>
+            <ol className="mt-3 grid gap-2.5">
+              {video.summary.map((point, i) => (
+                <li key={point} className="grid grid-cols-[1.5rem_1fr] text-body-sm text-ink-secondary">
+                  <span className="font-brand text-[1.125rem] font-semibold text-crimson-600">{i + 1}</span>
+                  {point}
+                </li>
+              ))}
+            </ol>
+          </section>
+        </Container>
+      )}
+
+      <Related ids={video.related} dark={portrait} />
+    </div>
+  );
+}
+
+/* ========================================================================================== */
+/* INFOGRAPHIC                                                                                 */
+/* ========================================================================================== */
+
+export function InfographicDetailView({ id }: { id: string }) {
+  const g = findInfographic(id)!;
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [earned, setEarned] = useState<string | null>(null);
+
+  useEffect(() => {
+    learnActions.complete(id);
+    const r = rewardsActions.earn("infographic-viewed", id);
+    if (r.ok) setEarned(`+${r.transaction.points} pts for studying this infographic`);
+  }, [id]);
+
+  return (
+    <div className="pb-4">
+      <Container className="max-w-[44rem] pt-4">
+        <button type="button" onClick={() => go("app/learn")} className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-body-sm font-semibold text-navy-900">
+          <ArrowLeft size={18} aria-hidden /> Learn
+        </button>
+        <p className="mt-2 text-overline uppercase tracking-[0.2em] text-teal-700">Infographic · {mediaTopicLabels[g.topic]}</p>
+        <h1 className="mt-2 font-brand text-[2rem] font-semibold leading-tight text-navy-950">{g.title}</h1>
+        <p className="mt-1 text-body text-ink-secondary">{g.description}</p>
+        {earned && (
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1.5 text-caption font-bold text-success-700" role="status">
+            <CheckCircle2 size={14} aria-hidden /> {earned}
+          </p>
+        )}
+      </Container>
+      <Container className="max-w-[44rem] pt-4">
+        <button
+          type="button"
+          onClick={() => dialogRef.current?.showModal()}
+          className="group relative block w-full overflow-hidden rounded-2xl ring-1 ring-ink/10"
+          aria-label={`Zoom into ${g.title}`}
+        >
+          <img src={g.full} alt={`${g.title}. ${g.description}`} width={g.width} height={g.height} className="ge-skeleton block h-auto w-full" />
+          <span className="absolute right-3 top-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-950/80 px-3 text-caption font-semibold text-white">
+            <Maximize2 size={14} aria-hidden /> Zoom
+          </span>
+        </button>
+        <p className="mt-2 text-caption text-ink-muted">General education. Product features vary by insurer — check the policy wording.</p>
+      </Container>
+
+      <dialog
+        ref={dialogRef}
+        aria-label={`${g.title}, zoomed`}
+        onClick={(e) => e.target === dialogRef.current && dialogRef.current?.close()}
+        className="m-0 h-full max-h-none w-full max-w-none bg-navy-950/95 p-0 backdrop:bg-navy-950/80"
+      >
+        <div className="sticky top-0 z-10 flex justify-end p-3">
+          <button type="button" autoFocus onClick={() => dialogRef.current?.close()} aria-label="Close" className="inline-flex size-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+            <X size={20} aria-hidden />
+          </button>
+        </div>
+        <div className="overflow-auto px-3 pb-6">
+          <img
+            src={g.full}
+            alt={g.title}
+            className={cn("mx-auto block h-auto max-w-none", g.orientation === "portrait" ? "w-[max(100%,44rem)] lg:w-[56rem]" : "w-[max(100%,72rem)]")}
+          />
+        </div>
+      </dialog>
+
+      <Related ids={g.related} />
+    </div>
+  );
+}
+
+function Related({ ids, dark }: { ids: string[]; dark?: boolean }) {
+  const items = ids.map(findMedia).filter(Boolean) as Array<VideoResource | InfographicResource>;
+  if (!items.length) return null;
+  return (
+    <Container className="max-w-[44rem] pt-7">
+      <h2 className={cn("text-subheading", dark ? "text-white" : "text-navy-950")}>Keep learning</h2>
+      <ul className="mt-3 grid gap-2.5">
+        {items.map((m) => (
+          <li key={m.id}>
+            <button
+              type="button"
+              onClick={() => go(`app/learn/${m.kind}/${m.id}`)}
+              className={cn("flex w-full items-center gap-3 rounded-2xl p-2.5 text-left ring-1", dark ? "bg-white/5 ring-white/10" : "bg-surface ring-ink/[0.07]")}
+            >
+              <img src={m.kind === "video" ? m.poster : m.thumb} alt="" loading="lazy" className="size-14 shrink-0 rounded-xl object-cover object-top" />
+              <span className="min-w-0 flex-1">
+                <span className={cn("block text-[10px] font-bold uppercase tracking-[0.1em]", dark ? "text-teal-200" : "text-teal-700")}>
+                  {m.kind === "video" ? `Video · ${formatDuration(m.seconds)}` : "Infographic"}
+                </span>
+                <span className={cn("block text-body-sm font-semibold", dark ? "text-white" : "text-navy-950")}>{m.title}</span>
+              </span>
+              <ArrowRight size={18} className={dark ? "text-white/60" : "text-navy-900"} aria-hidden />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Container>
+  );
+}
