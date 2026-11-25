@@ -22,6 +22,11 @@ import { cn } from "@/lib/cn";
 import { guideCategories, guides, readinessChecklist, type Guide, type GuideCategory } from "@/data/guides";
 import { createStore, useStore } from "@/state/store";
 import { SessionsView } from "./guide/SessionsView";
+import { AdvisorAvatar } from "./guide/AdvisorCard";
+import { trioForSession } from "./guide/advisorSelection";
+
+/** Today's featured trio — one Malay, one Chinese, one Indian advisor (guaranteed). */
+const entryTrio = trioForSession(`entry|${new Date().toDateString()}`);
 
 const checklistStore = createStore<{ done: string[] }>("ge-guide-checklist-v1", () => ({ done: [] }));
 
@@ -221,13 +226,13 @@ function GuideHome() {
               className="mt-3 flex w-full items-center gap-4 rounded-[1.25rem] bg-navy-950 p-4 text-left text-white shadow-e2"
             >
               <span className="flex -space-x-2" aria-hidden>
-                {["NA", "JL", "PR"].map((x, k) => (
-                  <span key={x} className={cn("inline-flex size-10 items-center justify-center rounded-full text-caption font-bold ring-2 ring-navy-950", ["bg-teal-100 text-teal-800", "bg-gold-100 text-gold-700", "bg-crimson-100 text-crimson-700"][k])}>{x}</span>
+                {entryTrio.map((adv) => (
+                  <AdvisorAvatar key={adv.id} advisor={adv} size={40} ring="ring-2 ring-navy-950" />
                 ))}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-subheading">Book a guidance session</span>
-                <span className="block text-body-sm text-white/70">Talk through protection basics · prototype</span>
+                <span className="block text-body-sm text-white/70">Talk through protection basics with a fictional advisor</span>
               </span>
               <ArrowRight size={18} className="shrink-0" aria-hidden />
             </button>

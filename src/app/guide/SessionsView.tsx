@@ -21,6 +21,9 @@ import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import { createStore, useStore } from "@/state/store";
+import { ADVISOR_DISCLAIMER, findAdvisor } from "@/data/advisors";
+import { trioForSession } from "./advisorSelection";
+import { AdvisorAvatar, AdvisorCard } from "./AdvisorCard";
 
 /**
  * Guidance sessions — a DESIGN PROTOTYPE of an appointment flow. Everything here is simulated:
@@ -38,17 +41,6 @@ const topics = [
 const areas = ["Kuala Lumpur", "Petaling Jaya", "Penang", "Johor Bahru", "Kota Kinabalu"];
 const slotTimes = ["10:00", "11:30", "14:00", "15:30", "17:00"];
 
-/**
- * Fictional guide profiles — prototype only, not real people or licensed agents.
- * `portrait` is ready for owner-supplied images (e.g. "/advisor/<file>.jpg"); until one is set,
- * the initials avatar is shown.
- */
-const guides: Array<{ id: string; initials: string; name: string; focus: string; tone: string; portrait?: string }> = [
-  { id: "g1", initials: "NA", name: "Nadia A.", focus: "Medical protection basics", tone: "bg-teal-100 text-teal-800" },
-  { id: "g2", initials: "JL", name: "Jason L.", focus: "Budgeting & first jobs", tone: "bg-gold-100 text-gold-700" },
-  { id: "g3", initials: "PR", name: "Priya R.", focus: "Family & income protection", tone: "bg-crimson-100 text-crimson-700" },
-];
-
 type Booking = {
   id: string;
   ref: string;
@@ -58,6 +50,7 @@ type Booking = {
   date: string;
   time: string;
   guide: string;
+  advisorId?: string;
   name?: string;
   status: "booked" | "cancelled";
   createdAt: number;
@@ -91,7 +84,7 @@ const go = (hash: string) => {
 };
 
 const PROTOTYPE_NOTE =
-  "Prototype only: guides, availability and bookings are simulated. No real adviser, appointment or advice is arranged, and nothing is sent anywhere.";
+  "Fictional advisors for demonstration purposes (AI-generated portraits). Advisors, availability and bookings are simulated. No real adviser, appointment or advice is arranged, and nothing is sent anywhere.";
 
 export function SessionsView() {
   const { bookings } = useStore(bookingStore);
@@ -118,6 +111,8 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
   const [confirmed, setConfirmed] = useState<Booking | null>(null);
 
   const availKey = `${date}|${format === "in-person" ? area : "online"}`;
+  // One Malay, one Chinese and one Indian advisor — guaranteed by pickAdvisorTrio, stable per slot.
+  const sessionTrio = useMemo(() => trioForSession(`${availKey}|${time ?? ""}`), [availKey, time]);
   const openSlots = date ? slotTimes.filter((t) => simulatedOpen(availKey, t)) : [];
   const canNext = [!!topic, !!format && (format === "online" || !!area), !!date && !!time, true][step];
 
@@ -131,7 +126,8 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
       area: format === "in-person" ? area! : undefined,
       date: date!,
       time: time!,
-      guide: guide === "any" ? "Any available guide" : guides.find((g) => g.id === guide)!.name,
+      guide: guide === "any" ? "Any available advisor" : findAdvisor(guide)!.name,
+      advisorId: guide === "any" ? undefined : guide,
       name: name.trim() || undefined,
       status: "booked",
       createdAt: Date.now(),
@@ -251,7 +247,7 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
                 ) : (
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     {openSlots.map((t) => (
-                      <button key={t} type="button" aria-pressed={time === t} onClick={() => setTime(t)} className={cn("inline-flex h-11 items-center justify-center gap-1 rounded-xl text-body-sm font-semibold", time === t ? "bg-crimson-600 text-white" : "bg-surface text-navy-900 ring-1 ring-ink/10")}>
+                      <button key={t} type="button" aria-pressed={time === t} onClick={() => { setTime(t); setGuide("any"); }} className={cn("inline-flex h-11 items-center justify-center gap-1 rounded-xl text-body-sm font-semibold", time === t ? "bg-crimson-600 text-white" : "bg-surface text-navy-900 ring-1 ring-ink/10")}>
                         <Clock3 size={14} aria-hidden /> {t}
                       </button>
                     ))}
@@ -262,14 +258,15 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
             )}
             {time && (
               <fieldset className="mt-5">
-                <legend className="text-subheading text-navy-950">Guide (optional)</legend>
-                <div className="mt-2 grid gap-2">
-                  <GuideOption selected={guide === "any"} onSelect={() => setGuide("any")} initials="★" tone="bg-navy-100 text-navy-800" name="Any available guide" focus="Fastest match" />
-                  {guides.map((g) => (
-                    <GuideOption key={g.id} selected={guide === g.id} onSelect={() => setGuide(g.id)} initials={g.initials} tone={g.tone} name={g.name} focus={g.focus} portrait={g.portrait} />
+                <legend className="text-subheading text-navy-950">Advisors for this session</legend>
+                <p className="text-caption text-ink-muted">Choose one, or let us match you.</p>
+                <div className="mt-2 grid gap-2" role="radiogroup" aria-label="Advisor" data-testid="advisor-trio">
+                  {sessionTrio.map((a) => (
+                    <AdvisorCard key={a.id} advisor={a} selected={guide === a.id} onSelect={() => setGuide(a.id)} />
                   ))}
+                  <GuideOption selected={guide === "any"} onSelect={() => setGuide("any")} initials="★" tone="bg-navy-100 text-navy-800" name="Any available advisor" focus="We'll match you with one of the three" />
                 </div>
-                <p className="mt-2 text-caption text-ink-muted">Fictional prototype profiles — not real people or licensed agents.</p>
+                <p className="mt-2 text-caption text-ink-muted">{ADVISOR_DISCLAIMER} AI-generated portraits — not real people, agents or licensed professionals.</p>
               </fieldset>
             )}
           </>
@@ -283,7 +280,7 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
                 ["Topic", topics.find((t) => t.id === topic)?.label],
                 ["Format", format === "online" ? "Online video" : `In person · ${area}`],
                 ["When", `${new Date(`${date}T00:00:00`).toLocaleDateString("en-MY", { weekday: "long", day: "numeric", month: "long" })} · ${time}`],
-                ["Guide", guide === "any" ? "Any available guide" : guides.find((g) => g.id === guide)?.name],
+                ["Advisor", guide === "any" ? "Any available advisor" : findAdvisor(guide)?.name],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 py-3 text-body-sm">
                   <dt className="text-ink-muted">{k}</dt>
@@ -339,14 +336,10 @@ function Choice({ selected, onSelect, icon: Icon, label, hint }: { selected: boo
   );
 }
 
-function GuideOption({ selected, onSelect, initials, tone, name, focus, portrait }: { selected: boolean; onSelect: () => void; initials: string; tone: string; name: string; focus: string; portrait?: string }) {
+function GuideOption({ selected, onSelect, initials, tone, name, focus }: { selected: boolean; onSelect: () => void; initials: string; tone: string; name: string; focus: string }) {
   return (
     <button type="button" role="radio" aria-checked={selected} onClick={onSelect} className={cn("flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 py-2 text-left ring-1", selected ? "bg-navy-50 ring-navy-900" : "bg-surface ring-ink/10")}>
-      {portrait ? (
-        <img src={portrait} alt="" className="size-10 shrink-0 rounded-full object-cover" />
-      ) : (
-        <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-full text-body-sm font-bold", tone)} aria-hidden>{initials}</span>
-      )}
+      <span className={cn("inline-flex size-[52px] shrink-0 items-center justify-center rounded-full text-body font-bold", tone)} aria-hidden>{initials}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-body-sm font-semibold text-navy-950">{name}</span>
         <span className="block text-caption text-ink-muted">{focus}</span>
@@ -370,7 +363,8 @@ function MySessions({ bookings, onNew }: { bookings: Booking[]; onNew: () => voi
             {bookings.map((b) => (
               <li key={b.id} className={cn("rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]", b.status === "cancelled" && "opacity-60")}>
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  {b.advisorId && findAdvisor(b.advisorId) && <AdvisorAvatar advisor={findAdvisor(b.advisorId)!} size={44} />}
+                  <div className="min-w-0 flex-1">
                     <p className="text-body font-semibold text-navy-950">{b.topic}</p>
                     <p className="text-caption text-ink-muted">
                       {new Date(`${b.date}T00:00:00`).toLocaleDateString("en-MY", { weekday: "short", day: "numeric", month: "short" })} · {b.time} · {b.area ?? "Online"} · {b.guide}
