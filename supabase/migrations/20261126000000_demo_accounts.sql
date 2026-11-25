@@ -18,9 +18,35 @@
 --
 -- Welcome Offer eligibility matrix (strict, enforced by a generated column):
 --   food: eligible · drink: eligible · wellness: NOT eligible · game: NOT eligible
+--
+-- Execution
+--   * ONE-TIME migration for a fresh Supabase project. It is NOT re-runnable: the
+--     pre-flight check below stops it (changing nothing) if it was already applied.
+--   * Everything runs in ONE transaction: any error rolls the whole file back, so
+--     a failure never leaves a partial schema. Nothing existing is dropped.
+--   * Prerequisites: Supabase Auth (auth.users, auth.uid()) and PostgreSQL 13+
+--     (core gen_random_uuid()). No extensions are required.
 -- =============================================================================
 
-create schema if not exists ge_private;
+begin;
+
+do $preflight$
+begin
+  if to_regclass('auth.users') is null or to_regprocedure('auth.uid()') is null then
+    raise exception 'Great Empower migration: Supabase Auth (auth.users / auth.uid()) not found. Nothing was changed.';
+  end if;
+  if to_regnamespace('ge_private') is not null
+     or to_regclass('public.reward_products') is not null or to_regclass('public.earning_rules') is not null
+     or to_regclass('public.profiles') is not null or to_regclass('public.points_ledger') is not null
+     or to_regclass('public.reward_items') is not null or to_regclass('public.learning_progress') is not null
+     or to_regclass('public.guidance_bookings') is not null or to_regclass('public.user_app_state') is not null
+     or to_regclass('public.earnable_content') is not null then
+    raise exception 'Great Empower migration already applied (or objects with the same names exist). Nothing was changed.';
+  end if;
+end
+$preflight$;
+
+create schema ge_private;
 
 -- -----------------------------------------------------------------------------
 -- Global catalogue (shared, read-only to clients)
@@ -43,6 +69,14 @@ create table public.earning_rules (
   target       integer check (target is null or target > 0),
   counts_kinds text[],
   check ((kind = 'challenge') = (target is not null and counts_kinds is not null))
+);
+
+-- Content that can earn points, per activity (mirrors the app's lesson/video/infographic
+-- catalogues). earn_points only pays for these exact pairs. Server-only: no client grants.
+create table public.earnable_content (
+  kind       text not null references public.earning_rules (key),
+  content_id text not null check (content_id ~ '^[a-z0-9-]{1,80}$'),
+  primary key (kind, content_id)
 );
 
 -- -----------------------------------------------------------------------------
@@ -135,7 +169,7 @@ create table public.user_app_state (
   user_id            uuid primary key references public.profiles (user_id) on delete cascade,
   guide_checklist    text[] not null default '{}' check (cardinality(guide_checklist) <= 100),
   notifications_read text[] not null default '{}' check (cardinality(notifications_read) <= 200),
-  game_state         jsonb, -- reserved for the future game integration; unused today
+  game_state         jsonb, -- reserved for a future game integration; unused, not client-writable
   updated_at         timestamptz not null default now()
 );
 
@@ -143,14 +177,22 @@ create table public.user_app_state (
 -- Privileges + Row Level Security
 -- -----------------------------------------------------------------------------
 revoke all on public.reward_products, public.earning_rules, public.profiles, public.points_ledger,
-  public.reward_items, public.learning_progress, public.guidance_bookings, public.user_app_state
+  public.reward_items, public.learning_progress, public.guidance_bookings, public.user_app_state,
+  public.earnable_content
   from public, anon, authenticated;
 
 grant select on public.reward_products, public.earning_rules to authenticated;
 grant select on public.profiles, public.points_ledger, public.reward_items to authenticated;
 grant update (language, display_name) on public.profiles to authenticated;
 grant select, insert, update, delete on public.learning_progress to authenticated;
-grant select, insert, update on public.guidance_bookings, public.user_app_state to authenticated;
+grant select, insert, update on public.guidance_bookings to authenticated;
+-- user_app_state: clients may write only these two columns. game_state is reserved and is
+-- not client-writable (a future server-side function would own it).
+grant select on public.user_app_state to authenticated;
+grant insert (user_id, guide_checklist, notifications_read) on public.user_app_state to authenticated;
+-- user_id is included because upserts (INSERT … ON CONFLICT DO UPDATE) also set the conflict
+-- key; RLS `with check (user_id = auth.uid())` still prevents moving a row to another user.
+grant update (user_id, guide_checklist, notifications_read) on public.user_app_state to authenticated;
 
 alter table public.reward_products   enable row level security;
 alter table public.earning_rules     enable row level security;
@@ -160,6 +202,7 @@ alter table public.reward_items      enable row level security;
 alter table public.learning_progress enable row level security;
 alter table public.guidance_bookings enable row level security;
 alter table public.user_app_state    enable row level security;
+alter table public.earnable_content  enable row level security; -- no policies: RPC-only
 
 create policy "catalogue is readable" on public.reward_products
   for select to authenticated using (active);
@@ -213,15 +256,22 @@ begin
   return v_uid;
 end $$;
 
--- Random, non-personal pass token, e.g. GE-7K3F-92QD.
+-- Random, non-personal pass token, e.g. GE-7K3F-92QD (8 symbols × 5 bits = 40 bits).
+-- Randomness: core gen_random_uuid() (PostgreSQL 13+) draws from pg_strong_random(), the
+-- server's cryptographically secure generator — no pgcrypto/extension schema dependency.
+-- Only fully random UUID bytes are used (bytes 6 and 8 carry version/variant bits), and
+-- byte % 32 is unbiased because 256 is a multiple of 32.
 create function ge_private.pass_code()
 returns text language plpgsql volatile set search_path = '' as $$
 declare
   v_alphabet constant text := '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  v_bytes bytea := uuid_send(gen_random_uuid());
+  v_pick constant int[] := array[0, 1, 2, 3, 4, 5, 10, 11];
   v_out text := '';
+  i int;
 begin
-  for i in 1..8 loop
-    v_out := v_out || substr(v_alphabet, 1 + floor(random() * 32)::int, 1);
+  foreach i in array v_pick loop
+    v_out := v_out || substr(v_alphabet, 1 + (get_byte(v_bytes, i) % 32), 1);
   end loop;
   return 'GE-' || substr(v_out, 1, 4) || '-' || substr(v_out, 5, 4);
 end $$;
@@ -281,7 +331,7 @@ declare
   v_profile public.profiles;
   v_created boolean;
 begin
-  if p_type not in ('demo', 'new') then
+  if p_type is null or p_type not in ('demo', 'new') then
     return ge_private.fail('invalid_type', 'Unknown account type.');
   end if;
   if p_display_name is not null and char_length(btrim(p_display_name)) > 40 then
@@ -329,6 +379,9 @@ begin
   select * into v_rule from public.earning_rules where key = p_kind and kind = 'activity';
   if not found then
     return ge_private.fail('unknown_activity', 'Unknown activity.');
+  end if;
+  if not exists (select 1 from public.earnable_content where kind = p_kind and content_id = p_subject) then
+    return ge_private.fail('unknown_content', 'This activity does not earn points.');
   end if;
   perform 1 from public.profiles where user_id = v_uid for update;
   if not found then
@@ -397,7 +450,9 @@ begin
   if p_mode is null or p_mode not in ('standard', 'welcome_offer') then
     return ge_private.fail('invalid_mode', 'Unknown redemption type.');
   end if;
-  if p_request_id is null or char_length(p_request_id) not between 8 and 120 then
+  -- Own namespace ('redeem-…') so a client id can never collide with internal ledger ids
+  -- such as 'seed:…', 'earn:…', 'challenge:…' or 'pass-used:…'.
+  if p_request_id is null or p_request_id !~ '^redeem-[A-Za-z0-9-]{1,113}$' then
     return ge_private.fail('invalid_request', 'Invalid request.');
   end if;
 
@@ -409,13 +464,14 @@ begin
 
   select * into v_prior from public.points_ledger where user_id = v_uid and request_id = p_request_id;
   if found then
-    if v_prior.kind = 'redeem' and v_prior.product_id = p_product_id then
+    if v_prior.kind = 'redeem' and v_prior.product_id = p_product_id and v_prior.redemption_mode = p_mode then
       select * into v_item from public.reward_items where ledger_id = v_prior.id;
       return jsonb_build_object('ok', true, 'replayed', true, 'ledger_id', v_prior.id,
         'item_id', v_item.id, 'item_type', v_item.item_type, 'code', v_item.code,
         'charged', v_prior.charged_price, 'list_price', v_prior.list_price,
         'mode', v_prior.redemption_mode, 'points_balance', v_profile.points_balance);
     end if;
+    -- Same request id for a different product, mode or operation: refuse, change nothing.
     return ge_private.fail('request_reused', 'This request was already used for something else.');
   end if;
 
@@ -540,3 +596,25 @@ insert into public.earning_rules (key, kind, title, points, target, counts_kinds
   ('challenge:keep-learning',      'challenge', 'Keep Learning',      150, 3, array['lesson-complete', 'video-finished']),
   ('challenge:visual-learner',     'challenge', 'Visual Learner',      80, 3, array['infographic-viewed']),
   ('challenge:know-your-coverage', 'challenge', 'Know Your Coverage', 200, 1, array['profile-complete']);
+
+-- Mirrors src/data/demo-courses.ts (lessons) and src/data/learn-media.ts (videos, infographics).
+insert into public.earnable_content (kind, content_id) values
+  ('lesson-complete', 'money-talks'),
+  ('lesson-complete', 'medical-cards'),
+  ('lesson-complete', 'emergency-fund'),
+  ('lesson-complete', 'hospital-bills'),
+  ('lesson-complete', 'income-replacement'),
+  ('lesson-complete', 'first-salary'),
+  ('lesson-complete', 'deductibles'),
+  ('video-finished', 'what-is-insurance'),
+  ('video-finished', 'how-insurance-works-in-malaysia'),
+  ('video-finished', 'risk-pooling-powers-insurance'),
+  ('video-finished', 'life-insurance-risk-pooling'),
+  ('infographic-viewed', 'insurance-safety-net'),
+  ('infographic-viewed', 'medical-insurance-malaysia'),
+  ('infographic-viewed', 'life-insurance-malaysia'),
+  ('infographic-viewed', 'critical-illness-malaysia'),
+  ('infographic-viewed', 'personal-accident-malaysia'),
+  ('profile-complete', 'profile');
+
+commit;

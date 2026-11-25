@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { brands, earningRules, isWelcomeEligible, products } from "../rewards/catalogue.ts";
+import { demoLessons } from "../data/demo-courses.ts";
+import { infographics, videos } from "../data/learn-media.ts";
 import { challengeProgress, emptyRewardsState, redeem } from "../rewards/economy.ts";
 import { DEMO_EARNED, DEMO_SEED_BALANCE, demoRewardsState } from "./seed.ts";
 
@@ -57,4 +59,16 @@ test("Welcome Offer matrix: food + drink eligible; wellness + game never", () =>
 test("seeded Keep Learning progress (2 lessons + 1 video = 3 of 3, unclaimed)", () => {
   const p = challengeProgress(demoRewardsState(Date.now()), "keep-learning");
   assert.deepEqual([p.done, p.target, p.complete, p.claimed], [3, 3, true, false]);
+});
+
+test("SQL earnable_content allow-list matches the app's lessons, videos and infographics exactly", () => {
+  const block = sql.slice(sql.indexOf("insert into public.earnable_content"));
+  const rows = [...block.matchAll(/\('([a-z-]+)', '([a-z0-9-]+)'\)/g)].map((m) => `${m[1]}:${m[2]}`).sort();
+  const expected = [
+    ...demoLessons.map((l) => `lesson-complete:${l.id}`),
+    ...videos.map((v) => `video-finished:${v.id}`),
+    ...infographics.map((i) => `infographic-viewed:${i.id}`),
+    "profile-complete:profile",
+  ].sort();
+  assert.deepEqual(rows, expected);
 });
