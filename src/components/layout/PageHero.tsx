@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Container } from "./Editorial";
 import { cn } from "@/lib/cn";
@@ -18,6 +18,7 @@ export function PageHero({
   titleId,
   children,
   className,
+  fadeTo = "var(--color-canvas)",
 }: {
   eyebrow: string;
   title: ReactNode;
@@ -30,15 +31,19 @@ export function PageHero({
   titleId?: string;
   children?: ReactNode;
   className?: string;
+  /** Colour of the section that follows; image heroes fade into it. Defaults to the page canvas. */
+  fadeTo?: string;
 }) {
+  const hasArt = Boolean(image);
   const [imageFailed, setImageFailed] = useState(false);
   return (
     <section
       aria-labelledby={titleId}
       className={cn("ge-pagehero relative isolate overflow-hidden text-white", className)}
+      style={hasArt ? ({ "--ge-fade-to": fadeTo } as CSSProperties) : undefined}
     >
       {image && !imageFailed && (
-        <div className="ge-pagehero-art pointer-events-none absolute inset-y-0 right-0 -z-10 w-[52%] md:w-[46%]" aria-hidden>
+        <div className="ge-pagehero-art pointer-events-none absolute inset-y-0 right-0 -z-10 w-[56%] md:w-[46%]" aria-hidden>
           <img
             src={image}
             alt=""
@@ -49,7 +54,9 @@ export function PageHero({
           />
         </div>
       )}
-      <Container className="relative pb-8 pt-3 sm:pb-10 md:pb-14 md:pt-12">
+      {/* As on Home: the bottom of an image hero (photo + navy) melts into the next section. */}
+      {hasArt && <div className="ge-pagehero-fade pointer-events-none absolute inset-x-0 bottom-0 -z-[5]" aria-hidden />}
+      <Container className={cn("relative pt-3 md:pt-12", hasArt ? "pb-20 sm:pb-24 md:pb-28" : "pb-8 sm:pb-10 md:pb-14")}>
         {backLabel && (
           <button
             type="button"

@@ -41,7 +41,10 @@ export function HomeDashboard({
         greeting={greeting}
         profileName={profileName}
         onContinue={() => go(`app/learn/lesson/${nextLesson?.id ?? "hospital-bills"}`)}
-        onStartLearning={() => onNavigate("learn")}
+        onBookSession={() => {
+          go("app/guide/sessions");
+          window.scrollTo({ top: 0 });
+        }}
       />
 
       <div className="bg-canvas pb-6 pt-5 sm:pt-8">

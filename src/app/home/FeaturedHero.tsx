@@ -56,12 +56,13 @@ export function FeaturedHero({
   greeting,
   profileName,
   onContinue,
-  onStartLearning,
+  onBookSession,
 }: {
   greeting: string;
   profileName: string;
   onContinue: () => void;
-  onStartLearning: () => void;
+  /** Opens the existing Guidance Sessions booking flow. */
+  onBookSession: () => void;
 }) {
   const story = mediAsasStory;
 
@@ -102,19 +103,19 @@ export function FeaturedHero({
       media: { kind: "infographic" },
     },
     {
-      id: "learning",
-      label: "Learning",
-      eyebrow: "Continue your journey",
-      title: "Build your financial confidence.",
-      text: "Learn the essentials of financial protection, one step at a time.",
-      cta: "Start learning",
-      onAction: onStartLearning,
+      id: "advisor",
+      label: "Book an advisor",
+      eyebrow: "Guidance sessions · Fictional demo advisor",
+      title: "Book an Advisor for Guidance",
+      text: "Get guidance to better understand financial protection.",
+      cta: "Book a Session",
+      onAction: onBookSession,
       media: {
         kind: "photo",
-        src: "/images/pexels/learning-academy-students-in-library.webp",
-        alt: "Two students studying together at a library desk with books and a laptop.",
-        position: "45% 30%",
-        desktopPosition: "40% 40%",
+        src: "/advisor/web/advisor-malay-woman-1280.webp",
+        alt: "Farah Nadia, a fictional demonstration advisor (AI-generated portrait).",
+        position: "50% 18%",
+        desktopPosition: "50% 22%",
       },
     },
   ];
