@@ -11,9 +11,12 @@ export interface LearnProgress {
   completed: string[];
 }
 
-export const learnProgressStore = createStore<LearnProgress>("ge-learn-v1", () => ({
+export const LEARN_KEY = "ge-learn-v1";
+
+/** Per account. A new account starts in English with nothing bookmarked or completed. */
+export const learnProgressStore = createStore<LearnProgress>(LEARN_KEY, () => ({
   language: "en",
-  bookmarked: ["medical-cards"],
+  bookmarked: [],
   started: [],
   completed: [],
 }));

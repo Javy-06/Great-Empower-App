@@ -82,11 +82,15 @@ export const products: Product[] = [
   { id: "nst-savings-bonus", brand: "nestora", name: "Savings Bonus", description: "A one-time simulated savings bonus.", price: 2000, tags: ["game-savings"], benefit: { type: "savings-bonus", effect: "Grants a one-time simulated savings bonus in the Great Empower game." } },
 ];
 
-/** Food and drink tags that qualify for the one-time welcome redemption. */
-export const WELCOME_TAGS: ProductTag[] = ["healthy-food", "healthy-drink"];
+/**
+ * Welcome Offer eligibility matrix (strict; mirrors reward_products.welcome_eligible in the
+ * database): food and drink brands are eligible; wellness and in-game items never are.
+ */
+export const WELCOME_CATEGORIES: Brand["kind"][] = ["food", "drink"];
 /** One-time new-player price for any eligible food or drink item. */
 export const WELCOME_PRICE = 200;
-export const isWelcomeEligible = (p: Product) => p.tags.some((t) => WELCOME_TAGS.includes(t));
+export const isWelcomeEligible = (p: Product) =>
+  WELCOME_CATEGORIES.includes(brands.find((b) => b.id === p.brand)?.kind ?? "wellness");
 
 /**
  * Points for real activity in this app. Each activity pays once. These rates are new — the

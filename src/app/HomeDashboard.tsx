@@ -1,6 +1,7 @@
 import { ArrowRight, CalendarDays, ChevronRight, Megaphone } from "lucide-react";
 import { Container } from "@/components/layout/Editorial";
-import { demoUser } from "@/data/demo-user";
+import { useSession } from "@/account/session";
+import { useLearnProgress } from "@/state/learnProgress";
 import { demoLessons } from "@/data/demo-courses";
 import { primaryNav, type NavKey } from "@/components/nav/navItems";
 import { mediAsasStory, NEWS_HASH_PREFIX } from "@/data/news";
@@ -22,16 +23,17 @@ const go = (hash: string) => {
   window.scrollTo({ top: 0 });
 };
 
-const nextLesson = demoLessons.find((lesson) => lesson.id === "hospital-bills");
 
 /** Home — compact and app-first: featured carousel, one update, quick actions, the game. */
 export function HomeDashboard({
   onNavigate,
-  profileName = demoUser.name,
 }: {
   onNavigate: (destination: DashboardDestination) => void;
-  profileName?: string;
 }) {
+  const session = useSession();
+  const profileName = session.kind === "ready" ? session.account.displayName : undefined;
+  const learn = useLearnProgress();
+  const nextLesson = demoLessons.find((lesson) => !learn.completed.includes(lesson.id)) ?? demoLessons[0];
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 

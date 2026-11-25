@@ -41,7 +41,7 @@ const topics = [
 const areas = ["Kuala Lumpur", "Petaling Jaya", "Penang", "Johor Bahru", "Kota Kinabalu"];
 const slotTimes = ["10:00", "11:30", "14:00", "15:30", "17:00"];
 
-type Booking = {
+export type Booking = {
   id: string;
   ref: string;
   topic: string;
@@ -56,7 +56,8 @@ type Booking = {
   createdAt: number;
 };
 
-const bookingStore = createStore<{ bookings: Booking[] }>("ge-sessions-v1", () => ({ bookings: [] }));
+export const SESSIONS_KEY = "ge-sessions-v1";
+export const bookingStore = createStore<{ bookings: Booking[] }>(SESSIONS_KEY, () => ({ bookings: [] }));
 
 /** Next 7 weekdays from today. */
 function upcomingDays() {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -169,8 +169,8 @@ function RewardsHub() {
                 ) : p.complete ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      const r = rewardsActions.claimChallenge(c.id);
+                    onClick={async () => {
+                      const r = await rewardsActions.claimChallenge(c.id);
                       setMessage(r.ok ? { ok: true, text: `+${c.bonus} pts added.` } : { ok: false, text: r.error });
                     }}
                     className="inline-flex h-11 items-center rounded-full bg-crimson-600 px-4 text-caption font-bold text-white hover:bg-crimson-700"
@@ -311,12 +311,16 @@ function ProductDetail({ id }: { id: string }) {
   const [useWelcome, setUseWelcome] = useState(canWelcome);
   const [checkout, setCheckout] = useState<Checkout>({ phase: "idle" });
   const [requestId] = useState(() => rewardsActions.newRequestId("redeem"));
+  const busy = useRef(false);
   const q = quote(state, id, useWelcome)!;
 
-  const confirm = () => {
-    if (checkout.phase === "processing") return;
+  const confirm = async () => {
+    // Ref guard: a double tap within one render can't send a second request.
+    if (busy.current) return;
+    busy.current = true;
     setCheckout({ phase: "processing" });
-    const r = rewardsActions.redeem(id, q.welcome, requestId);
+    const r = await rewardsActions.redeem(id, q.welcome, requestId);
+    busy.current = false;
     if (!r.ok) {
       setCheckout({ phase: "error", message: r.error });
       return;
@@ -393,6 +397,12 @@ function ProductDetail({ id }: { id: string }) {
               />
             </div>
           </fieldset>
+        )}
+        {!isWelcomeEligible(product) && !state.welcomeRedeemed && (
+          <p className="mt-4 rounded-xl bg-gold-50 px-4 py-3 text-body-sm text-gold-700">
+            The Welcome Offer applies to food and drink items only, so this item uses its regular price. Your Welcome
+            Offer stays available.
+          </p>
         )}
 
         <dl className="mt-6 grid gap-2 rounded-2xl bg-surface p-4 text-body-sm ring-1 ring-ink/[0.07]">

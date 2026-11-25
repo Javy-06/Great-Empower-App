@@ -20,6 +20,11 @@ import { exitGame, GAME_HASH, gameReturnScroll, LEGACY_GAME_HASH } from "./game/
 import { NewsArticle } from "./news/NewsArticle";
 import { findStory, NEWS_HASH_PREFIX } from "@/data/news";
 import { goBack } from "@/lib/nav";
+import { initAccounts, useSession } from "@/account/session";
+import { AccountButton, WelcomeScreen } from "./account/AccountScreens";
+
+// Migrate pre-account data once and reopen the last active account (if any).
+initAccounts();
 
 const destinations: DashboardDestination[] = [
   "home",
@@ -62,7 +67,7 @@ function DestinationView({
   if (destination === "guide") return <GuideCentre />;
   if (destination === "notifications") return <NotificationsView />;
   if (destination === "about") return <AboutView />;
-  return <HomeDashboard profileName="Aisyah" onNavigate={(next) => navigateTo(next)} />;
+  return <HomeDashboard onNavigate={(next) => navigateTo(next)} />;
 }
 
 export function navigateTo(destination: DashboardDestination) {
@@ -75,6 +80,7 @@ export function ApplicationApp() {
   const [currentRoute, setCurrentRoute] = useState(routeKey);
   const { points } = useRewards();
   const { unread } = useNotifications();
+  const session = useSession();
 
   useEffect(() => {
     const onHashChange = () => {
@@ -110,6 +116,15 @@ export function ApplicationApp() {
   const newsStory = destination === "home" ? readStory(currentRoute) : undefined;
   const navigate = (next: NavKey) => navigateTo(next);
 
+  // No active demo account: show the account entry screen (Demo / Create New / reopen).
+  if (session.kind !== "ready")
+    return (
+      <>
+        <AppSplash />
+        <WelcomeScreen />
+      </>
+    );
+
   return (
     <>
       <AppSplash />
@@ -140,6 +155,7 @@ export function ApplicationApp() {
             unread={unread}
             points={points}
             rewardsActive={destination === "rewards"}
+            account={<AccountButton tone="light" />}
           />
         </header>
 
@@ -151,6 +167,7 @@ export function ApplicationApp() {
             onHome={() => navigateTo("home")}
             onRewardsClick={() => navigateTo("rewards")}
             onNotificationsClick={() => navigateTo("notifications")}
+            account={<AccountButton />}
           />
         </header>
 

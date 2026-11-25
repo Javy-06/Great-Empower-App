@@ -77,7 +77,8 @@ export const notifications: AppNotification[] = [
   },
 ];
 
-const readStore = createStore<{ read: string[] }>("ge-notifications-v1", () => ({ read: [] }));
+export const NOTIFICATIONS_KEY = "ge-notifications-v1";
+export const readStore = createStore<{ read: string[] }>(NOTIFICATIONS_KEY, () => ({ read: [] }));
 
 export function useNotifications() {
   const { read } = useStore(readStore);

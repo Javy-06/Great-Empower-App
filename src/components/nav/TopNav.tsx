@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Bell, Gift } from "lucide-react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { primaryNav, type NavKey } from "./navItems";
@@ -16,6 +17,7 @@ export function TopNav({
   rewardsActive,
   onNotifications,
   unread = 0,
+  account,
 }: {
   active: NavKey | null;
   onChange: (key: NavKey) => void;
@@ -25,6 +27,8 @@ export function TopNav({
   rewardsActive?: boolean;
   onNotifications?: () => void;
   unread?: number;
+  /** Optional account button (demo accounts). */
+  account?: ReactNode;
 }) {
   return (
     <div className="mx-auto flex h-[72px] w-full max-w-[1200px] items-center gap-6 px-5 sm:px-8 lg:px-12">
@@ -103,6 +107,7 @@ export function TopNav({
           )}
         </button>
       )}
+      {account}
     </div>
   );
 }

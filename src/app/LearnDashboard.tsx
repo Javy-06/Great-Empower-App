@@ -4,7 +4,6 @@ import { ProgressBar } from "@/components/ui/Progress";
 import { LessonArt } from "@/components/cards/LearnCards";
 import { Band, Chapter, Container, TextLink } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
-import { demoLearning } from "@/data/demo-learning";
 import { demoLearningCategories, demoLessons, protectionPurposes } from "@/data/demo-courses";
 import type { LearningCategoryKey, LearningLesson } from "@/types/learning";
 import { findInfographic, findVideo } from "@/data/learn-media";
@@ -49,8 +48,8 @@ function navigateToLearn(route: LearnRoute) {
 }
 
 function lessonStatus(lesson: LearningLesson, started: Set<string>, completed: Set<string>) {
-  if (completed.has(lesson.id) || lesson.progress === 100) return "Completed" as const;
-  if (started.has(lesson.id) || (lesson.progress ?? 0) > 0) return "In progress" as const;
+  if (completed.has(lesson.id)) return "Completed" as const;
+  if (started.has(lesson.id)) return "In progress" as const;
   return "Upcoming" as const;
 }
 
@@ -259,7 +258,7 @@ export function LearnDashboard() {
   const startLesson = (lessonId: string) => learnActions.start(lessonId);
   const completeLesson = (lessonId: string) => {
     learnActions.complete(lessonId);
-    rewardsActions.earn("lesson-complete", lessonId);
+    void rewardsActions.earn("lesson-complete", lessonId);
   };
 
   if (route.view === "video") return <VideoLessonView id={route.id} />;
@@ -274,7 +273,7 @@ export function LearnDashboard() {
       status === "Completed"
         ? 100
         : status === "In progress"
-          ? Math.max(lesson.progress ?? 0, started.has(lesson.id) ? 10 : 0)
+          ? 10
           : 0;
     const points = lessonKeyPoints[lesson.id] ?? [];
     return (
@@ -318,7 +317,7 @@ export function LearnDashboard() {
                 <span className="inline-flex h-12 items-center gap-1.5 rounded-full bg-success-50 px-5 text-body-sm font-semibold text-success-700">
                   <CheckCircle2 size={16} aria-hidden /> Lesson completed
                 </span>
-              ) : started.has(lesson.id) || (lesson.progress ?? 0) > 0 ? (
+              ) : started.has(lesson.id) ? (
                 <button
                   type="button"
                   onClick={() => completeLesson(lesson.id)}

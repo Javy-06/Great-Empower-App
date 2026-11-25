@@ -41,7 +41,8 @@ export interface RedemptionPass {
   usedAt?: number;
 }
 
-export type TransactionKind = "earn" | "challenge" | "redeem" | "pass-used";
+/** "seed" = the demo account's preloaded starting balance (shown honestly in history). */
+export type TransactionKind = "seed" | "earn" | "challenge" | "redeem" | "pass-used";
 
 export interface Transaction {
   id: string;
@@ -69,7 +70,7 @@ export interface RewardsState {
 
 export type Result = { ok: true; state: RewardsState; transaction: Transaction } | { ok: false; error: string };
 
-/** Existing demo balance from the project (demoRewards.points). */
+/** Demo account balance (approved seed: 2,290 + 50 + 50 + 40 + 20). Also the economy tests' base. */
 export const STARTING_POINTS = 2450;
 
 export const initialRewardsState = (): RewardsState => ({
@@ -82,6 +83,9 @@ export const initialRewardsState = (): RewardsState => ({
   claimedChallenges: [],
   welcomeRedeemed: false,
 });
+
+/** A brand-new account: 0 points, no history, Welcome Offer available. */
+export const emptyRewardsState = (): RewardsState => ({ ...initialRewardsState(), points: 0 });
 
 const duplicate = (state: RewardsState, requestId: string) =>
   state.transactions.some((t) => t.requestId === requestId);

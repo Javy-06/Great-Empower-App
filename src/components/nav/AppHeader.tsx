@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Bell, ChevronLeft, Gift } from "lucide-react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { IconButton } from "@/components/ui/Button";
@@ -41,12 +42,15 @@ export function AppTopBar({
   onRewardsClick,
   onNotificationsClick,
   onHome,
+  account,
 }: {
   points: number;
   unread?: number;
   onRewardsClick?: () => void;
   onNotificationsClick?: () => void;
   onHome?: () => void;
+  /** Optional account button (demo accounts). */
+  account?: ReactNode;
 }) {
   return (
     <div className="flex h-14 items-center gap-1 bg-navy-950 pl-4 pr-2 text-white">
@@ -86,6 +90,7 @@ export function AppTopBar({
           </span>
         )}
       </button>
+      {account}
     </div>
   );
 }

@@ -28,7 +28,12 @@ export const emptyProfile = (): ProtectionProfile => ({
   coverage: { medical: "", critical: "", life: "", accident: "" },
 });
 
-export const profileStore = createStore<ProtectionProfile>("ge-profile-v1", emptyProfile);
+/**
+ * Per account, and ALWAYS device-only: these self-reported financial inputs are never sent to
+ * Supabase, even for cloud accounts.
+ */
+export const PROFILE_KEY = "ge-profile-v1";
+export const profileStore = createStore<ProtectionProfile>(PROFILE_KEY, emptyProfile);
 export const useProfile = () => useStore(profileStore);
 
 /** Fields that make up a complete profile, used for the data-completeness indicator. */

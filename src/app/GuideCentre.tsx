@@ -28,7 +28,8 @@ import { trioForSession } from "./guide/advisorSelection";
 /** Today's featured trio — one Malay, one Chinese, one Indian advisor (guaranteed). */
 const entryTrio = trioForSession(`entry|${new Date().toDateString()}`);
 
-const checklistStore = createStore<{ done: string[] }>("ge-guide-checklist-v1", () => ({ done: [] }));
+export const CHECKLIST_KEY = "ge-guide-checklist-v1";
+export const checklistStore = createStore<{ done: string[] }>(CHECKLIST_KEY, () => ({ done: [] }));
 
 const categoryIcons: Record<GuideCategory, typeof ShieldPlus> = {
   "insurance-basics": ShieldPlus,

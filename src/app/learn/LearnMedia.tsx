@@ -16,7 +16,6 @@ import {
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
-import { demoLearning } from "@/data/demo-learning";
 import { demoLearningCategories, demoLessons } from "@/data/demo-courses";
 import {
   findInfographic,
@@ -61,7 +60,9 @@ export function LearnHome() {
   const lang = progress.language;
   const longEdition = editionFor(longForm, lang);
   const longShown = longEdition ?? editionFor(longForm, "en")!;
-  const next = demoLessons.find((l) => l.id === "hospital-bills");
+  const next = demoLessons.find((l) => !progress.completed.includes(l.id)) ?? demoLessons[0];
+  const lessonsDone = demoLessons.filter((l) => progress.completed.includes(l.id)).length;
+  const lessonsPercent = Math.round((lessonsDone / demoLessons.length) * 100);
   const lessons = category === "all" ? demoLessons : demoLessons.filter((l) => l.category === category);
 
   return (
@@ -117,9 +118,9 @@ export function LearnHome() {
               <span className="mt-0.5 block font-brand text-[1.375rem] font-semibold leading-tight">{next.title}</span>
               <span className="mt-1.5 flex items-center gap-2 text-caption text-white/70">
                 <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15">
-                  <span className="block h-full rounded-full bg-teal-300" style={{ width: `${demoLearning.completionPercent}%` }} />
+                  <span className="block h-full rounded-full bg-teal-300" style={{ width: `${lessonsPercent}%` }} />
                 </span>
-                {demoLearning.lessonsCompleted} of {demoLearning.lessonsTotal}
+                {lessonsDone} of {demoLessons.length}
               </span>
             </span>
             <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-navy-950">
@@ -246,7 +247,7 @@ export function LearnHome() {
           </div>
           <ul className="mt-3 grid gap-2.5">
             {lessons.map((lesson) => {
-              const done = progress.completed.includes(lesson.id) || lesson.progress === 100;
+              const done = progress.completed.includes(lesson.id);
               const saved = progress.bookmarked.includes(lesson.id);
               return (
                 <li key={lesson.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-ink/[0.07]">
@@ -298,8 +299,9 @@ export function VideoLessonView({ id }: { id: string }) {
 
   const onEnded = () => {
     learnActions.complete(id);
-    const r = rewardsActions.earn("video-finished", id);
-    if (r.ok) setEarned(`+${r.transaction.points} pts for finishing this video`);
+    void rewardsActions.earn("video-finished", id).then((r) => {
+      if (r.ok) setEarned(`+${r.transaction.points} pts for finishing this video`);
+    });
   };
 
   return (
@@ -408,8 +410,13 @@ export function InfographicDetailView({ id }: { id: string }) {
 
   useEffect(() => {
     learnActions.complete(id);
-    const r = rewardsActions.earn("infographic-viewed", id);
-    if (r.ok) setEarned(`+${r.transaction.points} pts for studying this infographic`);
+    let live = true;
+    void rewardsActions.earn("infographic-viewed", id).then((r) => {
+      if (live && r.ok) setEarned(`+${r.transaction.points} pts for studying this infographic`);
+    });
+    return () => {
+      live = false;
+    };
   }, [id]);
 
   return (

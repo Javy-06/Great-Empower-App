@@ -105,7 +105,7 @@ function ProfileStep({ onNext }: { onNext: () => void }) {
 
   const save = () => {
     profileStore.set({ ...p, savedAt: Date.now() });
-    if (completeness.done === completeness.total) rewardsActions.earn("profile-complete", "profile");
+    if (completeness.done === completeness.total) void rewardsActions.earn("profile-complete", "profile");
     onNext();
   };
 

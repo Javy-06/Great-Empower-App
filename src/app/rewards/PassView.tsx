@@ -102,10 +102,10 @@ export function PassView({ id }: { id: string }) {
   const brand = product ? findBrand(product.brand) : undefined;
   const used = pass.status === "used";
 
-  const confirm = () => {
+  const confirm = async () => {
     if (step === "saving") return;
     setStep("saving");
-    const r = rewardsActions.confirmPassUsed(pass.id);
+    const r = await rewardsActions.confirmPassUsed(pass.id);
     if (!r.ok) setError(r.error);
     setStep("idle");
   };

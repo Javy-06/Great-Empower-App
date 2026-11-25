@@ -59,7 +59,8 @@ export function FeaturedHero({
   onBookSession,
 }: {
   greeting: string;
-  profileName: string;
+  /** Optional: new accounts may not have a name. */
+  profileName?: string;
   onContinue: () => void;
   /** Opens the existing Guidance Sessions booking flow. */
   onBookSession: () => void;
@@ -73,9 +74,15 @@ export function FeaturedHero({
       eyebrow: "Your financial journey",
       title: (
         <>
-          {greeting},
-          <br />
-          {profileName}.
+          {profileName ? (
+            <>
+              {greeting},
+              <br />
+              {profileName}.
+            </>
+          ) : (
+            <>{greeting}.</>
+          )}
         </>
       ),
       text: "Small steps today. More confidence tomorrow.",
