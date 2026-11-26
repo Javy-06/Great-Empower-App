@@ -163,6 +163,14 @@
   --shadow-e1: 0 1px 2px 0 rgb(15 41 74 / 0.06), 0 1px 1px 0 rgb(15 41 74 / 0.03);
   --shadow-e2: 0 6px 16px -4px rgb(15 41 74 / 0.1), 0 2px 4px -2px rgb(15 41 74 / 0.06);
   --shadow-e3: 0 20px 40px -12px rgb(15 41 74 / 0.22), 0 4px 8px -4px rgb(15 41 74 / 0.08);
+
+  /*
+   * Motion — calm, never blocking. Small interactions ~220ms; reveals/dialogs ~260–340ms;
+   * route changes ~380ms. Every bare `transition-*` utility picks up these defaults.
+   */
+  --default-transition-duration: 220ms;
+  --default-transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-calm: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 @layer base {
@@ -278,19 +286,63 @@
     scrollbar-width: none;
   }
 
-  /* One route-enter fade, once per destination change. */
+  /* One route-enter fade, once per destination change. Content stays interactive throughout. */
   .ge-enter {
-    animation: ge-enter 200ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation: ge-enter 380ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
   }
   @keyframes ge-enter {
     from {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(10px);
     }
     to {
       opacity: 1;
       transform: none;
     }
+  }
+
+  /* Expand/collapse and filtered-list content: a short fade with a slight drop. */
+  .ge-reveal {
+    animation: ge-reveal 260ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+  @keyframes ge-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Dialogs and sheets: the scrim fades in while the panel rises into place. */
+  .ge-scrim {
+    animation: ge-fade 260ms ease-out both;
+  }
+  .ge-sheet {
+    animation: ge-sheet 340ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+  @keyframes ge-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes ge-sheet {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Staggered rise for an entry screen's sections; --ge-delay is set per item (≤ 300ms total). */
+  .ge-rise {
+    animation: ge-enter 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation-delay: var(--ge-delay, 0ms);
   }
 
   /*
@@ -379,6 +431,22 @@
     background:
       radial-gradient(60% 90% at 100% 100%, rgb(198 211 230 / 0.45), transparent 70%),
       linear-gradient(135deg, #ffffff 0%, var(--color-navy-50) 100%);
+  }
+
+  /*
+   * Welcome hero veil: deep navy behind the headline (left), clearing towards the lit peak on the
+   * right so the photograph reads as dusk. Keeps white text comfortably above 4.5:1.
+   */
+  .ge-welcome-veil {
+    background:
+      linear-gradient(180deg, rgb(10 28 51 / 0.6) 0%, rgb(10 28 51 / 0.12) 34%, transparent 60%),
+      linear-gradient(
+        100deg,
+        rgb(10 28 51 / 0.95) 0%,
+        rgb(13 35 66 / 0.84) 34%,
+        rgb(15 41 74 / 0.4) 66%,
+        rgb(15 41 74 / 0.08) 100%
+      );
   }
 
   /* Page hero: navy, with a small masked photo on the right that dissolves into it. */
@@ -548,9 +616,9 @@
   /* Linked surface: lifts 2px; a photo inside zooms within its frame. */
   .ge-lift {
     transition:
-      transform 180ms ease-out,
-      box-shadow 180ms ease-out,
-      border-color 180ms ease-out;
+      transform 240ms var(--ease-calm),
+      box-shadow 240ms var(--ease-calm),
+      border-color 240ms var(--ease-calm);
   }
   .ge-lift:hover {
     transform: translateY(-2px);
@@ -564,7 +632,11 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ge-enter {
+    .ge-enter,
+    .ge-reveal,
+    .ge-scrim,
+    .ge-sheet,
+    .ge-rise {
       animation: none;
     }
     .ge-lift:hover,

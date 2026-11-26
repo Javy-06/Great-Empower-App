@@ -64,7 +64,7 @@ export function AdvisorCard({ advisor, selected, onSelect }: { advisor: Advisor;
         <ChevronDown size={14} className={cn("transition-transform", open && "rotate-180")} aria-hidden />
       </button>
       {open && (
-        <div className="grid grid-cols-[6.5rem_1fr] gap-3 px-3 pb-3">
+        <div className="ge-reveal grid grid-cols-[6.5rem_1fr] gap-3 px-3 pb-3">
           {portraitFailed ? (
             <span className="flex aspect-[4/5] items-center justify-center rounded-xl bg-navy-100 text-heading font-bold text-navy-800" aria-hidden>
               {initialsOf(advisor.name)}

@@ -44,7 +44,7 @@ function FieldShell({
 
 const controlBox = (error?: string, disabled?: boolean, forceFocus?: boolean) =>
   cn(
-    'flex h-12 w-full items-center gap-2 rounded-xl border bg-surface px-4 transition-[border-color,box-shadow] duration-150',
+    'flex h-12 w-full items-center gap-2 rounded-xl border bg-surface px-4 transition-[border-color,box-shadow] duration-200',
     error
       ? 'border-error-600 focus-within:ring-4 focus-within:ring-error-600/12'
       : 'border-line-strong hover:border-navy-300 focus-within:border-navy-800 focus-within:ring-4 focus-within:ring-navy-900/10',
@@ -96,7 +96,7 @@ export function SearchField({ placeholder = 'Search', tone = 'light', className,
   return (
     <div
       className={cn(
-        'flex h-12 w-full items-center gap-2 rounded-xl border px-4 transition-[border-color,box-shadow] duration-150 focus-within:border-navy-800 focus-within:ring-4 focus-within:ring-navy-900/10',
+        'flex h-12 w-full items-center gap-2 rounded-xl border px-4 transition-[border-color,box-shadow] duration-200 focus-within:border-navy-800 focus-within:ring-4 focus-within:ring-navy-900/10',
         tone === 'light' ? 'border-line-strong bg-surface' : 'border-transparent bg-sunken',
         className,
       )}
@@ -307,7 +307,7 @@ export function SegmentedControl<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={cn(
-              'inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-4 text-body-sm font-semibold transition-colors duration-150',
+              'inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-4 text-body-sm font-semibold transition-colors duration-200',
               active ? 'bg-surface text-navy-900 shadow-e1' : 'text-ink-muted hover:text-ink',
             )}
           >

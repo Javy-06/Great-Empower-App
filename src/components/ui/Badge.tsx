@@ -101,7 +101,7 @@ export function Chip({
       aria-pressed={selected}
       onClick={onClick}
       className={cn(
-        'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-body-sm font-medium transition-colors duration-150',
+        'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-body-sm font-medium transition-colors duration-200',
         tone === 'light' &&
           (selected
             ? 'border-navy-900 bg-navy-900 text-white'

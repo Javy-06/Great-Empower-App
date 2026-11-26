@@ -44,9 +44,34 @@ const go = (hash: string) => {
 const scrollToId = (id: string) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
+/** Existing photos that suit a lesson's topic. Lessons without one use their bespoke glyph. */
 const lessonImages: Record<string, string> = {
+  "money-talks": "/images/pexels/young-friends-cafe-community.webp",
+  "medical-cards": "/images/pexels/everyday-health-wellbeing.webp",
+  "emergency-fund": "/images/pexels/young-professional-savings-planning.webp",
   "hospital-bills": "/images/pexels/everyday-health-wellbeing.webp",
+  "income-replacement": "/images/pexels/family-protection-conversation.webp",
+  "first-salary": "/images/pexels/young-professional-savings-planning.webp",
 };
+
+/**
+ * Continue-learning thumbnail: the lesson's photo with its glyph as a small badge, or — when the
+ * lesson has no photo or it fails to load — the glyph tile on its own. Never an empty box.
+ */
+function LessonCover({ id, category }: { id: string; category: string }) {
+  const [failed, setFailed] = useState(false);
+  const src = lessonImages[id];
+  if (!src || failed) {
+    return <LessonGlyph id={id} category={category} className="size-20 shrink-0 rounded-2xl ring-1 ring-white/10 sm:size-24" />;
+  }
+  return (
+    <span className="relative block size-20 shrink-0 overflow-hidden rounded-2xl bg-navy-800 ring-1 ring-white/10 sm:size-24" aria-hidden>
+      <img src={src} alt="" onError={() => setFailed(true)} className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" />
+      <span className="absolute inset-0 bg-gradient-to-t from-navy-950/55 via-navy-950/5 to-transparent" />
+      <LessonGlyph id={id} category={category} className="absolute bottom-1.5 left-1.5 size-8 rounded-lg shadow-e2 ring-2 ring-white/80" />
+    </span>
+  );
+}
 
 /* ========================================================================================== */
 /* LEARN HOME                                                                                  */
@@ -110,9 +135,9 @@ export function LearnHome() {
           <button
             type="button"
             onClick={() => go(`app/learn/lesson/${next.id}`)}
-            className="group flex w-full items-center gap-4 rounded-[1.25rem] bg-navy-950 p-3.5 text-left text-white shadow-e2"
+            className="group flex w-full items-center gap-4 rounded-[1.25rem] bg-navy-950 p-3.5 text-left text-white shadow-e2 transition-shadow hover:shadow-e3"
           >
-            <img src={lessonImages[next.id]} alt="" className="size-20 shrink-0 rounded-xl object-cover" />
+            <LessonCover id={next.id} category={next.category} />
             <span className="min-w-0 flex-1">
               <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-200">Continue learning</span>
               <span className="mt-0.5 block font-brand text-[1.375rem] font-semibold leading-tight">{next.title}</span>

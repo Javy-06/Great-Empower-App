@@ -96,7 +96,7 @@ export function buttonClasses(variant: ButtonVariant, size: ButtonSize, forced?:
   const v = variants[variant]
   const isDark = variant === 'inverse' || variant === 'inverse-outline'
   return cn(
-    'relative inline-flex select-none items-center justify-center whitespace-nowrap rounded-xl transition-colors duration-150 ease-out disabled:cursor-not-allowed',
+    'relative inline-flex select-none items-center justify-center whitespace-nowrap rounded-xl transition-colors duration-200 ease-out disabled:cursor-not-allowed',
     sizes[size],
     v.common,
     forced === 'hover' ? v.hover : forced === 'pressed' ? v.pressed : cn(v.idle, v.interactive),

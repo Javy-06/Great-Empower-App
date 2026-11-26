@@ -1,6 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, Cloud, HardDrive, Info, Loader2, LogOut, RotateCcw, Sparkles, UserPlus, Users, X } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  ChartColumnIncreasing,
+  ChevronRight,
+  CirclePlay,
+  Cloud,
+  Compass,
+  Gift,
+  HardDrive,
+  Info,
+  Loader2,
+  LogIn,
+  LogOut,
+  RotateCcw,
+  SlidersHorizontal,
+  UserPlus,
+  Users,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/cn";
 import { cloudConfigured } from "@/account/config";
@@ -26,10 +46,69 @@ const DEMO_NOTE =
 
 type LastAction = { kind: "demo" } | { kind: "new"; name?: string } | { kind: "open"; id: string };
 
-/** Shown whenever no account is active: choose Demo, create a new account, or reopen one. */
+/** Shared shell for the Welcome screen's choices: icon tile, title, one-line subtitle, chevron. */
+function EntryRow({
+  icon: Icon,
+  tile,
+  title,
+  subtitle,
+  subtitleClass = "text-ink-secondary",
+  trailing,
+  open,
+}: {
+  icon: LucideIcon;
+  tile: string;
+  title: string;
+  subtitle: string;
+  subtitleClass?: string;
+  trailing?: ReactNode;
+  open?: boolean;
+}) {
+  return (
+    <>
+      <span className={cn("inline-flex size-12 shrink-0 items-center justify-center rounded-2xl sm:size-14", tile)}>
+        <Icon size={24} strokeWidth={1.9} aria-hidden />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-subheading text-navy-950">{title}</span>
+        <span className={cn("block text-body-sm", subtitleClass)}>{subtitle}</span>
+      </span>
+      {trailing ?? (
+        <ChevronRight
+          size={22}
+          className={cn(
+            "shrink-0 text-navy-900 transition-transform duration-300",
+            open ? "rotate-90" : "group-hover:translate-x-0.5",
+          )}
+          aria-hidden
+        />
+      )}
+    </>
+  );
+}
+
+/** Frosted card surface used by every Welcome choice. */
+const entryCard =
+  "rounded-[1.25rem] bg-white/90 shadow-e2 ring-1 ring-navy-900/[0.07] backdrop-blur-xl";
+/** Pressable row inside a card. */
+const entryButton =
+  "group flex min-h-[4.75rem] w-full items-center gap-4 rounded-[1.25rem] p-3.5 text-left transition-[background-color,transform] duration-200 hover:bg-navy-50/60 active:scale-[0.99] disabled:opacity-60 sm:p-4";
+
+const features: Array<{ label: string; icon: LucideIcon; tone: string }> = [
+  { label: "Learn", icon: BookOpen, tone: "bg-info-50 text-info-600 ring-info-200/60" },
+  { label: "Simulate", icon: SlidersHorizontal, tone: "bg-teal-50 text-teal-700 ring-teal-200/60" },
+  { label: "Analyze", icon: ChartColumnIncreasing, tone: "bg-gold-50 text-gold-700 ring-gold-300/40" },
+  { label: "Guide", icon: Compass, tone: "bg-navy-50 text-navy-800 ring-navy-200/60" },
+  { label: "Rewards", icon: Gift, tone: "bg-crimson-50 text-crimson-600 ring-crimson-200/60" },
+];
+
+const rise = (ms: number) => ({ "--ge-delay": `${ms}ms` }) as CSSProperties;
+
+/** Shown whenever no account is active: log in to an account in this browser, sign up, or try the demo. */
 export function WelcomeScreen() {
   const session = useSession();
   const { accounts } = useRegistry();
+  const [loginOpen, setLoginOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [last, setLast] = useState<LastAction | null>(null);
@@ -45,135 +124,201 @@ export function WelcomeScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <div className="ge-pagehero relative isolate overflow-hidden pb-24 pt-[calc(env(safe-area-inset-top)+1.25rem)] text-white">
-        <div className="ge-pagehero-fade pointer-events-none absolute inset-x-0 bottom-0 -z-[5]" aria-hidden />
-        <div className="mx-auto max-w-[30rem] px-5">
-          <Logo tone="white" className="w-[132px]" />
-          <p className="mt-8 text-overline uppercase tracking-[0.22em] text-teal-200">Demo accounts</p>
-          <h1 className="mt-2 font-brand text-[2.5rem] font-semibold leading-[1.02]">Welcome to Great Empower.</h1>
-          <p className="mt-2 text-body-sm text-white/80">Empowering You to Protect Your Tomorrow.</p>
-        </div>
-      </div>
+    <div className="min-h-screen overflow-x-hidden bg-canvas">
+      {/* Hero: photograph under a navy veil that clears towards the peak, then dissolves into the canvas. */}
+      <header className="relative isolate overflow-hidden pb-28 pt-[calc(env(safe-area-inset-top)+1.5rem)] text-white sm:pb-32">
+        <picture className="absolute inset-0 -z-20" aria-hidden>
+          <source media="(min-width: 768px)" srcSet="/images/welcome/welcome-peak-1600.webp" />
+          <img
+            src="/images/welcome/welcome-peak-900.webp"
+            alt=""
+            fetchPriority="high"
+            className="h-full w-full object-cover object-[30%_62%] md:object-[50%_60%]"
+          />
+        </picture>
+        <div className="ge-welcome-veil absolute inset-0 -z-10" aria-hidden />
+        {/* Reaches the hero's bottom edge so the canvas fade below dissolves it — no seam. */}
+        <svg className="absolute inset-x-0 bottom-0 -z-10 h-40 w-full sm:h-48" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden>
+          <defs>
+            <linearGradient id="ge-welcome-swoosh" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stopColor="#c8102e" stopOpacity="0" />
+              <stop offset="0.45" stopColor="#c8102e" stopOpacity="0.35" />
+              <stop offset="1" stopColor="#c8102e" stopOpacity="0.95" />
+            </linearGradient>
+          </defs>
+          <path d="M0 112 C 120 104 250 92 400 30 L400 120 L0 120 Z" fill="url(#ge-welcome-swoosh)" />
+        </svg>
+        <div className="ge-pagehero-fade pointer-events-none absolute inset-x-0 bottom-0 -z-10" aria-hidden />
 
-      <main className="relative mx-auto -mt-14 grid max-w-[30rem] gap-3 px-5 pb-10" aria-busy={busy}>
+        <div className="mx-auto max-w-[34rem] px-5">
+          <Logo tone="white" className="ge-rise w-[164px] sm:w-[188px]" />
+          <h1 className="ge-rise mt-10 font-brand text-[2.75rem] font-bold leading-[1] tracking-[-0.01em] sm:mt-14 sm:text-[3.5rem]" style={rise(80)}>
+            Welcome to
+            <br />
+            Great Empower.
+          </h1>
+          <span className="ge-rise mt-5 block h-1 w-14 rounded-full bg-crimson-600" style={rise(140)} aria-hidden />
+          <p className="ge-rise mt-4 max-w-[22rem] text-body-lg text-white/90" style={rise(160)}>
+            Learn, plan and protect your tomorrow.
+          </p>
+        </div>
+      </header>
+
+      <main className="relative mx-auto -mt-16 grid max-w-[34rem] gap-3 px-5 pb-[calc(2.5rem+env(safe-area-inset-bottom))]" aria-busy={busy}>
         {session.kind === "loading" && (
-          <p role="status" className="flex items-center gap-2 rounded-2xl bg-surface p-4 text-body-sm font-semibold text-navy-950 shadow-e2 ring-1 ring-ink/[0.06]">
+          <p role="status" className={cn(entryCard, "ge-reveal flex items-center gap-2 p-4 text-body-sm font-semibold text-navy-950")}>
             <Loader2 size={18} className="animate-spin text-teal-700" aria-hidden /> {session.message}
           </p>
         )}
 
         {session.kind === "error" && (
-          <div role="alert" className="rounded-2xl bg-error-50 p-4 text-body-sm text-error-700 ring-1 ring-error-700/15">
+          <div role="alert" className="ge-reveal rounded-[1.25rem] bg-error-50 p-4 text-body-sm text-error-700 ring-1 ring-error-700/15">
             <p className="font-semibold">{session.message}</p>
             <p className="mt-1">{session.canUseDevice ? "Nothing was saved to the cloud." : "Your saved data hasn't changed."}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {last && (
-                <button type="button" onClick={() => run(last)} className="inline-flex h-10 items-center rounded-full bg-error-700 px-4 text-caption font-bold text-white">
+                <button type="button" onClick={() => run(last)} className="inline-flex h-11 items-center rounded-full bg-error-700 px-4 text-caption font-bold text-white">
                   Try again
                 </button>
               )}
               {last && last.kind !== "open" && session.canUseDevice && (
-                <button type="button" onClick={() => run(last, "local")} className="inline-flex h-10 items-center rounded-full bg-white px-4 text-caption font-bold text-error-700 ring-1 ring-error-700/30">
+                <button type="button" onClick={() => run(last, "local")} className="inline-flex h-11 items-center rounded-full bg-white px-4 text-caption font-bold text-error-700 ring-1 ring-error-700/30">
                   Continue in this browser only
                 </button>
               )}
-              <button type="button" onClick={dismissError} className="inline-flex h-10 items-center rounded-full px-3 text-caption font-semibold underline">
+              <button type="button" onClick={dismissError} className="inline-flex h-11 items-center rounded-full px-3 text-caption font-semibold underline">
                 Dismiss
               </button>
             </div>
           </div>
         )}
 
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => run({ kind: "demo" })}
-          className="group flex w-full items-center gap-4 rounded-2xl bg-surface p-4 text-left shadow-e2 ring-1 ring-ink/[0.06] transition hover:ring-navy-900/30 disabled:opacity-60"
-        >
-          <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-crimson-50 text-crimson-600">
-            <Sparkles size={22} aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-body font-semibold text-navy-950">{demoExists ? "Continue the Demo Account" : "Demo Account"}</span>
-            <span className="block text-caption text-ink-secondary">
-              {demoExists
-                ? "Reopen the demo with its saved progress in this browser."
-                : "Sample progress and 2,450 points to explore every feature. The Welcome Offer is still available."}
-            </span>
-          </span>
-          <ArrowRight size={20} className="shrink-0 text-navy-900 transition-transform group-hover:translate-x-1" aria-hidden />
-        </button>
+        {/* Log in = reopen an account saved in this browser (there are no passwords). */}
+        <div className={cn(entryCard, "ge-rise")} style={rise(180)}>
+          <button type="button" disabled={busy} aria-expanded={loginOpen} aria-controls="ge-login-panel" onClick={() => setLoginOpen((v) => !v)} className={entryButton}>
+            <EntryRow icon={LogIn} tile="bg-crimson-50 text-crimson-600" title="Log In" subtitle="Continue your account" open={loginOpen} />
+          </button>
+          {loginOpen && (
+            <section id="ge-login-panel" aria-labelledby="device-accounts" className="ge-reveal border-t border-ink/[0.07] p-3.5 sm:p-4">
+              <h2 id="device-accounts" className="flex items-center gap-2 text-caption font-semibold uppercase tracking-[0.12em] text-ink-muted">
+                <Users size={14} aria-hidden /> Accounts in this browser
+              </h2>
+              {sorted.length > 0 ? (
+                <ul className="mt-2 grid gap-2">
+                  {sorted.map((a) => (
+                    <li key={a.id}>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => run({ kind: "open", id: a.id })}
+                        className="flex min-h-14 w-full items-center gap-3 rounded-2xl bg-surface px-3 py-2.5 text-left ring-1 ring-ink/[0.07] transition-shadow hover:ring-navy-900/30 disabled:opacity-60"
+                      >
+                        <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-full text-body-sm font-bold", a.type === "demo" ? "bg-crimson-50 text-crimson-700" : "bg-navy-100 text-navy-800")} aria-hidden>
+                          {initials(a)}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-body-sm font-semibold text-navy-950">{accountLabel(a, accounts)}</span>
+                          <span className="flex items-center gap-1 text-caption text-ink-muted">
+                            {a.mode === "cloud" ? <Cloud size={12} aria-hidden /> : <HardDrive size={12} aria-hidden />} {modeText(a)}
+                          </span>
+                        </span>
+                        <ArrowRight size={18} className="shrink-0 text-ink-muted" aria-hidden />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2 text-body-sm text-ink-secondary">
+                  No accounts in this browser yet. Sign up below or open the Demo Account. Accounts are kept on this device only.
+                </p>
+              )}
+            </section>
+          )}
+        </div>
 
-        <div className="rounded-2xl bg-surface shadow-e2 ring-1 ring-ink/[0.06]">
-          <button
-            type="button"
-            disabled={busy}
-            aria-expanded={creating}
-            onClick={() => setCreating((v) => !v)}
-            className="group flex w-full items-center gap-4 p-4 text-left disabled:opacity-60"
-          >
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
-              <UserPlus size={22} aria-hidden />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-body font-semibold text-navy-950">Create New Account</span>
-              <span className="block text-caption text-ink-secondary">Start fresh: 0 points and no activity. The Welcome Offer is available.</span>
-            </span>
-            <ArrowRight size={20} className={cn("shrink-0 text-navy-900 transition-transform", creating ? "rotate-90" : "group-hover:translate-x-1")} aria-hidden />
+        <div className={cn(entryCard, "ge-rise")} style={rise(220)}>
+          <button type="button" disabled={busy} aria-expanded={creating} aria-controls="ge-signup-panel" onClick={() => setCreating((v) => !v)} className={entryButton}>
+            <EntryRow icon={UserPlus} tile="bg-teal-50 text-teal-700" title="Sign Up" subtitle="Create a new account" open={creating} />
           </button>
           {creating && (
             <form
-              className="grid gap-2 border-t border-ink/[0.07] p-4"
+              id="ge-signup-panel"
+              className="ge-reveal grid gap-2 border-t border-ink/[0.07] p-3.5 sm:p-4"
               onSubmit={(event) => {
                 event.preventDefault();
                 run({ kind: "new", name: name.trim() || undefined });
               }}
             >
-              <label htmlFor="ge-nickname" className="text-body-sm font-semibold text-navy-950">
+              <p className="text-caption text-ink-secondary">Start fresh: 0 points and no activity. The Welcome Offer is available.</p>
+              <label htmlFor="ge-nickname" className="mt-1 text-body-sm font-semibold text-navy-950">
                 Nickname <span className="font-normal text-ink-muted">(optional)</span>
               </label>
               <input id="ge-nickname" className="ge-input" maxLength={40} autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} placeholder="Shown in greetings only" />
               <p className="text-caption text-ink-muted">Not verified and not your real identity. Leave it blank if you like.</p>
-              <button type="submit" disabled={busy} className="mt-1 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-crimson-600 px-5 text-body-sm font-bold text-white hover:bg-crimson-700 disabled:opacity-60">
+              <button type="submit" disabled={busy} className="mt-1 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-crimson-600 px-5 text-body-sm font-bold text-white transition-colors hover:bg-crimson-700 disabled:opacity-60">
                 Create account <ArrowRight size={18} aria-hidden />
               </button>
             </form>
           )}
         </div>
 
-        {sorted.length > 0 && (
-          <section aria-labelledby="device-accounts" className="mt-3">
-            <h2 id="device-accounts" className="flex items-center gap-2 text-subheading text-navy-950">
-              <Users size={18} aria-hidden /> Accounts in this browser
-            </h2>
-            <ul className="mt-2 grid gap-2">
-              {sorted.map((a) => (
-                <li key={a.id}>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => run({ kind: "open", id: a.id })}
-                    className="flex min-h-14 w-full items-center gap-3 rounded-2xl bg-surface px-3 py-2.5 text-left ring-1 ring-ink/[0.07] hover:ring-navy-900/30 disabled:opacity-60"
-                  >
-                    <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-full text-body-sm font-bold", a.type === "demo" ? "bg-crimson-50 text-crimson-700" : "bg-navy-100 text-navy-800")} aria-hidden>
-                      {initials(a)}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-body-sm font-semibold text-navy-950">{accountLabel(a, accounts)}</span>
-                      <span className="flex items-center gap-1 text-caption text-ink-muted">
-                        {a.mode === "cloud" ? <Cloud size={12} aria-hidden /> : <HardDrive size={12} aria-hidden />} {modeText(a)}
-                      </span>
-                    </span>
-                    <ArrowRight size={18} className="shrink-0 text-ink-muted" aria-hidden />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        <div className="ge-rise my-1 flex items-center gap-4 text-body-sm text-ink-muted" style={rise(240)} aria-hidden>
+          <span className="h-px flex-1 bg-ink/10" /> or <span className="h-px flex-1 bg-ink/10" />
+        </div>
 
-        <p className="mt-3 flex gap-2 rounded-2xl bg-navy-50 p-4 text-caption text-navy-900">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => run({ kind: "demo" })}
+          className={cn(entryCard, entryButton, "ge-rise bg-gradient-to-r from-crimson-50 via-white/90 to-white/90 ring-crimson-200/70 hover:bg-crimson-50")}
+          style={rise(260)}
+        >
+          <EntryRow
+            icon={Gift}
+            tile="bg-crimson-100 text-crimson-600"
+            title={demoExists ? "Continue the Demo Account" : "Demo Account"}
+            subtitle={demoExists ? "Reopen the demo with its saved progress" : "Start with 2,450 points"}
+            subtitleClass="font-semibold text-crimson-600"
+          />
+        </button>
+
+        {/* App Demo: a UI placeholder only. The guided tour is a separate, future feature. */}
+        <div
+          role="group"
+          aria-label="App Demo: watch a quick tour of key features. Coming soon."
+          className={cn(entryCard, "ge-rise flex min-h-[4.75rem] items-center gap-4 p-3.5 sm:p-4")}
+          style={rise(280)}
+        >
+          <EntryRow
+            icon={CirclePlay}
+            tile="bg-teal-50 text-teal-700"
+            title="App Demo"
+            subtitle="Watch a quick tour of key features"
+            trailing={
+              <span className="shrink-0 rounded-full bg-sunken px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted ring-1 ring-ink/[0.06]">
+                Coming soon
+              </span>
+            }
+          />
+        </div>
+
+        <section aria-labelledby="ge-explore" className="ge-rise mt-5" style={rise(300)}>
+          <h2 id="ge-explore" className="flex items-center gap-4 text-center text-subheading text-navy-950">
+            <span className="h-px flex-1 bg-ink/10" aria-hidden />
+            Explore What You Can Do
+            <span className="h-px flex-1 bg-ink/10" aria-hidden />
+          </h2>
+          <ul className="mt-4 grid grid-cols-5 gap-2 sm:gap-3">
+            {features.map(({ label, icon: Icon, tone }) => (
+              <li key={label} className={cn("flex aspect-[4/5] flex-col items-center justify-center gap-2 rounded-2xl ring-1 sm:aspect-square", tone)}>
+                <Icon size={24} strokeWidth={1.9} aria-hidden />
+                <span className="text-[11px] font-semibold text-navy-950 sm:text-caption">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <p className="mt-4 flex gap-2 rounded-2xl bg-navy-50 p-4 text-caption text-navy-900">
           <Info size={16} className="mt-0.5 shrink-0" aria-hidden />
           <span>
             {DEMO_NOTE}
@@ -238,14 +383,14 @@ function AccountSheet({ account, label, onClose }: { account: DeviceAccount; lab
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-navy-950/50 p-3 sm:items-center" onClick={onClose}>
+    <div className="ge-scrim fixed inset-0 z-[70] flex items-end justify-center bg-navy-950/50 p-3 sm:items-center" onClick={onClose}>
       <div
         ref={ref}
         role="dialog"
         aria-modal="true"
         aria-labelledby="account-sheet-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[26rem] rounded-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] text-ink shadow-e3"
+        className="ge-sheet w-full max-w-[26rem] rounded-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] text-ink shadow-e3"
       >
         <div className="flex items-start gap-3">
           <span className={cn("inline-flex size-12 shrink-0 items-center justify-center rounded-full text-body font-bold", account.type === "demo" ? "bg-crimson-50 text-crimson-700" : "bg-navy-100 text-navy-800")} aria-hidden>

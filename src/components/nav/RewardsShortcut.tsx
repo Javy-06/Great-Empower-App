@@ -9,7 +9,7 @@ export function RewardsShortcut({ points, compact, onDark, onClick }: { points: 
       onClick={onClick}
       aria-label={`Rewards Hub, ${points.toLocaleString('en-MY')} points`}
       className={cn(
-        'inline-flex h-12 shrink-0 items-center gap-2 rounded-full pl-1.5 pr-4 transition-colors duration-150',
+        'inline-flex h-12 shrink-0 items-center gap-2 rounded-full pl-1.5 pr-4 transition-colors duration-200',
         onDark ? 'bg-white/10 text-white hover:bg-white/15' : 'border border-line bg-surface text-navy-900 hover:border-navy-200 hover:bg-navy-50',
       )}
     >

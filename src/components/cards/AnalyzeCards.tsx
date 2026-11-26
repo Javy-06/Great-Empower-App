@@ -127,7 +127,7 @@ export function InsightSummaryCard() {
         Sample data. A common guideline is 50/30/20 — your savings share is <span className="font-semibold text-ink">6 points below</span> that reference.
       </p>
       {showDetails && (
-        <p className="mt-3 rounded-xl bg-info-50 p-3 text-body-sm text-ink-secondary" role="status">
+        <p className="ge-reveal mt-3 rounded-xl bg-info-50 p-3 text-body-sm text-ink-secondary" role="status">
           This chart uses illustrative sample figures. The categories and percentages are not based on a user account or financial assessment.
         </p>
       )}

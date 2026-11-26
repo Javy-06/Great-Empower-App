@@ -233,7 +233,7 @@ export function LifeTrackEntryCard() {
             </p>
           )}
           {showHow && (
-            <p className="mt-3 text-caption text-ink-secondary">
+            <p className="ge-reveal mt-3 text-caption text-ink-secondary">
               Roll the dice, move across the life journey and consider how each money or health event changes your resources.
             </p>
           )}

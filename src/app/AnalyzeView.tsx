@@ -163,7 +163,7 @@ function SampleAnalysis() {
               />
             </button>
             {showAbout && (
-              <p className="mt-2 max-w-2xl text-body-sm text-ink-secondary" role="status">
+              <p className="ge-reveal mt-2 max-w-2xl text-body-sm text-ink-secondary" role="status">
                 Both views use illustrative sample figures. They are not based on a user account, a
                 financial assessment or any insurer's product, and they are not a personal insurance
                 assessment.

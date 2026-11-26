@@ -48,7 +48,7 @@ export function Sidebar({
                   onClick={() => onChange?.(key)}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-label transition-colors duration-150",
+                    "relative flex h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-label transition-colors duration-200",
                     isActive
                       ? "bg-navy-50 text-navy-900"
                       : "font-medium text-ink-secondary hover:bg-sunken hover:text-ink",

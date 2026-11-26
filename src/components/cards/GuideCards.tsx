@@ -96,7 +96,7 @@ export function FaqItem({ q, a, defaultOpen }: { q: string; a: string; defaultOp
           aria-hidden
         />
       </button>
-      {open && <p className="pb-4 pr-8 text-body-sm text-ink-secondary">{a}</p>}
+      {open && <p className="ge-reveal pb-4 pr-8 text-body-sm text-ink-secondary">{a}</p>}
     </div>
   );
 }

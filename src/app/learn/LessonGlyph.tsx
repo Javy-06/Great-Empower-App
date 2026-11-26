@@ -88,7 +88,7 @@ function Motif({ id, ink, soft }: { id: string; ink: string; soft: string }) {
 export function LessonGlyph({ id, category, className }: { id: string; category: string; className?: string }) {
   const tone = categoryTile[category] ?? categoryTile["life-planning"];
   return (
-    <span className={cn("inline-flex items-center justify-center rounded-xl bg-gradient-to-br", tone.bg, className)} aria-hidden>
+    <span className={cn("inline-flex items-center justify-center bg-gradient-to-br", !/\brounded-/.test(className ?? "") && "rounded-xl", tone.bg, className)} aria-hidden>
       <svg viewBox="0 0 56 56" className="h-[72%] w-[72%]">
         <Motif id={id} ink={tone.ink} soft={tone.soft} />
       </svg>
