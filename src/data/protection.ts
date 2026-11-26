@@ -2,12 +2,14 @@
  * Protection education content: five insurance categories with two names each (the official
  * category and the financial protection purpose), plus researched products.
  *
- * Accuracy rules (see report/Insurance_Phase_Content_Accuracy_Report.md):
+ * Accuracy rules (see report/insurance-phase/ and report/preview-validation/):
  *  - General statements are phrased generally ("may", "usually", "check your policy"); every
  *    Malaysia-specific fact carries a source.
- *  - Product facts come ONLY from the audited Product Master (design-system worktree,
- *    docs/insurance-engine/product-master, reviewed 22 Nov 2026) and only for fields it marks
- *    VERIFIED_OFFICIAL. Everything else is listed as "needs official confirmation".
+ *  - Products are limited to the 8 records the audited Product Master (22 Nov 2026) marks
+ *    VERIFIED_OFFICIAL, plus one issuer notice. Every displayed fact was re-checked against the
+ *    current official Great Eastern page or PDS on 27 Nov 2026
+ *    (report/preview-validation/Insurance_Content_Verification_Report.md). Anything not
+ *    confirmed there is listed as "needs official confirmation".
  *  - No prices, premiums or quotes are shown except a minimum premium printed on an official page,
  *    labelled as not a quote. No ranking and no "for you" product suggestions.
  */
@@ -41,7 +43,8 @@ export interface ProtectionCategory {
 
 const S = {
   bnmCopay: { label: "BNM — medical and health insurance/takaful co-payment requirements", url: "https://www.bnm.gov.my/-/mhit-req-en" },
-  bnmBase: { label: "BNM — Base MHIT plan (MediAsas)", url: "https://www.bnm.gov.my/mhit/baseplan" },
+  bnmBase: { label: "BNM — Medical and health insurance/takaful (MHIT) and MediAsas", url: "https://www.bnm.gov.my/mhit" },
+  mediasasFaq: { label: "BNM — MediAsas FAQs, Version 1: Pilot Programme (29 July 2026, PDF)", url: "https://www.bnm.gov.my/documents/20124/22555060/MediAsas_Pilot_FAQs_Customers.pdf" },
   bnmDirect: { label: "BNM — direct distribution channels for pure protection products", url: "https://www.bnm.gov.my/-/direct-distribution-channels-for-pure-protection-products-1" },
   pidm: { label: "PIDM — Takaful and Insurance Benefits Protection System (TIPS)", url: "https://www.pidm.gov.my/general/how-we-protect-you/takaful-and-insurance-benefits-protection-system" },
   glossary: { label: "InsuranceInfo (BNM) — insurance glossary", url: "https://insuranceinfo.com.my/learn-the-basics/insurance-glossary/" },
@@ -84,12 +87,13 @@ export const protectionCategories: ProtectionCategory[] = [
     ],
     notEqual: [{ a: "Medical insurance", b: "All medical expenses covered", why: "Only eligible costs within the plan's limits are paid, after any amount you share." }],
     malaysia: [
-      { text: "Since 1 September 2024, insurers and takaful operators must offer a medical plan option with co-payment. A plan without co-payment can still exist, so check yours.", source: S.bnmCopay },
-      { text: "MediAsas, BNM's standardised base medical plan, is scheduled for industry-wide launch in January 2027.", source: S.bnmBase },
+      { text: "Since 1 September 2024, insurers and takaful operators must offer an option to buy medical cover with co-payment. Plans without co-payment can still be sold, so check which one you have.", source: S.bnmCopay },
+      { text: "Where co-payment applies, BNM says it does not apply to emergency treatment (including accidents), outpatient follow-up for critical illnesses such as cancer or kidney dialysis, or treatment at a government healthcare facility.", source: S.bnmCopay },
+      { text: "MediAsas, BNM's standardised base medical plan, is being piloted. Its national launch is scheduled for January 2027, when final features and pricing are to be published.", source: S.bnmBase },
     ],
     infographicId: "medical-insurance-malaysia",
     scenario: { label: "Open the medical bill simulator", href: "app/simulate/needs/tool-bill", text: "See how a deductible, co-payment and an annual limit split a hospital bill." },
-    sources: [S.bnmCopay, S.bnmBase, S.glossary, S.star],
+    sources: [S.bnmCopay, S.bnmBase, S.mediasasFaq, S.glossary, S.star],
   },
   {
     slug: "critical-illness",
@@ -130,7 +134,7 @@ export const protectionCategories: ProtectionCategory[] = [
     purpose: "Family Financial Protection",
     short: "A lump sum for the people who depend on you.",
     summary:
-      "Pays a lump sum to your nominee or estate if you die during the cover period. Many plans also pay on total and permanent disability (TPD). Family takaful is the takaful equivalent.",
+      "Pays a lump sum to your nominee or estate if you die during the cover period, subject to the policy's terms and exclusions. Many plans also pay on total and permanent disability (TPD). Family takaful is the takaful equivalent.",
     example: {
       title: "Example situation (illustrative)",
       text:
@@ -197,7 +201,7 @@ export const protectionCategories: ProtectionCategory[] = [
     purpose: "Accident Protection",
     short: "Benefits for injury or death caused by an accident.",
     summary:
-      "Pays benefits for death or disablement caused solely by an accident, and may reimburse accident-related medical costs. Usually a one-year policy you renew.",
+      "Pays benefits for death or disablement caused solely by an accident, as defined in the policy, and may reimburse accident-related medical costs. Usually a one-year policy you renew.",
     example: {
       title: "Example situation (illustrative)",
       text:
@@ -252,9 +256,8 @@ export interface ResearchedProduct {
 const GELM = "Great Eastern Life Assurance (Malaysia) Berhad";
 const GEGM = "Great Eastern General Insurance (Malaysia) Berhad";
 const GETB = "Great Eastern Takaful Berhad";
-const STANDARD_GAPS = ["Current PDS and policy wording", "Eligibility and entry ages", "Waiting periods and exclusions", "Your premium or contribution"];
 
-export const PRODUCT_RESEARCH_DATE = "22 November 2026";
+export const PRODUCT_RESEARCH_DATE = "27 November 2026";
 
 export const researchedProducts: ResearchedProduct[] = [
   {
@@ -264,10 +267,10 @@ export const researchedProducts: ResearchedProduct[] = [
     basis: "Conventional insurance",
     categories: ["medical"],
     type: "Issuer notice about a product portfolio, not a product",
-    status: "New applications for GEGM's individual medical products stopped from 1 November 2026. Existing policies continue to be serviced, claimed and renewed under their terms.",
-    howToApply: "No new applications for this portfolio.",
+    status: "Great Eastern General stopped accepting new applications for its individual medical products from 1 November 2026. Existing policies continue to be renewed, claimed and serviced under their terms.",
+    howToApply: "No new applications for this portfolio. Great Eastern Life and Great Eastern Takaful products are not affected by this notice.",
     verifiedFacts: [],
-    needsConfirmation: ["Which individual products the notice covers"],
+    needsConfirmation: ["Which individual products the notice covers (none are named)"],
     evidence: "ISSUER_NOTICE",
     sources: [{ label: "Great Eastern — important update on individual medical insurance products", url: "https://www.greateasternlife.com/my/en/customer-services/announcements/important-update-on-individual-medical-insurance-products.html" }],
   },
@@ -278,15 +281,15 @@ export const researchedProducts: ResearchedProduct[] = [
     basis: "Conventional insurance",
     categories: ["medical"],
     type: "Medical rider attached to selected regular-premium investment-linked plans (not sold on its own)",
-    status: "Shown as active on the official product page when checked.",
-    howToApply: "Exact channel and acceptance terms need the current PDS and underwriting confirmation.",
+    status: "Shown on the official product page (information correct as on 1 October 2026).",
+    howToApply: "The official page offers a call-back from a Life Planning Advisor; it doesn't describe an online application.",
     verifiedFacts: [
-      { label: "Annual limit (official product page)", value: "RM3,000,000" },
-      { label: "Lifetime limit (official product page)", value: "No overall lifetime limit stated" },
-      { label: "Deductible (official product page)", value: "Starts from RM500; the option and basis depend on the current PDS" },
+      { label: "Annual limit (official page)", value: "RM3,000,000" },
+      { label: "Lifetime limit (official page)", value: "No overall lifetime limit" },
+      { label: "Deductible (official page)", value: "Options starting from RM500 per policy year" },
+      { label: "Entry age (official page)", value: "14 days to 70 years next birthday (59 for one deductible option)" },
     ],
-    needsConfirmation: ["Plan variants and sub-limits", ...STANDARD_GAPS, "Which base plans it can attach to"],
-    note: "The product page states its information was correct on 11 May 2026.",
+    needsConfirmation: ["Current PDS and policy wording", "Waiting periods and exclusions", "Which base plans it can attach to", "Your cost of insurance"],
     evidence: "VERIFIED_OFFICIAL",
     sources: [{ label: "Great Eastern Life — SMART Health Protector", url: "https://www.greateasternlife.com/my/en/personal-insurance/our-products/health-insurance/smart-health-protector.html" }],
   },
@@ -296,19 +299,20 @@ export const researchedProducts: ResearchedProduct[] = [
     issuer: GELM,
     basis: "Conventional insurance",
     categories: ["medical"],
-    type: "Medical rider, optional under an eligible life policy",
-    status: "Listed on the official site; the current version and new-business status need confirmation.",
-    howToApply: "Confirm with the current official application and PDS.",
+    type: "Medical rider attached to selected regular-premium investment-linked plans",
+    status: "Shown on the official product page (information correct as on 11 May 2026).",
+    howToApply: "The official page offers a call-back from a Life Planning Advisor; it doesn't describe an online application.",
     verifiedFacts: [
-      { label: "PDS version checked", value: "V00/0526" },
-      { label: "Annual limit, Plan 200 (PDS p. 1)", value: "RM3,000,000" },
-      { label: "Lifetime limit (PDS p. 1)", value: "No limit stated" },
-      { label: "Room and board (PDS p. 1)", value: "RM200 per day" },
-      { label: "Deductible options (PDS p. 2)", value: "RM500 or RM2,500 per policy year" },
-      { label: "Renewal (PDS p. 2)", value: "Guaranteed renewal; the cost of insurance is not guaranteed" },
+      { label: "PDS version checked", value: "V00/0526 (Plan 200)" },
+      { label: "Annual limit (PDS and official page)", value: "RM3,000,000" },
+      { label: "Lifetime limit (PDS)", value: "No limit" },
+      { label: "Room and board (PDS)", value: "RM200 per day" },
+      { label: "Deductible (PDS)", value: "RM500 or RM2,500 per policy year" },
+      { label: "Co-insurance (PDS)", value: "Hospital and surgical: 20% up to RM20,000 per policy year, if applicable" },
+      { label: "Waiting periods (PDS)", value: "30 days for illness; 120 days for specified illnesses" },
+      { label: "Renewal (PDS)", value: "Renewal is guaranteed; the cost of insurance is not" },
     ],
-    needsConfirmation: ["Co-insurance conditions in full", "Coverage term (the PDS shows a placeholder)", ...STANDARD_GAPS],
-    note: "Earlier research cited a different annual limit for an older version. Only the figure in the PDS checked is shown.",
+    needsConfirmation: ["Coverage term (the PDS shows a placeholder: age 80 or 100 next birthday)", "Full policy wording and exclusions", "Your cost of insurance"],
     evidence: "VERIFIED_OFFICIAL",
     sources: [
       { label: "Great Eastern Life — GREAT MediValue PDS (PDF)", url: "https://www.greateasternlife.com/content/dam/corp-site/my/malaysia/gelm-mcm-marcom/product-/product-disclosure-sheet/gelm-mmc-pd-gmv-pds.pdf" },
@@ -322,10 +326,15 @@ export const researchedProducts: ResearchedProduct[] = [
     basis: "Conventional insurance",
     categories: ["medical"],
     type: "Yearly renewable standalone medical plan",
-    status: "Unknown for new applications; the PDS found has placeholder dates and may be historical.",
-    howToApply: "Unknown — confirm with Great Eastern Life.",
-    verifiedFacts: [],
-    needsConfirmation: ["Whether it is open to new applicants", "Current limits and deductible", ...STANDARD_GAPS],
+    status: "Shown on the official product page (information correct as on 1 June 2026). The page doesn't say whether it's open to new applicants.",
+    howToApply: "Not stated on the product page — confirm with Great Eastern Life.",
+    verifiedFacts: [
+      { label: "Annual limit (official page)", value: "Up to RM150,000, no overall lifetime limit (terms and conditions apply)" },
+      { label: "Deductible (official page)", value: "RM300 per disability" },
+      { label: "Room and board (official page)", value: "Up to RM200 per day" },
+      { label: "Renewal (official page)", value: "Renewable until age 100 next birthday" },
+    ],
+    needsConfirmation: ["Whether it's open to new applicants", "Entry age and eligibility", "Current PDS (the one found has placeholder dates)", "Waiting periods and exclusions", "Your premium"],
     evidence: "VERIFIED_OFFICIAL",
     sources: [{ label: "Great Eastern Life — GREAT Medic Shield 2", url: "https://www.greateasternlife.com/my/en/personal-insurance/our-products/health-insurance/great-medic-shield2-great-medic-million-extender2.html" }],
   },
@@ -335,11 +344,15 @@ export const researchedProducts: ResearchedProduct[] = [
     issuer: GELM,
     basis: "Conventional insurance",
     categories: ["medical"],
-    type: "Medical conversion or continuation option",
-    status: "For qualifying existing policyholders of selected plans (official page, 1 June 2026). Not open to everyone.",
-    howToApply: "Limited to existing policyholders of selected eligible plans or riders.",
-    verifiedFacts: [],
-    needsConfirmation: ["Who qualifies", "Deductible basis and limits", ...STANDARD_GAPS],
+    type: "Yearly renewable standalone medical plan for switching from an existing plan",
+    status: "Only for existing policyholders of selected eligible medical plans or riders (official page, information correct as on 1 June 2026).",
+    howToApply: "Check eligibility with a Great Eastern agent. Switching ends your existing medical plan or rider.",
+    verifiedFacts: [
+      { label: "Switching (official page)", value: "No waiting period and no medical underwriting; the existing plan is terminated" },
+      { label: "Room and board (official page)", value: "Up to RM150 per day" },
+      { label: "Deductible (official page)", value: "From RM2,500 per policy year, reset every year" },
+    ],
+    needsConfirmation: ["Who exactly qualifies", "Limits for each plan option", "Exclusions", "Your premium"],
     evidence: "VERIFIED_OFFICIAL",
     sources: [{ label: "Great Eastern Life — GREAT Medic Lite Secure", url: "https://www.greateasternlife.com/my/en/personal-insurance/our-products/health-insurance/great-medic-lite-secure.html" }],
   },
@@ -349,16 +362,17 @@ export const researchedProducts: ResearchedProduct[] = [
     issuer: GETB,
     basis: "Takaful",
     categories: ["medical"],
-    type: "Standalone medical takaful plan",
-    status: "Official product page and PDS found; confirm the current version before relying on it.",
-    howToApply: "Has an official direct online product page; acceptance depends on current underwriting terms.",
-    verifiedFacts: [],
-    needsConfirmation: ["Limits, deductible or co-payment", "Contribution steps", ...STANDARD_GAPS],
-    evidence: "VERIFIED_OFFICIAL",
-    sources: [
-      { label: "Great Eastern Takaful — i-Great Medi Care", url: "https://www.greateasterntakaful.com/en/personal-takaful/our-products/get-it-direct/i-great-medi-care.html" },
-      { label: "Great Eastern Takaful — i-Great Medi Care PDS (PDF)", url: "https://www.greateasterntakaful.com/content/dam/great-eastern/takaful/en/homepage/personal-takaful/our-products/get-it-direct/i-great-medi-care/i-great-medi-care-pds-en.pdf" },
+    type: "Standalone medical takaful plan with step-up contributions, without savings or investment",
+    status: "Shown on the official product page (the page carries no 'information correct as' date).",
+    howToApply: "Offered through the official direct online channel, with no intermediary; acceptance depends on underwriting.",
+    verifiedFacts: [
+      { label: "Cover age (official page)", value: "Up to age 80 next birthday" },
+      { label: "Co-takaful (official page)", value: "None for this plan" },
+      { label: "Medical examination (official page)", value: "Not required" },
     ],
+    needsConfirmation: ["Entry age", "Annual limit and deductible", "Contribution amounts", "Current PDS (not reviewed in this check)", "Waiting periods and exclusions"],
+    evidence: "VERIFIED_OFFICIAL",
+    sources: [{ label: "Great Eastern Takaful — i-Great Medi Care", url: "https://www.greateasterntakaful.com/en/personal-takaful/our-products/get-it-direct/i-great-medi-care.html" }],
   },
   {
     id: "GELM-SPY",
@@ -367,13 +381,14 @@ export const researchedProducts: ResearchedProduct[] = [
     basis: "Conventional insurance",
     categories: ["life", "tpd"],
     type: "Investment-linked life insurance plan",
-    status: "Shown as active on the official page (information correct 1 August 2026).",
-    howToApply: "Official online product page; acceptance depends on the application terms.",
+    status: "Shown on the official product page (information correct as on 1 August 2026).",
+    howToApply: "The official page offers a 'Talk to us' call-back from a Life Planning Advisor; it doesn't describe an online application.",
     verifiedFacts: [
-      { label: "Cover (official page)", value: "Death and TPD sum assured, plus optional cover; amounts depend on what you select" },
+      { label: "Cover (official page)", value: "On death or TPD, the basic and additional sum assured plus the investment value; TPD only before age 75 next birthday" },
+      { label: "Entry age (official page)", value: "16 to 70 years next birthday" },
       { label: "Minimum premium (official page)", value: "RM100 a month — not a quote for you" },
     ],
-    needsConfirmation: ["Charges, lapse and surrender terms", "Investment risk and fund details", "Rider terms", ...STANDARD_GAPS],
+    needsConfirmation: ["Charges, lapse and surrender terms", "Investment risk and fund details", "Rider terms", "Your premium and cover amount"],
     note: "Investment-linked: policy values depend on charges and fund performance and are not guaranteed.",
     evidence: "VERIFIED_OFFICIAL",
     sources: [{ label: "Great Eastern Life — SmartProtect You", url: "https://www.greateasternlife.com/my/en/personal-insurance/our-products/life-insurance/smartprotect-you.html" }],
@@ -384,20 +399,22 @@ export const researchedProducts: ResearchedProduct[] = [
     issuer: GELM,
     basis: "Conventional insurance",
     categories: ["critical-illness"],
-    type: "Critical illness rider (unit-deduction, attached to a base plan)",
-    status: "PDS version V03/1123 found; current availability and version not confirmed.",
+    type: "Critical illness rider (unit-deduction) attached to selected regular-premium investment-linked plans",
+    status: "PDS V03/1123 checked. The product page says its information was correct as at 1 June 2024, so current availability needs confirming.",
     howToApply: "Confirm the current PDS and channel with Great Eastern Life.",
     verifiedFacts: [
       { label: "PDS version checked", value: "V03/1123" },
-      { label: "Claims (PDS pp. 1–3)", value: "Multiple claims across early, intermediate and advanced stages" },
-      { label: "Total benefit (PDS)", value: "Up to 800% of the rider sum assured, subject to RM5,000,000 per life before age 85 next birthday" },
-      { label: "Early stage (PDS)", value: "50% of the rider sum assured, subject to RM300,000 per claim" },
+      { label: "Claims (PDS)", value: "Multiple claims across early, intermediate and advanced stages" },
+      { label: "Total benefit (PDS)", value: "Up to 800% of the rider sum assured before age 85 next birthday, capped at RM5,000,000 per life across the company's CI cover" },
+      { label: "Early stage (PDS)", value: "50% of the rider sum assured, up to RM300,000 per claim" },
+      { label: "Waiting period (PDS)", value: "30 or 60 days, depending on the event" },
+      { label: "Survival period (PDS)", value: "7 or 14 days after diagnosis, depending on the event" },
     ],
-    needsConfirmation: ["The number of covered conditions (the official page shows two different counts)", "Definitions and stages", "Survival periods", ...STANDARD_GAPS],
+    needsConfirmation: ["The number of covered conditions (the official page shows both 178 and 188)", "Whether it's currently offered", "Full definitions and exclusions", "Your cost of insurance"],
     evidence: "VERIFIED_OFFICIAL",
     sources: [
-      { label: "Great Eastern Life — Smart Multi Critical Care", url: "https://www.greateasternlife.com/my/en/personal-insurance/our-products/health-insurance/smart-multi-critical-care.html" },
       { label: "Great Eastern Life — Smart Multi Critical Care PDS (PDF)", url: "https://www.greateasternlife.com/content/dam/corp-site/my/malaysia/gelm-mcm-marcom/product-/product-disclosure-sheet/gelm-mmc-pd-smcc-pds.pdf" },
+      { label: "Great Eastern Life — Smart Multi Critical Care", url: "https://www.greateasternlife.com/my/en/personal-insurance/our-products/health-insurance/smart-multi-critical-care.html" },
     ],
   },
   {
@@ -408,11 +425,11 @@ export const researchedProducts: ResearchedProduct[] = [
     categories: ["personal-accident"],
     type: "Personal accident insurance",
     status: "PDS information valid as at 31 May 2026; confirm the current version before applying.",
-    howToApply: "Confirm the current application route with Great Eastern General.",
+    howToApply: "The PDS describes paying through your agent or intermediary. Confirm the current application route with Great Eastern General.",
     verifiedFacts: [
-      { label: "Entry age (PDS)", value: "30 days to 70 years" },
-      { label: "Cover term (PDS)", value: "12 months, renewed yearly up to age 100, subject to the insurer being satisfied about your health" },
-      { label: "Other conditions (PDS)", value: "Residency, occupation class, age and sum-insured limits apply" },
+      { label: "Entry age (PDS)", value: "30 days to 70 years, renewable up to age 100" },
+      { label: "Cover term (PDS)", value: "12 months; you renew it every year" },
+      { label: "Who can apply (PDS)", value: "Malaysian citizens, permanent residents, or foreigners legally residing in Malaysia; sum-insured limits apply by age and occupation class" },
       { label: "Exclusions (PDS, not the full list)", value: "Include pre-existing conditions, self-inflicted injury, war risks, and illegal or dangerous activities or sports" },
     ],
     needsConfirmation: ["Full policy wording and the complete exclusions list", "Benefits and limits for your occupation class", "Your premium"],

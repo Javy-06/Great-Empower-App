@@ -134,9 +134,9 @@ function HubView() {
             { t: "Read the Product Disclosure Sheet (PDS)", d: "It summarises the benefits, limits, exclusions and costs. The policy wording is what counts." },
             { t: "Find the limits and what you pay", d: "Annual and lifetime limits, room-and-board limits, deductible and co-payment." },
             { t: "Check waiting periods and exclusions", d: "Some conditions aren't covered at all, and illness right after cover starts may not be." },
-            { t: "Answer health questions honestly", d: "Non-disclosure of pre-existing conditions is a main reason claims are declined.", source: protectionSources.star },
+            { t: "Answer health questions honestly", d: "Not disclosing a pre-existing condition is one of the biggest reasons hospital guarantee letters are declined.", source: protectionSources.star },
             { t: "Ask whether the premium can change", d: "Medical premiums can be revised at renewal. Plan for it, not just today's price." },
-            { t: "Know your free-look period", d: "You can usually cancel a new policy within a short period and get a refund. Check its length in your policy." },
+            { t: "Know your free-look period", d: "You can usually cancel a new life or medical policy within a free-look period (usually 15 days) for a refund, less some costs. Check your policy.", source: protectionSources.glossary },
           ].map((item, i) => (
             <li key={item.t} className="flex gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
               <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-crimson-600 text-caption font-bold text-white tabular-nums">{i + 1}</span>
@@ -156,7 +156,7 @@ function HubView() {
           <div className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
             <h3 className="text-body font-semibold text-navy-950">Buying directly (online)</h3>
             <p className="mt-1 text-body-sm text-ink-secondary">
-              BNM requires insurers to offer certain simple protection products — such as term life and standalone critical illness and medical plans — through direct channels without agent commission.
+              BNM introduced commission-free standalone pure protection products sold through direct channels — term life from July 2017, then critical illness and medical plans from July 2018.
             </p>
             <SourceLink source={protectionSources.bnmDirect} className="mt-1.5" />
           </div>
@@ -179,7 +179,7 @@ function HubView() {
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
           <li className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
             <h3 className="text-body font-semibold text-navy-950">A dispute with your insurer</h3>
-            <p className="mt-1 text-body-sm text-ink-secondary">Complain to the insurer first. If you can't agree, the Financial Markets Ombudsman Service (FMOS) handles eligible disputes for free.</p>
+            <p className="mt-1 text-body-sm text-ink-secondary">Complain to the insurer first. If you're still unhappy with its final decision, you can take an eligible dispute to the Financial Markets Ombudsman Service (FMOS).</p>
             <SourceLink source={protectionSources.fmos} className="mt-1.5" />
           </li>
           <li className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
