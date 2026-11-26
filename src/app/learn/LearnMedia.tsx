@@ -5,8 +5,10 @@ import {
   Bookmark,
   BookmarkCheck,
   CheckCircle2,
+  CirclePlay,
   Clock3,
   FileText,
+  Heart,
   Image as ImageIcon,
   Layers,
   Maximize2,
@@ -32,6 +34,7 @@ import {
 } from "@/data/learn-media";
 import { learnActions, useLearnProgress } from "@/state/learnProgress";
 import { LessonGlyph } from "./LessonGlyph";
+import { CategoryArt } from "./CategoryArt";
 import { CaptionControl } from "./CaptionControl";
 import { LanguageSelector } from "./LanguageSelector";
 import { rewardsActions } from "@/rewards/store";
@@ -43,6 +46,21 @@ const go = (hash: string) => {
 };
 const scrollToId = (id: string) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+/** Lesson topics shown as cards (the "all" pseudo-category is the chip row's reset). */
+const topics = demoLearningCategories.filter(
+  (c): c is typeof c & { key: Exclude<LearningCategoryKey, "all"> } => c.key !== "all",
+);
+/** Live count from the lesson list — never the category's stored figure. */
+const lessonCount = (key: LearningCategoryKey) =>
+  key === "all" ? demoLessons.length : demoLessons.filter((l) => l.category === key).length;
+/** Card gradients from the brand palette; the darkest stop sits behind the title for contrast. */
+const topicTone: Record<Exclude<LearningCategoryKey, "all">, string> = {
+  "financial-wellness": "from-gold-700 via-[#a57a24] to-gold-500",
+  protection: "from-teal-800 via-teal-700 to-teal-500",
+  "life-planning": "from-navy-900 via-navy-700 to-navy-500",
+  practical: "from-crimson-700 via-crimson-600 to-crimson-400",
+};
 
 /** Existing photos that suit a lesson's topic. Lessons without one use their bespoke glyph. */
 const lessonImages: Record<string, string> = {
@@ -250,11 +268,13 @@ export function LearnHome() {
       <Container className="mt-8">
         <section id="learn-lessons" className="scroll-mt-20" aria-labelledby="lessons-title">
           <h2 id="lessons-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">All lessons</h2>
-          <div className="-mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-none" role="tablist" aria-label="Lesson topics">
-            {[{ key: "all" as const, label: "All" }, ...demoLearningCategories.filter((c) => c.key !== "all").map((c) => ({ key: c.key, label: c.label }))].map((c) => {
-              const count = c.key === "all" ? demoLessons.length : demoLessons.filter((l) => l.category === c.key).length;
+          <p className="mt-0.5 text-body-sm text-ink-secondary">Build your financial protection knowledge, one topic at a time.</p>
+          <div className="-mx-5 mt-3 flex snap-x scroll-px-5 gap-2 overflow-x-auto px-5 py-1.5 scrollbar-none" role="tablist" aria-label="Lesson topics">
+            {[{ key: "all" as const, label: "All", icon: undefined }, ...topics.map((c) => ({ key: c.key, label: c.label, icon: c.icon }))].map((c) => {
+              const count = lessonCount(c.key);
               if (!count) return null;
               const selected = category === c.key;
+              const Icon = c.icon;
               return (
                 <button
                   key={c.key}
@@ -262,15 +282,65 @@ export function LearnHome() {
                   role="tab"
                   aria-selected={selected}
                   onClick={() => setCategory(c.key)}
-                  className={cn("inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-body-sm font-semibold", selected ? "bg-navy-900 text-white" : "bg-surface text-navy-900 ring-1 ring-ink/10")}
+                  className={cn(
+                    "inline-flex h-11 shrink-0 snap-start items-center gap-1.5 rounded-full px-4 text-body-sm font-semibold transition-[background-color,color,box-shadow] duration-300",
+                    selected ? "bg-navy-900 text-white shadow-e2" : "bg-surface text-navy-900 shadow-e1 ring-1 ring-ink/[0.08] hover:bg-navy-50",
+                  )}
                 >
+                  {Icon && <Icon size={16} aria-hidden />}
                   {c.label}
                   <span className={cn("text-caption", selected ? "text-white/70" : "text-ink-muted")}>{count}</span>
                 </button>
               );
             })}
           </div>
-          <ul className="mt-3 grid gap-2.5">
+
+          {/* Topic cards: a visual way into the same filter. Counts come from the lesson list. */}
+          <ul className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            {topics.map((c) => {
+              const count = lessonCount(c.key);
+              if (!count) return null;
+              const selected = category === c.key;
+              const saved = demoLessons.filter((l) => l.category === c.key && progress.bookmarked.includes(l.id)).length;
+              const unit = count === 1 ? "Lesson" : "Lessons";
+              return (
+                <li key={c.key}>
+                  <button
+                    type="button"
+                    aria-pressed={selected}
+                    aria-label={`${c.label}: ${count} ${unit.toLowerCase()}${saved ? `, ${saved} saved` : ""}. ${selected ? "Showing this topic." : "Show this topic."}`}
+                    onClick={() => setCategory(selected ? "all" : c.key)}
+                    className={cn(
+                      "ge-lift group relative flex h-full min-h-[10.5rem] w-full flex-col justify-between overflow-hidden rounded-[1.25rem] bg-gradient-to-br p-4 text-left text-white shadow-e2 md:min-h-[11.5rem]",
+                      topicTone[c.key],
+                      selected && "ring-[3px] ring-navy-950 ring-offset-2 ring-offset-canvas",
+                    )}
+                  >
+                    <span className="pointer-events-none absolute -right-8 -top-12 size-36 rounded-full bg-white/10" aria-hidden />
+                    <span className="pointer-events-none absolute -bottom-16 -left-10 size-32 rounded-full bg-black/[0.06]" aria-hidden />
+                    <CategoryArt
+                      category={c.key}
+                      className="pointer-events-none absolute -bottom-1 -right-1.5 size-[4.5rem] transition-transform duration-500 ease-out group-hover:-translate-y-0.5 group-hover:scale-105 md:size-24 lg:size-28"
+                    />
+                    <span className={cn("relative block text-[1.125rem] font-bold leading-[1.2] [text-shadow:0_1px_2px_rgb(10_28_51/0.25)] md:text-[1.25rem]", saved > 0 && "pr-9")}>
+                      {c.label}
+                    </span>
+                    {saved > 0 && (
+                      <span className="absolute right-3 top-3 inline-flex h-7 items-center gap-1 rounded-full bg-white/95 px-2 text-[11px] font-bold text-crimson-600 shadow-e1" aria-hidden>
+                        <Heart size={13} className="fill-crimson-600" /> {saved}
+                      </span>
+                    )}
+                    <span className="relative mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 py-1 pl-1.5 pr-2.5 text-caption font-semibold text-navy-950 shadow-e1">
+                      <CirclePlay size={16} className="text-crimson-600" aria-hidden />
+                      {count} {unit}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <ul key={category} className="ge-reveal mt-5 grid gap-2.5">
             {lessons.map((lesson) => {
               const done = progress.completed.includes(lesson.id);
               const saved = progress.bookmarked.includes(lesson.id);
