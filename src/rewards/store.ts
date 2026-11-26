@@ -1,11 +1,16 @@
 import { createStore, useStore } from "@/state/store";
-import type { EarningKind } from "./catalogue";
+import type { EarningKind, QuizKind } from "./catalogue";
+import type { QuizAnswers } from "./verification";
 import {
   claimChallenge as claimChallengeOp,
   confirmPassUsed as confirmPassUsedOp,
   earn as earnOp,
   emptyRewardsState,
+  recordWatch as recordWatchOp,
   redeem as redeemOp,
+  submitQuiz as submitQuizOp,
+  type QuizOutcome,
+  type WatchOutcome,
   type Result,
   type RewardsState,
 } from "./economy";
@@ -27,6 +32,10 @@ export interface RewardsBackend {
   claimChallenge: (id: string) => Promise<Result>;
   redeem: (productId: string, welcome: boolean, requestId: string) => Promise<Result>;
   confirmPassUsed: (passId: string) => Promise<Result>;
+  /** Server-graded quiz: the server decides the score and whether points are paid. */
+  submitQuiz: (kind: QuizKind, contentId: string, answers: QuizAnswers) => Promise<QuizOutcome>;
+  /** Server-credited watch time (bounded by real elapsed time between reports). */
+  recordWatch: (videoId: string, lang: string, seconds: number) => Promise<WatchOutcome>;
 }
 
 let backend: RewardsBackend | null = null;
@@ -63,4 +72,21 @@ export const rewardsActions = {
   confirmPassUsed: (passId: string) =>
     commit((s) => confirmPassUsedOp(s, passId, Date.now()), (b) => b.confirmPassUsed(passId)),
   newRequestId: requestId,
+  /**
+   * Verification paths. Not behind the single-transaction lock: a watch-time report can arrive
+   * while another action runs. Device accounts apply synchronously; cloud accounts are serialised
+   * per user by the database.
+   */
+  submitQuiz: async (kind: QuizKind, contentId: string, answers: QuizAnswers): Promise<QuizOutcome> => {
+    if (backend) return backend.submitQuiz(kind, contentId, answers);
+    const r = submitQuizOp(rewardsStore.get(), kind, contentId, answers, Date.now());
+    if (r.ok && r.earned) rewardsStore.set(r.state);
+    return r;
+  },
+  recordWatch: async (videoId: string, lang: string, seconds: number): Promise<WatchOutcome> => {
+    if (backend) return backend.recordWatch(videoId, lang, seconds);
+    const r = recordWatchOp(rewardsStore.get(), videoId, lang, seconds, Date.now());
+    if (r.ok) rewardsStore.set(r.state);
+    return r;
+  },
 };

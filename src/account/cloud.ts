@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { supabaseConfig } from "./config";
 import { findProduct } from "@/rewards/catalogue";
-import type { RedemptionPass, OwnedBenefit, Result, RewardsState, Transaction } from "@/rewards/economy";
+import type { OwnedVoucher, RedemptionPass, OwnedBenefit, QuizOutcome, Result, RewardsState, Transaction, WatchOutcome } from "@/rewards/economy";
 import { rewardsStore, setRewardsBackend, type RewardsBackend } from "@/rewards/store";
 import { learnProgressStore, type LearnProgress, type LessonLanguage } from "@/state/learnProgress";
 import { bookingStore, type Booking } from "@/app/guide/SessionsView";
@@ -157,10 +157,11 @@ async function select(table: string, order?: string) {
 }
 
 async function pullRewards() {
-  const [[profile], ledger, items] = await Promise.all([
+  const [[profile], ledger, items, watchRows] = await Promise.all([
     select("profiles"),
     select("points_ledger", "created_at"),
     select("reward_items", "issued_at"),
+    select("video_watch_progress"),
   ]);
   if (!profile) throw new CloudError("This account has not been set up.", "server");
   const transactions: Transaction[] = ledger.map((l) => ({
@@ -192,12 +193,25 @@ async function pullRewards() {
       acquiredAt: Date.parse(i.issued_at),
       status: "stored" as const,
     }));
+  const vouchers: OwnedVoucher[] = items
+    .filter((i) => i.item_type === "voucher")
+    .map((i) => ({
+      id: i.id,
+      code: i.code,
+      productId: i.product_id,
+      transactionId: i.ledger_id,
+      issuedAt: Date.parse(i.issued_at),
+      status: "stored" as const,
+    }));
+  const watch = Object.fromEntries(watchRows.map((w) => [`${w.content_id}:${w.lang}`, Math.floor(Number(w.watched_seconds))]));
   const state: RewardsState = {
     version: 2,
     points: profile.points_balance,
     transactions,
     passes,
     benefits,
+    vouchers,
+    watch,
     earned: ledger.filter((l) => l.kind === "earn" && l.earn_key).map((l) => l.earn_key),
     claimedChallenges: ledger
       .filter((l) => l.kind === "challenge" && l.earn_key)
@@ -428,6 +442,26 @@ async function runRpc(fn: string, args: Record<string, unknown>, pickTx: (body: 
   return { ok: true, state, transaction };
 }
 
+/** Quiz / watch-time RPCs. Rewards are re-pulled only when points were paid. */
+async function verifyRpc(fn: string, args: Record<string, unknown>): Promise<({ ok: true } & Row) | { ok: false; error: string }> {
+  if (!active) return { ok: false, error: "No account is open." };
+  let body;
+  try {
+    body = await rpc(active.client, fn, args);
+  } catch (e) {
+    return { ok: false, error: e instanceof CloudError && e.code === "network" ? "Couldn't reach the cloud. Please try again." : "Something went wrong. Nothing was changed." };
+  }
+  if (!body.ok) return { ok: false, error: String(body.error ?? "This action wasn't allowed.") };
+  if (body.earned) {
+    try {
+      await pullRewards();
+    } catch {
+      /* the points were paid; the view will refresh on the next pull */
+    }
+  }
+  return { ...body, ok: true };
+}
+
 const cloudRewards: RewardsBackend = {
   earn: (kind, subjectId) => runRpc("earn_points", { p_kind: kind, p_subject: subjectId }, (b) => b.ledger_id),
   claimChallenge: (id) => runRpc("claim_challenge", { p_challenge_id: id }, (b) => b.ledger_id),
@@ -437,6 +471,37 @@ const cloudRewards: RewardsBackend = {
       { p_product_id: productId, p_mode: welcome ? "welcome_offer" : "standard", p_request_id: requestId },
       (b) => b.ledger_id,
     ),
+  submitQuiz: async (kind, contentId, answers): Promise<QuizOutcome> => {
+    const body = await verifyRpc("submit_quiz", { p_kind: kind, p_content_id: contentId, p_answers: answers });
+    if (!body.ok) return body;
+    const results = (body.results as { id: string; correct: boolean }[]) ?? [];
+    return {
+      ok: true,
+      score: Number(body.score),
+      total: Number(body.total),
+      perfect: Boolean(body.passed),
+      results,
+      earned: Boolean(body.earned),
+      alreadyEarned: Boolean(body.already_earned),
+      points: Number(body.points ?? 0),
+      state: rewardsStore.get(),
+    };
+  },
+  recordWatch: async (videoId, lang, seconds): Promise<WatchOutcome> => {
+    const body = await verifyRpc("record_video_watch", { p_video_id: videoId, p_lang: lang, p_seconds: seconds });
+    if (!body.ok) return body;
+    const s = rewardsStore.get();
+    rewardsStore.set({ ...s, watch: { ...(s.watch ?? {}), [`${videoId}:${lang}`]: Math.floor(Number(body.watched_seconds)) } });
+    return {
+      ok: true,
+      watched: Math.floor(Number(body.watched_seconds)),
+      required: Number(body.required_seconds),
+      earned: Boolean(body.earned),
+      alreadyEarned: Boolean(body.already_earned),
+      points: Number(body.points ?? 0),
+      state: rewardsStore.get(),
+    };
+  },
   confirmPassUsed: async (passId) => {
     const r = await runRpc("confirm_pass_used", { p_item_id: passId }, () => undefined);
     if (!r.ok) return r;

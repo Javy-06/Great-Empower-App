@@ -8,6 +8,7 @@ import { challengeProgress, emptyRewardsState, redeem } from "../rewards/economy
 import { DEMO_EARNED, DEMO_SEED_BALANCE, demoRewardsState } from "./seed.ts";
 
 const sql = readFileSync(new URL("../../supabase/migrations/20261126000000_demo_accounts.sql", import.meta.url), "utf8");
+const v3 = readFileSync(new URL("../../supabase/migrations/20261127000000_rewards_learning_verification.sql", import.meta.url), "utf8");
 
 test("demo seed totals 2,450 with the approved breakdown and the Welcome Offer available", () => {
   const s = demoRewardsState(Date.now());
@@ -36,21 +37,35 @@ test("device seed matches the SQL seed (balance + each earn key)", () => {
   }
 });
 
-test("SQL catalogue prices and categories match the app catalogue", () => {
+test("SQL catalogue (base + v3) matches the app catalogue: category, price, active, holding limit", () => {
+  const rows = new Map<string, { category: string; price: number; active: boolean; maxHeld: number | null }>();
+  for (const m of [...sql.matchAll(/\('([a-z0-9-]+)',\s+'([a-z-]+)',\s+'[^']+',\s+'([a-z]+)',\s+(\d+)\)/g)])
+    rows.set(m[1], { category: m[3], price: Number(m[4]), active: true, maxHeld: null });
+  for (const m of [...v3.matchAll(/\('([a-z0-9-]+)',\s+'([a-z-]+)',\s+'[^']+',\s+'([a-z]+)',\s+(\d+),\s+(\d+)\)/g)])
+    rows.set(m[1], { category: m[3], price: Number(m[4]), active: true, maxHeld: Number(m[5]) });
+  for (const m of [...v3.matchAll(/update public\.reward_products set price_points = (\d+) where id = '([a-z0-9-]+)'/g)]) rows.get(m[2])!.price = Number(m[1]);
+  assert.match(v3, /update public\.reward_products set active = false where category = 'game';/);
+  for (const r of rows.values()) if (r.category === "game") r.active = false;
+
+  assert.equal(rows.size, products.length);
   for (const p of products) {
     const kind = brands.find((b) => b.id === p.brand)!.kind;
-    const category = kind === "game-benefit" ? "game" : kind;
-    assert.match(sql, new RegExp(`\\('${p.id}',\\s+'${p.brand}',\\s+'[^']+',\\s+'${category}',\\s+${p.price}\\)`), p.id);
+    const r = rows.get(p.id)!;
+    assert.ok(r, p.id);
+    assert.equal(r.category, kind === "game-benefit" ? "game" : kind, p.id);
+    assert.equal(r.price, p.price, p.id);
+    assert.equal(r.active, !p.retired, p.id);
+    assert.equal(r.maxHeld, p.voucher?.maxHeld ?? null, p.id);
   }
 });
 
-test("Welcome Offer matrix: food + drink eligible; wellness + game never", () => {
+test("Welcome Offer matrix: food + drink eligible; wellness, vouchers + game never", () => {
   for (const p of products) {
     const kind = brands.find((b) => b.id === p.brand)!.kind;
     assert.equal(isWelcomeEligible(p), kind === "food" || kind === "drink", p.id);
   }
   const s = demoRewardsState(Date.now());
-  for (const id of ["crp-wellness-pack", "shd-medical-protection", "nst-savings-bonus"]) {
+  for (const id of ["crp-wellness-pack", "gev-rm10", "shd-medical-protection", "nst-savings-bonus"]) {
     const r = redeem(s, id, { welcome: true }, `req-${id}`, Date.now());
     assert.equal(r.ok, false);
   }

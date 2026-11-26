@@ -8,8 +8,8 @@ import { demoLearningCategories, demoLessons, protectionPurposes } from "@/data/
 import type { LearningCategoryKey, LearningLesson } from "@/types/learning";
 import { findInfographic, findVideo } from "@/data/learn-media";
 import { learnActions, useLearnProgress } from "@/state/learnProgress";
-import { rewardsActions } from "@/rewards/store";
 import { InfographicDetailView, LearnHome, VideoLessonView } from "./learn/LearnMedia";
+import { RewardQuiz } from "./learn/RewardQuiz";
 import { cn } from "@/lib/cn";
 
 type LearnRoute =
@@ -256,10 +256,6 @@ export function LearnDashboard() {
 
   const toggleBookmark = (lessonId: string) => learnActions.toggleBookmark(lessonId);
   const startLesson = (lessonId: string) => learnActions.start(lessonId);
-  const completeLesson = (lessonId: string) => {
-    learnActions.complete(lessonId);
-    void rewardsActions.earn("lesson-complete", lessonId);
-  };
 
   if (route.view === "video") return <VideoLessonView id={route.id} />;
   if (route.view === "infographic") return <InfographicDetailView id={route.id} />;
@@ -317,22 +313,10 @@ export function LearnDashboard() {
                 <span className="inline-flex h-12 items-center gap-1.5 rounded-full bg-success-50 px-5 text-body-sm font-semibold text-success-700">
                   <CheckCircle2 size={16} aria-hidden /> Lesson completed
                 </span>
-              ) : started.has(lesson.id) ? (
-                <button
-                  type="button"
-                  onClick={() => completeLesson(lesson.id)}
-                  className="inline-flex h-12 items-center rounded-full bg-crimson-600 px-6 text-body-sm font-semibold text-white hover:bg-crimson-700"
-                >
-                  Mark lesson complete
-                </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => startLesson(lesson.id)}
-                  className="inline-flex h-12 items-center rounded-full bg-crimson-600 px-6 text-body-sm font-semibold text-white hover:bg-crimson-700"
-                >
-                  Start lesson
-                </button>
+                <span className="inline-flex h-12 items-center text-body-sm text-ink-secondary">
+                  Pass the quiz below to complete this lesson.
+                </span>
               )}
               <button
                 type="button"
@@ -348,6 +332,16 @@ export function LearnDashboard() {
                 {bookmarked.has(lesson.id) ? "Saved" : "Save lesson"}
               </button>
             </div>
+          </div>
+
+          <div className="mt-6">
+            <RewardQuiz
+              key={lesson.id}
+              kind="lesson-complete"
+              contentId={lesson.id}
+              onStart={() => startLesson(lesson.id)}
+              onPassed={() => learnActions.complete(lesson.id)}
+            />
           </div>
 
           {(lessonRelated[lesson.id] ?? defaultRelated).length > 0 && (

@@ -21,17 +21,18 @@ import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import {
+  VOUCHER_TERMS,
   WELCOME_PRICE,
-  brands,
+  activeBrands,
+  activeProducts,
   challenges,
   findBrand,
   findProduct,
   isWelcomeEligible,
-  products,
   type BrandId,
   type Product,
 } from "@/rewards/catalogue";
-import { challengeProgress, quote, welcomeAvailableFor } from "@/rewards/economy";
+import { challengeProgress, heldVouchers, quote, welcomeAvailableFor } from "@/rewards/economy";
 import { rewardsActions, useRewards } from "@/rewards/store";
 import { PassView } from "./rewards/PassView";
 
@@ -42,15 +43,16 @@ const go = (hash: string) => {
 const pts = (n: number) => `${n.toLocaleString("en-MY")} pts`;
 
 const SIMULATED_NOTE =
-  "Fictional in-app items with no cash value. Brands are not real merchants; game benefits are simulated.";
+  "Marketplace brands and items are fictional, with no cash value, and are not real merchants. Great Empower Vouchers are for future insurance purchases, which are not available yet.";
 
-const foodAndDrink = products.filter(isWelcomeEligible);
+const foodAndDrink = activeProducts.filter(isWelcomeEligible);
+const vouchers = activeProducts.filter((p) => p.voucher);
 
 export function RewardsView({ route }: { route: string }) {
   const parts = route.split("/"); // app/rewards/<view>/<id>
   const view = parts[2];
   if (view === "marketplace") return <Marketplace brandId={parts[3] as BrandId | undefined} />;
-  if (view === "product" && parts[3] && findProduct(parts[3])) return <ProductDetail id={parts[3]} />;
+  if (view === "product" && parts[3] && findProduct(parts[3]) && !findProduct(parts[3])!.retired) return <ProductDetail id={parts[3]} />;
   if (view === "wallet") return <WalletView />;
   if (view === "pass" && parts[3]) return <PassView id={parts[3]} />;
   return <RewardsHub />;
@@ -185,8 +187,29 @@ function RewardsHub() {
           })}
         </ul>
         <p className="mt-2 text-caption text-ink-muted">
-          Complete lessons and videos, study infographics and finish your protection profile. Each activity pays once.
+          Earn points by passing lesson and infographic quizzes with a perfect score, watching video lessons in full
+          and finishing your protection profile. Each activity pays once.
         </p>
+      </Container>
+
+      {/* Great Empower Vouchers */}
+      <Container className="mt-8">
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="text-heading text-navy-950">Great Empower Vouchers</h2>
+          <button type="button" onClick={() => go("app/rewards/marketplace/great-empower")} className="inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-navy-900">
+            View all <ArrowRight size={15} aria-hidden />
+          </button>
+        </div>
+        <p className="mt-1 text-body-sm text-ink-secondary">
+          Save towards future Great Empower insurance purchases. Insurance purchasing isn't available yet — vouchers are kept in your wallet until it is.
+        </p>
+        <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {vouchers.map((p) => (
+            <li key={p.id}>
+              <ProductCard product={p} welcome={false} />
+            </li>
+          ))}
+        </ul>
       </Container>
 
       {/* Marketplace entry */}
@@ -197,10 +220,10 @@ function RewardsHub() {
             <Store size={22} aria-hidden /> Marketplace
           </span>
           <span className="mt-1 block max-w-[20rem] text-body-sm text-white/75">
-            Wellness items and in-game boosts from six fictional brands.
+            Healthy food and drinks, wellness essentials and Great Empower Vouchers.
           </span>
           <span className="mt-4 flex -space-x-2">
-            {brands.map((b) => (
+            {activeBrands.filter((b) => b.logo).map((b) => (
               <img key={b.id} src={b.logo} alt="" className="size-10 rounded-full bg-white object-contain p-0.5 ring-2 ring-navy-950" />
             ))}
           </span>
@@ -216,11 +239,11 @@ function RewardsHub() {
 
 function Marketplace({ brandId }: { brandId?: BrandId }) {
   const state = useRewards();
-  const active = brandId && findBrand(brandId) ? brandId : null;
-  const list = active ? products.filter((p) => p.brand === active) : products;
+  const active = brandId && findBrand(brandId) && !findBrand(brandId)!.retired ? brandId : null;
+  const list = active ? activeProducts.filter((p) => p.brand === active) : activeProducts;
   return (
     <>
-      <PageHero eyebrow="Great Empower" title="Marketplace" text="Redeem healthy choices, wellness items and in-game boosts." backLabel="Marketplace" onBack={() => go("app/rewards")} titleId="market-title">
+      <PageHero eyebrow="Great Empower" title="Marketplace" text="Redeem healthy choices, wellness essentials and Great Empower Vouchers." backLabel="Marketplace" onBack={() => go("app/rewards")} titleId="market-title">
         <p className="mt-4 inline-flex h-9 items-center gap-2 rounded-full bg-white/10 px-3.5 text-body-sm font-semibold">
           <Coins size={16} className="text-gold-300" aria-hidden /> {pts(state.points)} available
         </p>
@@ -228,7 +251,7 @@ function Marketplace({ brandId }: { brandId?: BrandId }) {
       <Container className="mt-5">
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-none" role="tablist" aria-label="Brands">
           <BrandChip label="All" selected={!active} onClick={() => go("app/rewards/marketplace")} />
-          {brands.map((b) => (
+          {activeBrands.map((b) => (
             <BrandChip key={b.id} label={b.name} logo={b.logo} selected={active === b.id} onClick={() => go(`app/rewards/marketplace/${b.id}`)} />
           ))}
         </div>
@@ -265,8 +288,27 @@ function BrandChip({ label, logo, selected, onClick }: { label: string; logo?: s
   );
 }
 
+function VoucherVisual({ product, className }: { product: Product; className?: string }) {
+  const v = product.voucher!;
+  return (
+    <span className={cn("relative flex aspect-square w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-navy-950 via-navy-800 to-crimson-700 p-4 text-white", className)}>
+      <span aria-hidden className="absolute -right-8 -top-8 size-28 rounded-full bg-white/10" />
+      <span aria-hidden className="absolute -bottom-10 -left-6 size-24 rounded-full bg-crimson-500/25" />
+      <span className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-teal-200">Great Empower</span>
+      <span className="relative">
+        <span className="block font-brand text-[2.5rem] font-bold leading-none">{v.face}</span>
+        <span className="mt-1 block text-[11px] font-semibold text-white/80">{v.discount.type === "percent" ? `off · up to RM${v.discount.capRm}` : "off"}</span>
+      </span>
+      <span className="relative flex items-center gap-1.5 border-t border-dashed border-white/30 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/75">
+        <Ticket size={12} aria-hidden /> Future insurance voucher
+      </span>
+    </span>
+  );
+}
+
 function ProductVisual({ product, className }: { product: Product; className?: string }) {
   const brand = findBrand(product.brand)!;
+  if (product.voucher) return <VoucherVisual product={product} className={className} />;
   return product.image ? (
     <img src={product.image} alt="" loading="lazy" className={cn("ge-skeleton aspect-square w-full object-cover", className)} />
   ) : (
@@ -313,6 +355,7 @@ function ProductDetail({ id }: { id: string }) {
   const [requestId] = useState(() => rewardsActions.newRequestId("redeem"));
   const busy = useRef(false);
   const q = quote(state, id, useWelcome)!;
+  const held = product.voucher ? heldVouchers(state, id) >= product.voucher.maxHeld : false;
 
   const confirm = async () => {
     // Ref guard: a double tap within one render can't send a second request.
@@ -340,9 +383,10 @@ function ProductDetail({ id }: { id: string }) {
         <p className="mt-1 text-body text-ink-secondary">
           {product.name} · {pts(checkout.total)} spent. Your balance is now {pts(state.points)}.
         </p>
-        {product.benefit && (
+        {product.voucher && (
           <p className="mt-3 rounded-xl bg-navy-50 px-4 py-3 text-body-sm text-navy-900">
-            Stored in your wallet: {product.benefit.effect} It will apply once the Great Empower game is connected.
+            Saved in your wallet for a future eligible Great Empower insurance purchase. Insurance purchasing isn't
+            available yet, so it can't be used today.
           </p>
         )}
         <div className="mt-6 flex gap-3">
@@ -360,22 +404,27 @@ function ProductDetail({ id }: { id: string }) {
   return (
     <div className="pb-6">
       <div className="relative">
-        <ProductVisual product={product} className="max-h-[22rem] md:max-h-[26rem]" />
+        <ProductVisual product={product} className={cn("max-h-[22rem] md:max-h-[26rem]", product.voucher && "pt-20")} />
         <button type="button" onClick={() => go("app/rewards")} aria-label="Back to Rewards" className="absolute left-4 top-4 inline-flex size-11 items-center justify-center rounded-full bg-white/90 text-navy-950 shadow-e2 backdrop-blur">
           <ArrowLeft size={20} aria-hidden />
         </button>
       </div>
       <Container className="max-w-[40rem] pt-5">
         <div className="flex items-center gap-2">
-          <img src={brand.logo} alt="" className="size-8 rounded-full bg-white object-contain ring-1 ring-ink/10" />
+          {brand.logo && <img src={brand.logo} alt="" className="size-8 rounded-full bg-white object-contain ring-1 ring-ink/10" />}
           <span className="text-caption font-bold uppercase tracking-[0.1em] text-ink-muted">{brand.name}</span>
         </div>
         <h1 className="mt-2 font-brand text-[2rem] font-semibold leading-tight text-navy-950">{product.name}</h1>
         <p className="mt-1 text-body text-ink-secondary">{product.description}</p>
-        {product.benefit && (
-          <p className="mt-3 rounded-xl bg-navy-50 px-4 py-3 text-body-sm text-navy-900">
-            <strong>Simulated game benefit:</strong> {product.benefit.effect} Not real insurance or savings.
-          </p>
+        {product.voucher && (
+          <div className="mt-4 rounded-2xl bg-navy-50 p-4 text-body-sm text-navy-900">
+            <p className="font-semibold">Voucher terms</p>
+            <ul className="mt-2 grid list-disc gap-1.5 pl-5">
+              {VOUCHER_TERMS.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </div>
         )}
 
         {isWelcomeEligible(product) && (
@@ -398,10 +447,15 @@ function ProductDetail({ id }: { id: string }) {
             </div>
           </fieldset>
         )}
+        {held && (
+          <p className="mt-4 rounded-xl bg-gold-50 px-4 py-3 text-body-sm text-gold-700">
+            You already hold this voucher. You can hold one of each voucher at a time.
+          </p>
+        )}
         {!isWelcomeEligible(product) && !state.welcomeRedeemed && (
           <p className="mt-4 rounded-xl bg-gold-50 px-4 py-3 text-body-sm text-gold-700">
-            The Welcome Offer applies to food and drink items only, so this item uses its regular price. Your Welcome
-            Offer stays available.
+            The Welcome Offer applies to food and drink items only, so this {product.voucher ? "voucher" : "item"} uses its
+            regular price. Your Welcome Offer stays available.
           </p>
         )}
 
@@ -436,11 +490,11 @@ function ProductDetail({ id }: { id: string }) {
         ) : (
           <button
             type="button"
-            disabled={!q.affordable}
+            disabled={!q.affordable || held}
             onClick={() => setCheckout({ phase: "confirm" })}
             className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-bold text-white hover:bg-crimson-700 disabled:bg-ink/20 disabled:text-ink-muted"
           >
-            {q.affordable ? <>Redeem for {pts(q.total)} <ArrowRight size={18} aria-hidden /></> : `Not enough points (${pts(q.total - state.points)} short)`}
+            {held ? "Already in your wallet" : q.affordable ? <>Redeem for {pts(q.total)} <ArrowRight size={18} aria-hidden /></> : `Not enough points (${pts(q.total - state.points)} short)`}
           </button>
         )}
         <p className="mt-3 text-caption text-ink-muted">{SIMULATED_NOTE}</p>
@@ -481,7 +535,7 @@ function WalletView() {
 
   return (
     <>
-      <PageHero eyebrow="Rewards" title="Wallet" text="Your points, redemption passes, game benefits and history." backLabel="Wallet" onBack={() => go("app/rewards")} titleId="wallet-title">
+      <PageHero eyebrow="Rewards" title="Wallet" text="Your points, redemption passes, vouchers and history." backLabel="Wallet" onBack={() => go("app/rewards")} titleId="wallet-title">
         <p className="mt-4 font-brand text-[2.5rem] font-bold leading-none tabular-nums">
           {state.points.toLocaleString("en-MY")} <span className="text-body font-semibold text-white/70">pts</span>
         </p>
@@ -528,10 +582,36 @@ function WalletView() {
       </Container>
 
       <Container className="mt-7">
-        <h2 className="text-heading text-navy-950">Game benefits</h2>
-        {state.benefits.length === 0 ? (
-          <p className="mt-2 text-body-sm text-ink-muted">Shieldora and Nestora items you redeem are stored here.</p>
+        <h2 className="text-heading text-navy-950">Great Empower Vouchers</h2>
+        {(state.vouchers ?? []).length === 0 ? (
+          <p className="mt-2 text-body-sm text-ink-muted">Vouchers you redeem are kept here for future Great Empower insurance purchases.</p>
         ) : (
+          <ul className="mt-3 grid gap-2.5">
+            {(state.vouchers ?? []).map((v) => {
+              const product = findProduct(v.productId);
+              return (
+                <li key={v.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-ink/[0.07]">
+                  <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-navy-950 to-crimson-700 font-brand text-body-sm font-bold text-white">
+                    {product?.voucher?.face}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-body-sm font-semibold text-navy-950">{product?.name}</span>
+                    <span className="block font-mono text-caption text-ink-muted">{v.code}</span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-navy-50 px-2.5 py-1 text-[11px] font-bold text-navy-900">Saved for later</span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <p className="mt-2 text-caption text-ink-muted">
+          For future eligible Great Empower insurance purchases. Insurance purchasing isn't available in the app yet, so vouchers can't be used today. One voucher per purchase; vouchers can't be combined.
+        </p>
+      </Container>
+
+      {state.benefits.length > 0 && (
+      <Container className="mt-7">
+        <h2 className="text-heading text-navy-950">Retired game benefits</h2>
           <ul className="mt-3 grid gap-2.5">
             {state.benefits.map((b) => (
               <li key={b.id} className="flex items-center gap-3 rounded-2xl bg-navy-50 p-3.5">
@@ -544,9 +624,9 @@ function WalletView() {
               </li>
             ))}
           </ul>
-        )}
-        <p className="mt-2 text-caption text-ink-muted">Benefits are simulated and will apply once the Great Empower game is connected.</p>
+        <p className="mt-2 text-caption text-ink-muted">Shieldora and Nestora game items are no longer offered. Benefits you already redeemed stay stored here; they are simulated and have no real-world value.</p>
       </Container>
+      )}
 
       <Container className="mt-7">
         <h2 className="flex items-center gap-2 text-heading text-navy-950"><History size={20} aria-hidden /> History</h2>

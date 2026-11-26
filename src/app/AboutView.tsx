@@ -35,9 +35,11 @@ export function AboutView() {
           <section>
             <h2 className="text-heading text-navy-950">Rewards and the Marketplace</h2>
             <p className="mt-2">
-              Points, vouchers, Marketplace brands and game benefits are fictional, in-app
-              items with no cash value. They are stored on this device only and do not represent
-              real merchants, products, insurance cover or real-world redemption.
+              Points and Marketplace brands and items are fictional, in-app items with no cash
+              value. They do not represent real merchants, products, insurance cover or
+              real-world redemption. Great Empower Vouchers are intended for future Great Empower
+              insurance purchases; insurance purchasing is not available yet, so they cannot be
+              used today.
             </p>
           </section>
           <section>

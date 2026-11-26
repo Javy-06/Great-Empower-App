@@ -209,6 +209,23 @@ mkdir -p /tmp/ge-sqltest && cd /tmp/ge-sqltest && npm init -y >/dev/null && npm 
 cp <repo>/supabase/tests/db.test.mjs . && MIGRATION=<repo>/supabase/migrations/20261126000000_demo_accounts.sql node --test db.test.mjs
 ```
 
+The v3 rewards/learning migration (`20261127000000_rewards_learning_verification.sql`) has its
+own suite. It applies the base migration, creates accounts with history, then applies v3 the way the
+live project would:
+
+```sh
+cp <repo>/supabase/tests/verification.test.mjs . && \
+  BASE=<repo>/supabase/migrations/20261126000000_demo_accounts.sql \
+  V3=<repo>/supabase/migrations/20261127000000_rewards_learning_verification.sql node --test verification.test.mjs
+```
+
+### Applying v3 to a project that already has the base migration
+
+Run `20261127000000_rewards_learning_verification.sql` **once** in the SQL editor. It is one
+transaction, additive, and its pre-flight refuses to run twice or without the base migration.
+Deploy the app version that calls `submit_quiz` / `record_video_watch` only after it is applied.
+Until then, cloud accounts can't earn lesson, infographic or video points.
+
 PGlite has a single connection, so **truly parallel** requests are checked separately, after setup,
 by `supabase/tests/concurrency-check.mjs` against your project (see step 8 above). Double charges
 are prevented by the per-user `select … for update` lock, the unique `(user_id, request_id)`

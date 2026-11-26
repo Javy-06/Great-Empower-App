@@ -6,16 +6,33 @@
  * Model (v2): Marketplace items are redeemed directly with points. A new player can redeem ONE
  * eligible food or drink item at the welcome price, once. Food, drink and wellness redemptions
  * issue a pass ("ready") that the player later confirms as "used"; game benefits are stored.
+ *
+ * v3: Great Empower Vouchers are stored in the wallet for future insurance purchases (one held
+ * per voucher type). Retired items cannot be redeemed. Lessons and infographics pay only through
+ * a perfect quiz (`submitQuiz`), videos only through valid watch time (`recordWatch`).
  */
 import {
   challenges,
   earningRules,
   findProduct,
+  isVerifiedKind,
   isWelcomeEligible,
   WELCOME_PRICE,
   type EarningKind,
   type GameBenefit,
+  type QuizKind,
 } from "./catalogue.ts";
+import { findQuiz, gradeQuiz, requiredWatchSeconds, watchKey, type QuizAnswers, type QuizGrade } from "./verification.ts";
+
+/** A Great Empower Voucher held for a future insurance purchase. It cannot be used yet. */
+export interface OwnedVoucher {
+  id: string;
+  code: string;
+  productId: string;
+  transactionId: string;
+  issuedAt: number;
+  status: "stored";
+}
 
 export interface OwnedBenefit {
   id: string;
@@ -66,6 +83,10 @@ export interface RewardsState {
   claimedChallenges: string[];
   /** True once the one-time welcome redemption has been used. */
   welcomeRedeemed: boolean;
+  /** v3 (optional so older saved states still load): held Great Empower Vouchers. */
+  vouchers?: OwnedVoucher[];
+  /** v3: credited valid watch seconds per video edition, keyed "<videoId>:<lang>". */
+  watch?: Record<string, number>;
 }
 
 export type Result = { ok: true; state: RewardsState; transaction: Transaction } | { ok: false; error: string };
@@ -97,8 +118,23 @@ const tx = (state: RewardsState, t: Omit<Transaction, "id">): Transaction => ({
 
 const fmt = (n: number) => n.toLocaleString("en-MY");
 
-/** Pay points once for a real in-app activity. */
+/**
+ * Pay points once for an activity that needs no verification (the protection profile).
+ * Lessons, infographics and videos are refused here: they pay only via `submitQuiz` / `recordWatch`.
+ */
 export function earn(state: RewardsState, kind: EarningKind, subjectId: string, now: number): Result {
+  if (!earningRules[kind]) return { ok: false, error: "Unknown activity." };
+  if (isVerifiedKind(kind))
+    return {
+      ok: false,
+      error: earningRules[kind].verification === "quiz" ? "Pass the quiz with a perfect score to earn these points." : "Keep watching to earn these points.",
+    };
+  if (kind === "profile-complete" && subjectId !== "profile") return { ok: false, error: "This activity does not earn points." };
+  return pay(state, kind, subjectId, now);
+}
+
+/** Internal: the one place points are paid for an activity (once per key). */
+function pay(state: RewardsState, kind: EarningKind, subjectId: string, now: number): Result {
   const key = `${kind}:${subjectId}`;
   if (state.earned.includes(key)) return { ok: false, error: "Already rewarded for this activity." };
   const rule = earningRules[kind];
@@ -119,6 +155,49 @@ export function earn(state: RewardsState, kind: EarningKind, subjectId: string, 
       transactions: [transaction, ...state.transactions],
     },
   };
+}
+
+/** Outcome of a quiz attempt. A failed (non-perfect) attempt is still `ok` — it just pays nothing. */
+export type QuizOutcome =
+  | ({ ok: true; earned: boolean; alreadyEarned: boolean; points: number; state: RewardsState } & QuizGrade)
+  | { ok: false; error: string };
+
+/** Grade a lesson/infographic quiz; pay the activity once, only on a perfect score. */
+export function submitQuiz(state: RewardsState, kind: QuizKind, contentId: string, answers: QuizAnswers, now: number): QuizOutcome {
+  const quiz = findQuiz(kind, contentId);
+  if (!quiz) return { ok: false, error: "This activity does not earn points." };
+  const grade = gradeQuiz(quiz, answers);
+  const key = `${kind}:${contentId}`;
+  const alreadyEarned = state.earned.includes(key);
+  if (!grade.perfect || alreadyEarned) return { ok: true, ...grade, earned: false, alreadyEarned, points: 0, state };
+  const paid = pay(state, kind, contentId, now);
+  if (!paid.ok) return paid;
+  return { ok: true, ...grade, earned: true, alreadyEarned: false, points: paid.transaction.points, state: paid.state };
+}
+
+export type WatchOutcome =
+  | { ok: true; watched: number; required: number; earned: boolean; alreadyEarned: boolean; points: number; state: RewardsState }
+  | { ok: false; error: string };
+
+/** Largest single report accepted (the player reports far more often than this). */
+export const MAX_WATCH_REPORT_SECONDS = 600;
+
+/** Add credited valid watch seconds for one video edition; pay once when the requirement is met. */
+export function recordWatch(state: RewardsState, videoId: string, lang: string, seconds: number, now: number): WatchOutcome {
+  const required = requiredWatchSeconds(videoId, lang);
+  if (!required) return { ok: false, error: "This activity does not earn points." };
+  if (!Number.isFinite(seconds) || seconds < 0 || seconds > MAX_WATCH_REPORT_SECONDS) return { ok: false, error: "Invalid watch time." };
+  const key = watchKey(videoId, lang);
+  const watch = { ...(state.watch ?? {}) };
+  watch[key] = Math.min((watch[key] ?? 0) + Math.floor(seconds), 86_400);
+  let next: RewardsState = { ...state, watch };
+  const alreadyEarned = state.earned.includes(`video-finished:${videoId}`);
+  if (alreadyEarned || watch[key] < required)
+    return { ok: true, watched: watch[key], required, earned: false, alreadyEarned, points: 0, state: next };
+  const paid = pay(next, "video-finished", videoId, now);
+  if (!paid.ok) return paid;
+  next = paid.state;
+  return { ok: true, watched: watch[key], required, earned: true, alreadyEarned: false, points: paid.transaction.points, state: next };
 }
 
 export function challengeProgress(state: RewardsState, challengeId: string) {
@@ -164,6 +243,10 @@ export function welcomeAvailableFor(state: RewardsState, productId: string) {
   return !!product && !state.welcomeRedeemed && isWelcomeEligible(product);
 }
 
+/** Unused copies of a voucher this account holds. */
+export const heldVouchers = (state: RewardsState, productId: string) =>
+  (state.vouchers ?? []).filter((v) => v.productId === productId && v.status === "stored").length;
+
 /** Price breakdown shown before confirming; mirrors exactly what `redeem` will charge. */
 export function quote(state: RewardsState, productId: string, useWelcome: boolean) {
   const product = findProduct(productId);
@@ -183,7 +266,9 @@ export function redeem(
 ): Result {
   if (duplicate(state, requestId)) return { ok: false, error: "This redemption was already processed." };
   const product = findProduct(productId);
-  if (!product) return { ok: false, error: "This item is not available." };
+  if (!product || product.retired) return { ok: false, error: "This item is not available." };
+  if (product.voucher && heldVouchers(state, productId) >= product.voucher.maxHeld)
+    return { ok: false, error: "You already hold this voucher. You can hold one of each voucher at a time." };
   if (options.welcome) {
     if (state.welcomeRedeemed) return { ok: false, error: "Your welcome redemption has already been used." };
     if (!isWelcomeEligible(product))
@@ -212,7 +297,20 @@ export function redeem(
         ...state.benefits,
       ]
     : state.benefits;
-  const passes = product.benefit
+  const vouchers = product.voucher
+    ? [
+        {
+          id: `vch-${(state.vouchers ?? []).length + 1}-${now}`,
+          code: passCode(requestId, now),
+          productId,
+          transactionId: transaction.id,
+          issuedAt: now,
+          status: "stored" as const,
+        },
+        ...(state.vouchers ?? []),
+      ]
+    : state.vouchers;
+  const passes = product.benefit || product.voucher
     ? state.passes
     : [
         {
@@ -233,6 +331,7 @@ export function redeem(
       points: state.points - total,
       benefits,
       passes,
+      vouchers,
       welcomeRedeemed: state.welcomeRedeemed || options.welcome,
       transactions: [transaction, ...state.transactions],
     },

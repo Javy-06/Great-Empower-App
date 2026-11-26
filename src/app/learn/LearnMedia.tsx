@@ -36,7 +36,10 @@ import { learnActions, useLearnProgress } from "@/state/learnProgress";
 import { LessonGlyph } from "./LessonGlyph";
 import { CaptionControl } from "./CaptionControl";
 import { LanguageSelector } from "./LanguageSelector";
-import { rewardsActions } from "@/rewards/store";
+import { ProgressBar } from "@/components/ui/Progress";
+import { earningRules } from "@/rewards/catalogue";
+import { RewardQuiz } from "./RewardQuiz";
+import { useWatchTime } from "./useWatchTime";
 import type { LearningCategoryKey } from "@/types/learning";
 
 const go = (hash: string) => {
@@ -396,20 +399,19 @@ export function VideoLessonView({ id }: { id: string }) {
   const video = findVideo(id)!;
   const videoRef = useRef<HTMLVideoElement>(null);
   const progress = useLearnProgress();
-  const [earned, setEarned] = useState<string | null>(null);
   const done = progress.completed.includes(id);
   const portrait = video.orientation === "portrait";
   const lang = progress.language;
   const selected = editionFor(video, lang);
   const playing = selected ?? editionFor(video, "en")!;
   const missing = !selected;
+  // Points depend on valid watch time, never on reaching the end (seeking there doesn't count).
+  const watch = useWatchTime(videoRef, id, playing.lang);
+  const earned = watch.justEarned !== null ? `+${watch.justEarned} pts for watching this video` : null;
 
-  const onEnded = () => {
-    learnActions.complete(id);
-    void rewardsActions.earn("video-finished", id).then((r) => {
-      if (r.ok) setEarned(`+${r.transaction.points} pts for finishing this video`);
-    });
-  };
+  useEffect(() => {
+    if (watch.earned && !done) learnActions.complete(id);
+  }, [watch.earned, done, id]);
 
   return (
     <div className={cn("pb-4", portrait ? "bg-navy-950" : "")}>
@@ -446,7 +448,6 @@ export function VideoLessonView({ id }: { id: string }) {
           preload="metadata"
           poster={playing.poster}
           onPlay={() => learnActions.start(id)}
-          onEnded={onEnded}
           className={cn("block w-full bg-black", portrait ? "aspect-[9/16] rounded-[1.25rem]" : "aspect-video sm:rounded-[1.25rem]")}
         >
           <source src={playing.src} type="video/mp4" />
@@ -470,11 +471,32 @@ export function VideoLessonView({ id }: { id: string }) {
         <div className="mt-3">
           <CaptionControl videoRef={videoRef} dark={portrait} />
         </div>
-        {(done || earned) && (
+        {watch.earned ? (
           <p className={cn("mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption font-bold", portrait ? "bg-white/10 text-white" : "bg-success-50 text-success-700")} role="status">
-            <CheckCircle2 size={14} aria-hidden /> {earned ?? "Watched"}
+            <CheckCircle2 size={14} aria-hidden /> {earned ?? "Watched · points earned"}
           </p>
-        )}
+        ) : watch.required > 0 ? (
+          <div className={cn("mt-4 rounded-2xl p-4", portrait ? "bg-white/10" : "bg-surface ring-1 ring-ink/[0.07]")}>
+            <ProgressBar
+              value={watch.watched}
+              max={watch.required}
+              tone={portrait ? "white" : "teal"}
+              size="sm"
+              onDark={portrait}
+              label="Watch progress"
+              valueLabel={`${formatDuration(watch.watched)} / ${formatDuration(watch.required)}`}
+            />
+            <p className={cn("mt-2 text-caption", portrait ? "text-white/70" : "text-ink-muted")}>
+              Earn {earningRules["video-finished"].points} pts once you've watched the whole video. Only time spent watching counts — skipping ahead,
+              pauses and time on other tabs don't. You can finish over several visits.
+            </p>
+            {watch.error && (
+              <p role="status" className={cn("mt-1.5 text-caption font-semibold", portrait ? "text-gold-300" : "text-gold-700")}>
+                {watch.error} Your progress will be saved again shortly.
+              </p>
+            )}
+          </div>
+        ) : null}
       </Container>
 
       {video.summary && playing.lang !== "en" && (
@@ -513,17 +535,10 @@ export function VideoLessonView({ id }: { id: string }) {
 export function InfographicDetailView({ id }: { id: string }) {
   const g = findInfographic(id)!;
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [earned, setEarned] = useState<string | null>(null);
 
+  // Opening an infographic starts it; passing its quiz (perfect score) completes it and pays.
   useEffect(() => {
-    learnActions.complete(id);
-    let live = true;
-    void rewardsActions.earn("infographic-viewed", id).then((r) => {
-      if (live && r.ok) setEarned(`+${r.transaction.points} pts for studying this infographic`);
-    });
-    return () => {
-      live = false;
-    };
+    learnActions.start(id);
   }, [id]);
 
   return (
@@ -535,11 +550,6 @@ export function InfographicDetailView({ id }: { id: string }) {
         <p className="mt-2 text-overline uppercase tracking-[0.2em] text-teal-700">Infographic · {mediaTopicLabels[g.topic]}</p>
         <h1 className="mt-2 font-brand text-[2rem] font-semibold leading-tight text-navy-950">{g.title}</h1>
         <p className="mt-1 text-body text-ink-secondary">{g.description}</p>
-        {earned && (
-          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1.5 text-caption font-bold text-success-700" role="status">
-            <CheckCircle2 size={14} aria-hidden /> {earned}
-          </p>
-        )}
       </Container>
       <Container className="max-w-[44rem] pt-4">
         <button
@@ -554,6 +564,9 @@ export function InfographicDetailView({ id }: { id: string }) {
           </span>
         </button>
         <p className="mt-2 text-caption text-ink-muted">General education. Product features vary by insurer — check the policy wording.</p>
+      </Container>
+      <Container className="max-w-[44rem] pt-6">
+        <RewardQuiz key={id} kind="infographic-viewed" contentId={id} onPassed={() => learnActions.complete(id)} />
       </Container>
 
       <dialog
