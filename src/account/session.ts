@@ -10,7 +10,7 @@ import {
 } from "./registry";
 import { DEMO_BOOKMARKED, DEMO_COMPLETED, DEMO_DISPLAY_NAME, demoBooking, demoRewardsState } from "./seed";
 import { emptyRewardsState } from "@/rewards/economy";
-import { REWARDS_KEY } from "@/rewards/store";
+import { REWARDS_KEY, WATCH_COVERAGE_KEY, watchCoverageStore } from "@/rewards/store";
 import { LEARN_KEY } from "@/state/learnProgress";
 import { PROFILE_KEY, profileStore } from "@/state/profile";
 import { SESSIONS_KEY } from "@/app/guide/SessionsView";
@@ -33,7 +33,7 @@ export type SessionStatus =
 export const sessionStore = createStore<SessionStatus>("ge-session", () => ({ kind: "signed-out" }), "memory");
 export const useSession = () => useStore(sessionStore);
 
-const ACCOUNT_KEYS = [REWARDS_KEY, LEARN_KEY, PROFILE_KEY, SESSIONS_KEY, CHECKLIST_KEY, NOTIFICATIONS_KEY];
+const ACCOUNT_KEYS = [REWARDS_KEY, LEARN_KEY, PROFILE_KEY, SESSIONS_KEY, CHECKLIST_KEY, NOTIFICATIONS_KEY, WATCH_COVERAGE_KEY];
 const loadCloud = () => import("./cloud");
 
 /* ------------------------------------------------------------------------------------------
@@ -169,6 +169,7 @@ export async function resetDemo() {
     setAccountNamespace(account.id);
   }
   profileStore.reset(); // the demo's device-only Analyze inputs
+  watchCoverageStore.reset(); // the server cleared its watch progress too
 }
 
 export const dismissError = () => sessionStore.set({ kind: "signed-out" });

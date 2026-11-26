@@ -1,6 +1,6 @@
 import { createStore, useStore } from "@/state/store";
 import type { EarningKind, QuizKind } from "./catalogue";
-import type { QuizAnswers } from "./verification";
+import type { Coverage, QuizAnswers } from "./verification";
 import {
   claimChallenge as claimChallengeOp,
   confirmPassUsed as confirmPassUsedOp,
@@ -26,6 +26,14 @@ export const REWARDS_KEY = "ge-rewards-v2";
 export const rewardsStore = createStore<RewardsState>(REWARDS_KEY, emptyRewardsState);
 
 export const useRewards = () => useStore(rewardsStore);
+
+export const WATCH_COVERAGE_KEY = "ge-watch-coverage-v1";
+
+/**
+ * Per account, per video edition ("<videoId>:<lang>"): the parts of the video already credited as
+ * watch time, so replaying them never counts twice. Kept on the device (the server can't see playback).
+ */
+export const watchCoverageStore = createStore<Record<string, Coverage>>(WATCH_COVERAGE_KEY, () => ({}));
 
 export interface RewardsBackend {
   earn: (kind: EarningKind, subjectId: string) => Promise<Result>;

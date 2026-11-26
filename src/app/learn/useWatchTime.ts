@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
-import { rewardsActions, useRewards } from "@/rewards/store";
-import { WatchMeter, requiredWatchSeconds, watchKey } from "@/rewards/verification";
+import { rewardsActions, rewardsStore, useRewards, watchCoverageStore } from "@/rewards/store";
+import { WatchMeter, coveredSeconds, requiredWatchSeconds, watchKey } from "@/rewards/verification";
+
+/** Watch seconds the account has had confirmed (server for cloud, local ledger for device-only). */
+const rewardsStoreWatch = (key: string) => rewardsStore.get().watch?.[key] ?? 0;
 
 /** Report credited time roughly every 15 s of watching, and whenever playback stops. */
 const REPORT_EVERY_SECONDS = 15;
@@ -8,6 +11,7 @@ const REPORT_EVERY_SECONDS = 15;
 /**
  * Tracks VALID watch time for one video edition, event-driven (no polling):
  *  - counts only while the video is playing, the page is visible and the user isn't seeking;
+ *  - counts each part of the video once: replaying footage already credited adds nothing;
  *  - pause, seeking, buffering, end, hidden tab, leaving the page and unmount all stop counting;
  *  - credited seconds are reported to the rewards layer (cloud: the server bounds them by real
  *    elapsed time and pays once the requirement is met).
@@ -31,8 +35,19 @@ export function useWatchTime(videoRef: RefObject<HTMLVideoElement | null>, video
     if (!active) return;
     const v = videoRef.current;
     if (!v) return;
-    const m = new WatchMeter();
+    const key = watchKey(videoId, lang);
+    // Restore what this account already watched of this edition. If the saved coverage is clearly
+    // ahead of the confirmed watch time (progress reset elsewhere, or reports that never landed),
+    // start the coverage over rather than leaving footage that can never count again.
+    let restored = watchCoverageStore.get()[key] ?? [];
+    const confirmed = rewardsStoreWatch(key);
+    if (coveredSeconds(restored) > confirmed + REPORT_EVERY_SECONDS + 2) restored = [];
+    const m = new WatchMeter(restored);
     meter.current = m;
+    const saveCoverage = () => {
+      const round = (x: number) => Math.round(x * 10) / 10;
+      watchCoverageStore.set({ ...watchCoverageStore.get(), [key]: m.coverage.map(([a, b]) => [round(a), round(b)] as [number, number]) });
+    };
     let startedClock = false;
     let shown = 0;
 
@@ -52,6 +67,7 @@ export function useWatchTime(videoRef: RefObject<HTMLVideoElement | null>, video
     const now = () => performance.now();
     const visible = () => document.visibilityState === "visible";
     const flush = () => {
+      saveCoverage();
       const s = m.take();
       if (s > 0) report(s);
       shown = 0;

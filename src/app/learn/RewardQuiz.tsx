@@ -138,7 +138,7 @@ export function RewardQuiz({ kind, contentId, onPassed, onStart }: { kind: QuizK
           )}
         </div>
 
-        <ol className="mt-4 grid gap-3">
+        <ol className="ge-reveal mt-4 grid gap-3">
           {ordered.map((q, i) => {
             const isWrong = phase.wrong.has(q.id);
             const given = q.options.find((o) => o.id === answers[q.id])?.text;
@@ -157,7 +157,9 @@ export function RewardQuiz({ kind, contentId, onPassed, onStart }: { kind: QuizK
                     </p>
                   </div>
                 ) : (
-                  <p className="mt-1 pl-[26px] text-caption text-ink-secondary">{correct}</p>
+                  <p className="mt-1 pl-[26px] text-caption text-ink-secondary">
+                    <span className="font-semibold text-success-700">{correct}.</span> {q.explanation}
+                  </p>
                 )}
               </li>
             );
@@ -196,7 +198,7 @@ export function RewardQuiz({ kind, contentId, onPassed, onStart }: { kind: QuizK
         />
       </div>
 
-      <fieldset key={`${attempt}-${qid}`} data-qid={qid} disabled={checking} className="mt-4">
+      <fieldset key={`${attempt}-${qid}`} data-qid={qid} disabled={checking} className="ge-reveal mt-4">
         <legend className="w-full">
           <h3 ref={headingRef} tabIndex={-1} className="text-body font-semibold text-navy-950 outline-none">{q.prompt}</h3>
         </legend>

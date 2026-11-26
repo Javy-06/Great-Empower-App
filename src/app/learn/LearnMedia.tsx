@@ -487,7 +487,7 @@ export function VideoLessonView({ id }: { id: string }) {
               valueLabel={`${formatDuration(watch.watched)} / ${formatDuration(watch.required)}`}
             />
             <p className={cn("mt-2 text-caption", portrait ? "text-white/70" : "text-ink-muted")}>
-              Earn {earningRules["video-finished"].points} pts once you've watched the whole video. Only time spent watching counts — skipping ahead,
+              Earn {earningRules["video-finished"].points} pts once you've watched the whole video. Only new footage you actually watch counts — skipping ahead, replaying parts you have already watched,
               pauses and time on other tabs don't. You can finish over several visits.
             </p>
             {watch.error && (

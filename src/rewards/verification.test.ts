@@ -4,7 +4,7 @@ import test from "node:test";
 import { quizzes } from "../data/quizzes.ts";
 import { demoLessons } from "../data/demo-courses.ts";
 import { infographics, videos } from "../data/learn-media.ts";
-import { WatchMeter, gradeQuiz, shuffled, watchRequirements } from "./verification.ts";
+import { WatchMeter, addCoverage, coveredSeconds, gradeQuiz, shuffled, watchRequirements, type Coverage } from "./verification.ts";
 
 const v3 = readFileSync(new URL("../../supabase/migrations/20261127000000_rewards_learning_verification.sql", import.meta.url), "utf8");
 
@@ -119,14 +119,51 @@ test("WatchMeter: seeking forward does not count the jump", () => {
   assert.ok(m.pending < 8.4, String(m.pending));
 });
 
-test("WatchMeter: seeking backward adds no time for the jump; rewatching counts as watching", () => {
+test("WatchMeter: seeking backward and replaying already-watched footage adds no time", () => {
   const m = new WatchMeter();
   m.start(0, 0);
   const p = play(m, { real: 0, media: 0 }, 30);
   m.tick(p.real + 250, 5); // jump back 25 s
   assert.ok(Math.abs(m.pending - 30) < 0.01, String(m.pending));
-  play(m, { real: p.real + 250, media: 5 }, 10);
-  assert.ok(Math.abs(m.pending - 40) < 0.01, String(m.pending));
+  const q = play(m, { real: p.real + 250, media: 5 }, 10); // replays 5 → 15: already credited
+  assert.ok(Math.abs(m.pending - 30) < 0.01, String(m.pending));
+  play(m, q, 20); // 15 → 35: only 30 → 35 is new footage
+  assert.ok(Math.abs(m.pending - 35) < 0.05, String(m.pending));
+});
+
+test("WatchMeter: coverage carries across visits, so a new session cannot recount old footage", () => {
+  const first = new WatchMeter();
+  first.start(0, 0);
+  const p = play(first, { real: 0, media: 0 }, 20);
+  first.stop(p.real, p.media);
+  const again = new WatchMeter(first.coverage); // next visit, coverage restored from storage
+  again.start(0, 0);
+  const q = play(again, { real: 0, media: 0 }, 25); // 0 → 25: only 20 → 25 is new
+  assert.ok(Math.abs(again.pending - 5) < 0.05, String(again.pending));
+  assert.ok(Math.abs(coveredSeconds(again.coverage) - 25) < 0.05);
+  assert.ok(q.media > 24);
+});
+
+test("addCoverage merges ranges and reports only new seconds", () => {
+  let c: Coverage = [];
+  let r = addCoverage(c, 0, 10); c = r.coverage; assert.equal(r.added, 10);
+  r = addCoverage(c, 20, 30); c = r.coverage; assert.equal(r.added, 10);
+  r = addCoverage(c, 5, 25); c = r.coverage; assert.equal(r.added, 10);
+  assert.deepEqual(c, [[0, 30]]);
+  r = addCoverage(c, 0, 30); assert.equal(r.added, 0);
+  r = addCoverage(c, 40, 40); assert.equal(r.added, 0);
+});
+
+test("WatchMeter: 2x playback over the whole video can still reach the requirement on a second pass", () => {
+  const m = new WatchMeter();
+  m.start(0, 0);
+  let p = play(m, { real: 0, media: 0 }, 43, 2); // whole 86 s video at 2x
+  const firstPass = m.pending;
+  assert.ok(firstPass <= 43.05, String(firstPass));
+  m.stop(p.real, p.media);
+  m.start(p.real, 0); // replay at 1x: the gaps left by 2x are new footage
+  p = play(m, { real: p.real, media: 0 }, 86);
+  assert.ok(m.pending > 85, String(m.pending));
 });
 
 test("WatchMeter: fast playback never counts faster than real time", () => {
