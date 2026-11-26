@@ -483,7 +483,7 @@ export function VideoLessonView({ id }: { id: string }) {
               tone={portrait ? "white" : "teal"}
               size="sm"
               onDark={portrait}
-              label="Watch progress"
+              label="Valid watch time"
               valueLabel={`${formatDuration(watch.watched)} / ${formatDuration(watch.required)}`}
             />
             <p className={cn("mt-2 text-caption", portrait ? "text-white/70" : "text-ink-muted")}>

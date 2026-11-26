@@ -53,3 +53,9 @@ Each activity pays **once per account**.
 They are aspirational until more learning content (or recurring earning) is added. This is a
 known content-supply limit, not a pricing error. Raising earning values would also change the
 approved Demo seed (2,450), so that decision is left to the product owner.
+
+## Quiz and video experience
+
+- **Quizzes** show one question per screen ("Question 1 of 3", a progress bar, Back and Next). Question order and answer order are shuffled on every attempt. Answers are submitted by id, so shuffling never changes grading.
+- A failed attempt shows the score, your answer, the correct answer and a short explanation. "Try again" asks only the missed questions, reshuffled, and keeps the correct answers. No partial points.
+- **Videos** show "Valid watch time m:ss / m:ss" with a progress bar until the points are earned.

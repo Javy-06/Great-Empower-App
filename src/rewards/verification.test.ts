@@ -4,7 +4,7 @@ import test from "node:test";
 import { quizzes } from "../data/quizzes.ts";
 import { demoLessons } from "../data/demo-courses.ts";
 import { infographics, videos } from "../data/learn-media.ts";
-import { WatchMeter, gradeQuiz, watchRequirements } from "./verification.ts";
+import { WatchMeter, gradeQuiz, shuffled, watchRequirements } from "./verification.ts";
 
 const v3 = readFileSync(new URL("../../supabase/migrations/20261127000000_rewards_learning_verification.sql", import.meta.url), "utf8");
 
@@ -149,4 +149,25 @@ test("WatchMeter.take hands out whole seconds and keeps the fraction", () => {
   play(m, { real: 0, media: 0 }, 2.5);
   assert.equal(m.take(), 2);
   assert.ok(Math.abs(m.pending - 0.5) < 0.01);
+});
+
+test("shuffled display order keeps every item and never changes which answer is correct", () => {
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const seen = new Set<string>();
+  for (const quiz of quizzes) {
+    const order = shuffled(quiz.questions.map((q) => q.id), rand);
+    assert.deepEqual([...order].sort(), quiz.questions.map((q) => q.id).sort());
+    // Answer by id after shuffling options: still a perfect score.
+    const answers: Record<string, string> = {};
+    for (const q of quiz.questions) {
+      const opts = shuffled(q.options, rand);
+      assert.equal(opts.length, 4);
+      seen.add(opts.map((o) => o.id).join(""));
+      answers[q.id] = opts.find((o) => o.id === q.answer)!.id;
+    }
+    assert.equal(gradeQuiz(quiz, answers).perfect, true);
+  }
+  assert.ok(seen.size > 1, "options are actually reordered");
+  assert.deepEqual(shuffled([1, 2, 3], () => 0.999).sort(), [1, 2, 3]);
 });
