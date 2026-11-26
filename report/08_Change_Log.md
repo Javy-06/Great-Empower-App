@@ -72,3 +72,12 @@ Branch `redesign/overnight-product-refresh`. Base for this phase: `49985a4`.
 - Read-only live checks:
   - 25 profiles, 112 ledger rows, 0 mismatches, 0 duplicate earns.
   - Verified earns since the migration: 17.
+
+### v4 — per-account watch clock (approved)
+- Added `supabase/migrations/20261128000000_account_watch_clock.sql`:
+  - New table `ge_private.video_watch_clock`, seeded from existing progress.
+  - `record_video_watch` uses one real-time allowance per account across all videos.
+- Added `supabase/tests/watch-clock.test.mjs` (12 tests: safety, preservation, parallel videos, first report, idle cap, pays once, validation, security, demo reset, invariant).
+- **Applied live once** on 2026-11-26 at 18:54:15 UTC. Data unchanged before and after.
+- `supabase/tests/concurrency-check.mjs` gained 4 checks: parallel quiz, wrong quiz, parallel watch reports and parallel voucher redemptions. **Live run: 7/7 pass.** It created 4 anonymous test accounts.
+- Updated reports 01, 04, 05, 06, 07 and 08, and `docs/demo-accounts-setup.md`.

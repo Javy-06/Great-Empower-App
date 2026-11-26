@@ -219,6 +219,19 @@ cp <repo>/supabase/tests/verification.test.mjs . && \
   V3=<repo>/supabase/migrations/20261127000000_rewards_learning_verification.sql node --test verification.test.mjs
 ```
 
+The v4 per-account watch clock (`20261128000000_account_watch_clock.sql`) has its own suite. It
+applies base and v3, creates watch progress, then applies v4:
+
+```sh
+cp <repo>/supabase/tests/watch-clock.test.mjs . && \
+  BASE=<repo>/supabase/migrations/20261126000000_demo_accounts.sql \
+  V3=<repo>/supabase/migrations/20261127000000_rewards_learning_verification.sql \
+  V4=<repo>/supabase/migrations/20261128000000_account_watch_clock.sql node --test watch-clock.test.mjs
+```
+
+v4 must be applied **after** v3, **once**. It is one transaction, additive, and its preflight refuses to
+run twice or without v3. It needs no app change because the RPC signature and response are unchanged.
+
 ### Applying v3 to a project that already has the base migration
 
 Run `20261127000000_rewards_learning_verification.sql` **once** in the SQL editor. It is one

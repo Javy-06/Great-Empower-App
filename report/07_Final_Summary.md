@@ -38,18 +38,20 @@
 - A rewind/replay gap found during this audit is fixed.
 - **Remaining, documented risks:**
   - The quiz key is readable in the bundle (≤ 450 pts per account, once).
-  - A script can earn video points in real time without watching (≤ 160 pts per account, once).
+  - A script can earn video points in real time without watching, one video at a time since v4 (≤ 160 pts per account, once).
 
 ## Testing results
 | Check | Result |
 |---|---|
 | App unit tests | **176/176** pass (includes 69/69 frozen Engine 2 and 40/40 Engine 1) |
 | Typecheck and build | **Pass** |
-| Database suites | **36/36** base and **28/28** v3 pass |
+| Database suites | **36/36** base, **28/28** v3 and **12/12** v4 pass |
+| Live concurrency check | **7/7** pass (quiz, watch clock, voucher and redemption races) |
 | Headless Chrome E2E | All quiz, video and voucher checks pass, 0 console errors |
 | Lint | **None configured** (not run) |
 
 ## Migration status
+- `20261128000000_account_watch_clock.sql` (v4, one watch clock per account across all videos) was **applied once** on 2026-11-26 at 18:54 UTC, with approval. Data was unchanged before and after. The live concurrency check (7/7) passed afterwards.
 - `20261127000000_rewards_learning_verification.sql` was **applied once** on 2026-11-26 at 15:10:54 UTC to `ddxepshchmmhjvomzaoc`. It must not be re-run, and its preflight blocks a second run.
 - **Live check on 2026-11-27, read-only:**
   - 0 balance mismatches and 0 duplicate earns.
@@ -68,7 +70,7 @@
 ## Outstanding / next steps
 1. **Your decision:** content expansion (or rate changes) to make the 4,500–5,000 tier reachable.
 2. **Revoke** the Vercel "Protection Bypass for Automation" secret (Settings → Deployment Protection).
-3. Optional: a migration that adds a per-account watch clock across all videos (closes R2), after your approval.
+3. ~~Per-account watch clock~~: **done** (v4).
 4. Optional: add a linter (a new dependency, so it needs approval) and decide on repo-wide formatting.
-5. Optional: re-run `supabase/tests/concurrency-check.mjs` against the live project. It creates test accounts.
+5. ~~Live concurrency check~~: **done**, 7/7. Optionally remove its 4 anonymous test accounts with the cleanup SQL in the docs.
 6. When insurance purchasing is designed, use `VOUCHER_TERMS` and the `voucher` config on each product (discount, cap, `maxHeld`) for eligibility, expiry and how vouchers are applied.

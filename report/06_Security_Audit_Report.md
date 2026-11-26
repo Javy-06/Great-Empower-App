@@ -27,6 +27,14 @@
 | `public.redeem_reward` | replaced | Same contract, plus voucher items with codes and the `max_held` limit. Retired products (`active = false`) are refused. |
 | Grants | | The new functions are executable by `authenticated` only. Verified live: `anon=false`, `auth=true` for all four. |
 
+### v4 — per-account watch clock (`20261128000000_account_watch_clock.sql`)
+| Object | Type | Security |
+|---|---|---|
+| `ge_private.video_watch_clock` | table | One row per account: allowance (0–60 s) and the last report time. Private schema; all privileges revoked. Seeded from existing watch progress. |
+| `public.record_video_watch` | replaced in place | Same signature and response. The allowance now comes from the account clock, shared by all videos. Still DEFINER with `search_path=''`; anon can't execute; authenticated can. |
+
+Applied **once** on 2026-11-26 at 18:54 UTC with approval. Before and after (read-only): 27 profiles, 128 ledger rows, balance sum 33,740, 0 mismatches, 5 watch rows totalling 217 s, all unchanged. 4 clock rows were seeded.
+
 ## 3. Manipulation attempts and results
 | Attempt | Defence | Verified by |
 |---|---|---|
@@ -45,21 +53,25 @@
 | Write catalogue, ledger or items directly | No grants | v3: "clients cannot write reward items…" |
 | Read another user's ledger, items or watch progress | RLS own rows only | v3: "watch progress is per account"; base suite isolation tests |
 | Read the answer key | `ge_private` revoked | v3: "the answer key is server-only" |
+| Watch several videos in parallel to multiply credit | v4: one shared account clock | `watch-clock.test.mjs`; **live** concurrency check 6 |
+| Parallel duplicate quiz claims | Profile row lock plus the unique earn key | **Live** concurrency check 4: 5 parallel perfect quizzes paid +50 once |
+| Parallel voucher redemptions | Lock plus `max_held` | **Live** concurrency check 7: 5 in parallel, exactly one |
 | Run v3 twice or without the base | Preflight refuses and rolls back | v3: first and "second run" tests |
 
 ## 4. Issues found during this audit
 | # | Issue | Severity | Action |
 |---|---|---|---|
 | F1 | Replaying already-watched footage (seek back, or a new visit) counted again toward the video requirement | Medium (brief requirement) | **Fixed** in `a6766b4`: coverage-based `WatchMeter`, saved per account and edition, with unit and E2E regression tests |
+| F3 | Watch credit was limited per video edition, so parallel videos could multiply credit (formerly R2) | Low–medium | **Fixed** by v4 (a per-account clock), with 12 DB tests and a live concurrency check |
 | F2 | Before v3, `earn_points` paid lessons, infographics and videos on a bare client call (no verification) | High (the core issue this phase fixes) | **Fixed** by v3 (`earn_points` refuses these kinds), with a regression test |
 
-No other defects were found. No issue required a further live database change.
+No other defects were found. F3 needed one more live migration (v4), which was approved and applied.
 
 ## 5. Remaining risks (accepted and documented)
 | # | Risk | Impact | Suggested mitigation |
 |---|---|---|---|
 | R1 | The quiz answer key is also in the client bundle, and the server returns per-question correctness, so answers can be found or read | ≤ 450 pts per account, once | Accepted: quizzes are for learning, not a secure exam. Rotating question pools would raise the effort. |
-| R2 | Watch credit is limited per edition, so a script could accumulate several videos in parallel at real-time speed without watching | ≤ 160 pts per account, once | A future migration with a per-account clock shared across all videos (needs approval, since it is a live DB change) |
+| R2 | ~~Parallel videos~~ | — | **Closed by v4** (F3) |
 | R3 | The server can't see playback; coverage is kept on the device | Limited by R2's bound | Accepted; inherent to a browser player |
 | R4 | Device-only accounts are checked in the browser only | Local points only; no server value | By design |
 | R5 | `learning_progress` is client-writable for the account's own rows | Cosmetic (completion badges); **pays no points** | Accepted |

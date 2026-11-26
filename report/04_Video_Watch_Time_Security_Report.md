@@ -47,18 +47,18 @@ credit = new footage in [m0, m0 + min(dr, dm)] not already in the coverage list
 ### UI
 "**Valid watch time** m:ss / m:ss", with a progress bar and the rules in plain words. After earning, it shows "+40 pts for watching this video", then "Watched · points earned".
 
-## 3. Server validation (`public.record_video_watch`)
+## 3. Server validation (`public.record_video_watch`, v3 and v4)
 | Check | Behaviour |
 |---|---|
 | Identity | `ge_private.require_uid()`. No user-id parameter. |
 | Video and edition | Must exist in `ge_private.video_requirement`. Otherwise `unknown_content`. |
 | Reported seconds | Must be between 0 and 600 (`invalid_seconds` otherwise) |
 | First report for an edition | Only starts the clock. Credits 0. |
-| Credit | `allowance += real seconds since last report` (capped at **60 s**, so idle time cannot be saved up), then `credit = min(reported, allowance)` |
+| Credit | **One clock per account, shared by all videos** (v4, `ge_private.video_watch_clock`): `allowance += real seconds since the account's previous report of any video` (capped at **60 s**, so idle time cannot be saved up), then `credit = min(reported, allowance)` |
 | Pay | When credited time ≥ the requirement, pays 40 once through `ge_private.pay_activity` (ledger plus the unique `earn_key`) |
 | Storage | `public.video_watch_progress`. RLS is on, **select own rows only**, and clients have no write grants. |
 
-**Result:** the total credited time for an edition can **never exceed the real time that passed** between the client's reports, whatever the client claims.
+**Result:** the total credited time **across all of an account's videos** can never exceed the real time that passed, whatever the client claims. v3 limited each edition separately; v4 closes the parallel-videos gap.
 
 ## 4. Manipulation tests (actually run)
 
@@ -72,6 +72,8 @@ credit = new footage in [m0, m0 + min(dr, dm)] not already in the coverage list
 | Other edition / language | Tracked separately; needs its own full time; pays at most once per video |
 | Fake video id, unknown language, negative or >600 s | Refused |
 | Read another account's progress / write progress directly | Not possible (RLS, no grants) |
+| **v4:** 3 videos reported in parallel after 30 s of real time | 30 s credited **in total** (the other videos get 0) |
+| **v4:** read or write the account clock | `permission denied` |
 | Old path: `earn_points('video-finished', …)` | Refused |
 
 ### App unit tests (`src/rewards/verification.test.ts`): all passed
@@ -88,7 +90,7 @@ Normal playback, pause, hidden tab, forward seek without events, seek back plus 
 | Watch the rest | +40 pts once, at 87 s of unique footage |
 
 ## 5. Remaining limitations
-1. **The server cannot see playback.** It limits credit to real elapsed time, but a script that calls `record_video_watch` on a timer without watching can earn 40 pts per video at real-time speed: 160 pts per account at most, once.
-2. **Videos at the same time.** Each edition has its own server clock, so a script could accumulate several videos in parallel. A per-account clock shared across all videos would close this gap, but it needs a new migration (see report 06, R2).
+1. **The server cannot see playback.** It limits credit to real elapsed time, but a script that calls `record_video_watch` on a timer without watching can earn 40 pts per video at real-time speed, **one video at a time**: about 12 minutes 10 seconds of real time for all 160 pts, once per account.
+2. ~~Videos at the same time.~~ **Fixed by v4.** The account clock is shared by all videos. Proven live: 8 parallel reports on 4 videos credited 5.2 s in 5.2 s of real time.
 3. **Coverage is kept on the device.** Clearing site data or switching devices restarts coverage, but the server's real-time limit and the one-time payment still apply.
 4. **Device-only accounts** are checked in the browser only, by design. They have no server.

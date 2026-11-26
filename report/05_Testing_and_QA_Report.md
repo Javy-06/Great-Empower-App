@@ -12,6 +12,8 @@ Nothing is reported as passing without having run.
 | Production build | `npm run build` (Vite) | **Pass**, built in about 1.8 s. Only the existing chunk-size warning. |
 | DB: base migration suite (PGlite) | `MIGRATION=<repo>/supabase/migrations/20261126000000_demo_accounts.sql node --test db.test.mjs` | **36 / 36 pass** |
 | DB: v3 verification suite (PGlite) | `BASE=<base.sql> V3=<repo>/supabase/migrations/20261127000000_rewards_learning_verification.sql node --test verification.test.mjs` | **28 / 28 pass** |
+| DB: v4 watch-clock suite (PGlite) | `BASE=… V3=… V4=<repo>/supabase/migrations/20261128000000_account_watch_clock.sql node --test watch-clock.test.mjs` | **12 / 12 pass** |
+| **Live concurrency check** (approved) | `node --env-file=.env.local supabase/tests/concurrency-check.mjs` (publishable key only) | **7 / 7 checks pass** (see §4b) |
 | Browser E2E: quiz | headless Chrome, `vite preview` of the production build | **All checks passed**, 0 console errors |
 | Browser E2E: full rewards flow | headless Chrome, production build | **All checks passed**, 0 console errors |
 | Live database verification | read-only SQL against project `ddxepshchmmhjvomzaoc` | **Consistent** (see §4) |
@@ -85,6 +87,24 @@ The cloud account path, which calls the same RPCs, was covered by the PGlite DB 
 
 These counts grew from the pre-migration 21 / 90 / 24,100 because of real preview use after the migration. The invariant still holds.
 
+## 4b. v4 migration and live concurrency check (2026-11-27, approved)
+- **v4 applied once** on 2026-11-26 at 18:54:15 UTC, exit 0.
+  - Before and after (read-only): 27 profiles, 128 ledger rows, balance sum 33,740, 0 mismatches, 5 watch rows (217 s), all unchanged.
+  - 4 clock rows seeded. `record_video_watch` is DEFINER with `search_path=""` and uses the clock. anon can't execute it; authenticated can and can't read the clock.
+- **Live concurrency check** with truly parallel HTTP requests against project `ddxepshchmmhjvomzaoc`. It created 4 anonymous test accounts.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Same request id ×5 (Welcome Offer) | One 200-pt charge; balance 2,250 = ledger |
+| 2 | 5 parallel Welcome Offers, different ids | Exactly one |
+| 3 | 10 parallel 1,000-pt redemptions on 2,250 | 2 succeed; balance 250 = ledger |
+| 4 | 5 parallel perfect quizzes (money-talks) | +50 **exactly once** |
+| 5 | Wrong answer | 2/3, nothing paid |
+| 6 | 8 parallel watch reports on 4 videos after 5 s | **5.2 s credited in 5.2 s** (v3 would have allowed about 21 s) |
+| 7 | 5 parallel RM10 voucher redemptions | Exactly one; −1,000; balance = ledger |
+
+- **Live invariants afterwards:** 31 profiles, 0 balance mismatches, 0 negative balances, 0 duplicate earns.
+
 ## 5. Lint and formatting
 - **Lint:** there is no linter (ESLint or oxlint) and no `lint` script in `package.json`. Lint was **not run** because there is nothing to run. Adding one is a separate decision because it adds a dependency.
 - **Formatting:** `oxfmt` is installed without a config. `npx oxfmt --check src` reports 92 files, but **86 were already non-conforming before this phase**, so the repo does not enforce formatting. Nothing was reformatted, to avoid unrelated diffs.
@@ -99,4 +119,4 @@ There are no failing tests now.
 
 ## 7. Outstanding
 - No linter (above).
-- The parallel-request concurrency check (`supabase/tests/concurrency-check.mjs`) was **not** re-run against the live project in this phase. It creates live accounts, so it needs your approval.
+- ~~Live concurrency check~~: **done** (§4b). It left 4 anonymous test accounts in the live project. The cleanup SQL is in `docs/demo-accounts-setup.md` if you want them removed. They were not deleted, because that is a destructive step.

@@ -99,6 +99,10 @@ Not touched: Engine 2 (`src/calculation-engine/*`), `public/advisor/*`, Producti
 - **Applied once** to Supabase project `ddxepshchmmhjvomzaoc` on **2026-11-26 at 15:10:54 UTC**, with the user's approval. Never re-run.
 - **Details:** see `06_Security_Audit_Report.md` §2 and `05_Testing_and_QA_Report.md` §4. That includes the live verification on 2026-11-27, which was read-only.
 
+### v4 — per-account watch clock
+- `supabase/migrations/20261128000000_account_watch_clock.sql` adds the `ge_private.video_watch_clock` table and replaces `record_video_watch` in place. Watch credit now comes from **one real-time allowance per account**, shared by all videos.
+- **Applied once** on 2026-11-26 at 18:54:15 UTC. Tests: `supabase/tests/watch-clock.test.mjs` (12).
+
 ## 6. Implementation decisions
 1. **Retire rather than delete or rename** the game items. Renaming would keep game behaviour under a new name, and deleting would break existing ledger rows and items.
 2. **Keep earning amounts.** Only the requirement changed. The Demo seed and Welcome Offer stay valid.
