@@ -34,7 +34,6 @@ import {
 } from "@/data/learn-media";
 import { learnActions, useLearnProgress } from "@/state/learnProgress";
 import { LessonGlyph } from "./LessonGlyph";
-import { CategoryArt } from "./CategoryArt";
 import { CaptionControl } from "./CaptionControl";
 import { LanguageSelector } from "./LanguageSelector";
 import { rewardsActions } from "@/rewards/store";
@@ -60,6 +59,14 @@ const topicTone: Record<Exclude<LearningCategoryKey, "all">, string> = {
   protection: "from-teal-800 via-teal-700 to-teal-500",
   "life-planning": "from-navy-900 via-navy-700 to-navy-500",
   practical: "from-crimson-700 via-crimson-600 to-crimson-400",
+};
+
+/** Supplied topic illustrations (trimmed, alpha WebP copies of ui reference/lesson/icons/*.png). */
+const topicArt: Record<Exclude<LearningCategoryKey, "all">, string> = {
+  "financial-wellness": "/images/learn/topics/financial-wellness.webp",
+  protection: "/images/learn/topics/protection-education.webp",
+  "life-planning": "/images/learn/topics/life-planning.webp",
+  practical: "/images/learn/topics/practical-knowledge.webp",
 };
 
 /** Existing photos that suit a lesson's topic. Lessons without one use their bespoke glyph. */
@@ -296,7 +303,7 @@ export function LearnHome() {
           </div>
 
           {/* Topic cards: a visual way into the same filter. Counts come from the lesson list. */}
-          <ul className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          <ul className="mt-3 grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
             {topics.map((c) => {
               const count = lessonCount(c.key);
               if (!count) return null;
@@ -311,16 +318,21 @@ export function LearnHome() {
                     aria-label={`${c.label}: ${count} ${unit.toLowerCase()}${saved ? `, ${saved} saved` : ""}. ${selected ? "Showing this topic." : "Show this topic."}`}
                     onClick={() => setCategory(selected ? "all" : c.key)}
                     className={cn(
-                      "ge-lift group relative flex h-full min-h-[10.5rem] w-full flex-col justify-between overflow-hidden rounded-[1.25rem] bg-gradient-to-br p-4 text-left text-white shadow-e2 md:min-h-[11.5rem]",
+                      "ge-lift group relative flex h-full min-h-[12rem] w-full flex-col items-start justify-start overflow-hidden rounded-[1.25rem] bg-gradient-to-br p-4 text-left text-white shadow-e2 md:min-h-[12rem] md:p-5 lg:min-h-[12.5rem] lg:p-4",
                       topicTone[c.key],
                       selected && "ring-[3px] ring-navy-950 ring-offset-2 ring-offset-canvas",
                     )}
                   >
-                    <span className="pointer-events-none absolute -right-8 -top-12 size-36 rounded-full bg-white/10" aria-hidden />
-                    <span className="pointer-events-none absolute -bottom-16 -left-10 size-32 rounded-full bg-black/[0.06]" aria-hidden />
-                    <CategoryArt
-                      category={c.key}
-                      className="pointer-events-none absolute -bottom-1 -right-1.5 size-[4.5rem] transition-transform duration-500 ease-out group-hover:-translate-y-0.5 group-hover:scale-105 md:size-24 lg:size-28"
+                    {/* Layered background shapes */}
+                    <span className="pointer-events-none absolute -right-10 -top-14 size-40 rounded-full bg-white/10" aria-hidden />
+                    <span className="pointer-events-none absolute -bottom-20 -left-12 size-40 rounded-full bg-black/[0.07]" aria-hidden />
+                    <span className="pointer-events-none absolute -bottom-6 -right-6 size-32 rounded-full bg-white/20 blur-2xl md:size-40" aria-hidden />
+                    {/* Supplied illustration: contained (never stretched or cropped), anchored bottom-right. */}
+                    <img
+                      src={topicArt[c.key]}
+                      alt=""
+                      decoding="async"
+                      className="pointer-events-none absolute bottom-2 right-2 h-[45%] w-[66%] object-contain object-right-bottom drop-shadow-[0_10px_14px_rgb(10_28_51/0.3)] transition-transform duration-500 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04] md:bottom-3 md:right-4 md:h-[60%] md:w-[46%] lg:right-3 lg:h-[46%] lg:w-[48%]"
                     />
                     <span className={cn("relative block text-[1.125rem] font-bold leading-[1.2] [text-shadow:0_1px_2px_rgb(10_28_51/0.25)] md:text-[1.25rem]", saved > 0 && "pr-9")}>
                       {c.label}
@@ -330,7 +342,7 @@ export function LearnHome() {
                         <Heart size={13} className="fill-crimson-600" /> {saved}
                       </span>
                     )}
-                    <span className="relative mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 py-1 pl-1.5 pr-2.5 text-caption font-semibold text-navy-950 shadow-e1">
+                    <span className="relative mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 py-1 pl-1.5 pr-2.5 text-caption font-semibold text-navy-950 shadow-e1">
                       <CirclePlay size={16} className="text-crimson-600" aria-hidden />
                       {count} {unit}
                     </span>
