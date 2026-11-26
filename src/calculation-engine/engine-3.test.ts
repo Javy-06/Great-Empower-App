@@ -116,3 +116,18 @@ test("formatting helpers", () => {
   assert.equal(ratioPermille(1n, 3n), 333);
   assert.equal(ratioPermille(2n, 3n), 667);
 });
+
+test("edge cases: maximum allowed amounts stay exact; zero cover gives 0%; κ 0% and 100% bound employer cover", () => {
+  const max = calculateLifeGap({ ...persona, monthlyDependantSupportMyr: 100_000_000, supportYears: 40, dependantDebtMyr: 100_000_000, finalExpensesMyr: 100_000_000, liquidAssetsMyr: 0, personalLifeCoverMyr: 0 });
+  assert.ok(max.ok);
+  if (!max.ok) return;
+  // 100,000,000 × 12 × 40 + 100,000,000 + 100,000,000 = RM48,200,000,000 → exact in sen.
+  assert.equal(max.variants[1].needSen, 4_820_000_000_000n);
+  assert.equal(formatSen(max.variants[1].gapSen), "RM 48,200,000,000");
+  assert.equal(max.variants[1].ratioPermille, 0);
+  const all = calculateCiRunway({ monthlyNetIncomeMyr: 3_000, recoveryYears: 1, personalCiCoverMyr: 0, employerCiCoverMyr: 36_000, employerPortabilityPercent: 100 });
+  assert.ok(all.ok && all.coverSen === 3_600_000n && all.gapSen === 0n && all.ratioPermille === 1000);
+  const none = calculateCiRunway({ monthlyNetIncomeMyr: 3_000, recoveryYears: 1, personalCiCoverMyr: 0, employerCiCoverMyr: 36_000, employerPortabilityPercent: 0 });
+  assert.ok(none.ok && none.coverSen === 0n && none.gapSen === 3_600_000n && none.ratioPermille === 0);
+  assert.equal(calculateCiRunway({ monthlyNetIncomeMyr: 100_000_001, recoveryYears: 1, personalCiCoverMyr: 0, employerCiCoverMyr: 0, employerPortabilityPercent: 0 }).ok, false);
+});

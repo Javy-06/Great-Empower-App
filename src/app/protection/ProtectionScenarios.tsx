@@ -30,7 +30,8 @@ export function FamilyProtectionScenario() {
   const profileYears =
     profile.dependants === "parents" ? 5 : profile.dependants === "children" ? 10 : profile.dependants === "none" ? 0 : null;
   const [support, setSupport] = useState<Money>("");
-  const [years, setYears] = useState<number>(profileYears ?? 5);
+  // Pre-set only from the profile; otherwise the learner picks — never a silent default.
+  const [years, setYears] = useState<number | null>(profileYears);
   const [debt, setDebt] = useState<Money>("");
   const [other, setOther] = useState<Money>("");
   const [finalExp, setFinalExp] = useState<Money>(String(ENGINE3_REFERENCES.finalExpensesExampleMyr));
@@ -40,8 +41,8 @@ export function FamilyProtectionScenario() {
   const [kappa, setKappa] = useState(0);
 
   const fields = [support, debt, other, finalExp, savings, personal, employer];
-  const missing = fields.some((f) => num(f) === null);
-  const result = missing
+  const missing = years === null || fields.some((f) => num(f) === null);
+  const result = missing || years === null
     ? null
     : calculateLifeGap({
         monthlyDependantSupportMyr: num(support)!,
@@ -91,7 +92,7 @@ export function FamilyProtectionScenario() {
               ))}
               <label className="flex items-center gap-1.5 text-caption text-ink-secondary">
                 Custom
-                <input type="number" min={0} max={40} value={years} onChange={(e) => setYears(Math.max(0, Math.min(40, Math.trunc(Number(e.target.value) || 0))))} className="ge-input h-10 w-20" aria-label="Years of support" />
+                <input type="number" min={0} max={40} value={years ?? ""} placeholder="–" onChange={(e) => setYears(e.target.value === "" ? null : Math.max(0, Math.min(40, Math.trunc(Number(e.target.value) || 0))))} className="ge-input h-10 w-20" aria-label="Years of support" />
               </label>
             </div>
           </div>
@@ -141,7 +142,8 @@ function VariantCard({ variant: v, coverSen }: { variant: GapVariant; coverSen: 
       <p className="text-caption font-semibold text-white/80">{v.label}</p>
       <p className="mt-0.5 text-[11px] leading-snug text-white/55">{v.explanation}</p>
       <p className="mt-2 text-caption text-white/70">Estimated gap</p>
-      <p className="font-brand text-[2rem] font-bold leading-none tabular-nums text-white">{formatSen(v.gapSen)}</p>
+      <p className="font-brand text-[2rem] font-bold leading-none tabular-nums text-white break-all">{formatSen(v.gapSen)}</p>
+      {v.gapSen === 0n && <p className="mt-1 text-caption font-semibold text-teal-200">No gap in this illustration — the cover you counted meets the need.</p>}
       <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-white/15" aria-hidden>
         <div className="h-full rounded-full bg-teal-300" style={{ width: `${coverPct}%` }} />
       </div>
@@ -211,7 +213,8 @@ export function CiRunwayScenario() {
         ) : (
           <>
             <p className="text-caption text-white/70">Estimated gap over {years} {years === 1 ? "year" : "years"}</p>
-            <p className="font-brand text-[2.5rem] font-bold leading-none tabular-nums text-white">{formatSen(result.gapSen)}</p>
+            <p className="font-brand text-[2.5rem] font-bold leading-none tabular-nums text-white break-all">{formatSen(result.gapSen)}</p>
+            {result.gapSen === 0n && <p className="mt-1 text-caption font-semibold text-gold-300">No gap in this illustration — the cover you counted meets the runway.</p>}
             <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-white/15" aria-hidden>
               <div className="h-full rounded-full bg-gold-300" style={{ width: `${Math.min(100, result.ratioPermille / 10)}%` }} />
             </div>
@@ -352,7 +355,7 @@ function Workings({ steps, assumptions, changes }: { steps: Engine3Step[]; assum
       </Disclosure>
       <p className="flex gap-1.5 text-[11px] leading-snug text-white/55">
         <Info size={12} className="mt-0.5 shrink-0" aria-hidden />
-        Formula from the GREAT EMPOWER V2 research blueprint (Engine 3). An educational illustration, not a needs analysis, recommendation or promise that any claim would be paid.
+        Formula from the GREAT EMPOWER V2 research blueprint (Engine 3). An educational illustration from your own numbers — not a quote, a needs analysis, a recommendation to buy any amount or product, or a promise that a claim would be paid.
       </p>
     </div>
   );
