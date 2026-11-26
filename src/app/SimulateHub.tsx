@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Accessibility,
   ArrowLeft,
@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   HeartPulse,
   Info,
+  Ribbon,
   ShieldPlus,
   Users,
   Wallet,
@@ -27,6 +28,19 @@ import {
 } from "@/state/profile";
 import { rewardsActions } from "@/rewards/store";
 import { MedicalClaimSimulator } from "./MedicalClaimSimulator";
+import { CiRunwayScenario, FamilyProtectionScenario } from "./protection/ProtectionScenarios";
+
+const TOOL_IDS = ["tool-bill", "tool-fund", "tool-family", "tool-ci"] as const;
+
+/** `#app/simulate/needs` opens the Needs step; `#app/simulate/needs/<tool-id>` also scrolls to that tool. */
+function readSimulateRoute(): { step: number; tool?: string } {
+  const parts = window.location.hash.replace(/^#/, "").split("/");
+  if (parts[0] === "app" && parts[1] === "simulate" && parts[2] === "needs") {
+    const tool = TOOL_IDS.find((t) => t === parts[3]);
+    return { step: 1, tool };
+  }
+  return { step: 0 };
+}
 
 const go = (hash: string) => {
   window.location.hash = hash;
@@ -44,7 +58,25 @@ const steps = ["Profile", "Needs", "Plan"] as const;
 
 /** Simulate: a three-step personal protection planner around the existing calculators. */
 export function SimulateHub() {
-  const [step, setStep] = useState(0);
+  const [initial] = useState(readSimulateRoute);
+  const [step, setStep] = useState(initial.step);
+  useEffect(() => {
+    // A deep link while Simulate is already open (e.g. back/forward): open Needs and go to the tool.
+    const onHash = () => {
+      const r = readSimulateRoute();
+      if (r.step !== 1) return;
+      setStep(1);
+      if (r.tool) window.setTimeout(() => document.getElementById(r.tool!)?.scrollIntoView({ block: "start" }), 60);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  useEffect(() => {
+    if (!initial.tool) return;
+    // Wait for the Needs step to render, then bring the requested tool into view.
+    const t = window.setTimeout(() => document.getElementById(initial.tool!)?.scrollIntoView({ block: "start" }), 60);
+    return () => window.clearTimeout(t);
+  }, [initial.tool]);
   const toStep = (n: number) => {
     setStep(n);
     window.scrollTo({ top: 0 });
@@ -251,6 +283,8 @@ function Field({ icon: Icon, label, prefix, suffix, children }: { icon: typeof W
 const tools = [
   { id: "tool-bill", title: "Medical bill simulator", hint: "How a hospital bill is shared between you, an employer and a plan", icon: HeartPulse },
   { id: "tool-fund", title: "Emergency fund", hint: "How many months your savings could cover essentials", icon: Wallet },
+  { id: "tool-family", title: "Family protection", hint: "What your dependants might need, compared with life cover you count", icon: Users },
+  { id: "tool-ci", title: "Critical illness runway", hint: "How far a critical illness lump sum might stretch during recovery", icon: Ribbon },
 ];
 
 const keyTerms = [
@@ -265,7 +299,7 @@ function NeedsStep({ onNext }: { onNext: () => void }) {
     <>
       <Container className="max-w-[44rem] pt-6">
         <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">Explore your needs</h2>
-        <p className="mt-1 text-body-sm text-ink-secondary">Two tools. Pick one, enter your own numbers, and see the result.</p>
+        <p className="mt-1 text-body-sm text-ink-secondary">Four tools. Pick one, enter your own numbers, and see the result. New to these covers? <a href="#app/learn/protection" className="font-semibold text-navy-800 underline underline-offset-2">Read Protection explained</a>.</p>
         <ol className="mt-3 grid gap-2.5 sm:grid-cols-2">
           {tools.map((t, i) => (
             <li key={t.id}>
@@ -334,6 +368,34 @@ function NeedsStep({ onNext }: { onNext: () => void }) {
         <EmergencyFundCalculator />
       </Container>
 
+      <Container className="max-w-[1040px] scroll-mt-20 pt-10" id="tool-family">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">3 · Family protection</h2>
+          <span className="rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-bold text-white">Interactive</span>
+        </div>
+        <p className="mt-1 text-body-sm text-ink-secondary">
+          If you died, what might the people who depend on you need — and how much of it would cover you count? Life insurance doesn't cancel debts; this shows the need, not a product.{" "}
+          <a href="#app/learn/protection/life" className="font-semibold text-navy-800 underline underline-offset-2">About life cover</a>
+        </p>
+        <div className="mt-4">
+          <FamilyProtectionScenario />
+        </div>
+      </Container>
+
+      <Container className="max-w-[1040px] scroll-mt-20 pt-10" id="tool-ci">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">4 · Critical illness runway</h2>
+          <span className="rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-bold text-white">Interactive</span>
+        </div>
+        <p className="mt-1 text-body-sm text-ink-secondary">
+          A critical illness payout is a one-off lump sum, not a salary. Compare it with the income a recovery period could cost.{" "}
+          <a href="#app/learn/protection/critical-illness" className="font-semibold text-navy-800 underline underline-offset-2">About critical illness cover</a>
+        </p>
+        <div className="mt-4">
+          <CiRunwayScenario />
+        </div>
+      </Container>
+
       <Container className="max-w-[44rem] pt-6">
         <button type="button" onClick={onNext} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-bold text-white hover:bg-crimson-700">
           See my protection plan <ArrowRight size={18} aria-hidden />
@@ -383,7 +445,7 @@ function PlanStep({ onBack }: { onBack: () => void }) {
       <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
         {[
           { label: "See your analysis", href: "app/analyze" },
-          { label: "Learn the basics", href: "app/learn" },
+          { label: "Protection explained", href: "app/learn/protection" },
           { label: "Practical guides", href: "app/guide" },
         ].map((l) => (
           <button key={l.href} type="button" onClick={() => go(l.href)} className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-navy-900 px-4 text-body-sm font-semibold text-white">

@@ -40,6 +40,7 @@ import { ProgressBar } from "@/components/ui/Progress";
 import { earningRules } from "@/rewards/catalogue";
 import { RewardQuiz } from "./RewardQuiz";
 import { useWatchTime } from "./useWatchTime";
+import { protectionCategories } from "@/data/protection";
 import type { LearningCategoryKey } from "@/types/learning";
 
 const go = (hash: string) => {
@@ -182,6 +183,30 @@ export function LearnHome() {
           </button>
         </Container>
       )}
+
+      {/* Protection explained */}
+      <Container className="mt-5">
+        <button
+          type="button"
+          onClick={() => go("app/learn/protection")}
+          className="group block w-full rounded-[1.25rem] bg-surface p-4 text-left shadow-e1 ring-1 ring-ink/[0.06] transition-shadow hover:shadow-e2"
+        >
+          <span className="flex items-start justify-between gap-3">
+            <span>
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Protection explained</span>
+              <span className="mt-0.5 block font-brand text-[1.5rem] font-semibold leading-tight text-navy-950">What each type of cover does — and doesn't</span>
+            </span>
+            <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-navy-900 text-white transition-transform group-hover:translate-x-0.5">
+              <ArrowRight size={18} aria-hidden />
+            </span>
+          </span>
+          <span className="mt-3 flex flex-wrap gap-1.5">
+            {protectionCategories.map((c) => (
+              <span key={c.slug} className="rounded-full bg-sunken px-2.5 py-1 text-caption font-semibold text-navy-900">{c.purpose}</span>
+            ))}
+          </span>
+        </button>
+      </Container>
 
       {/* Featured long-form lesson */}
       <Container className="mt-8" >

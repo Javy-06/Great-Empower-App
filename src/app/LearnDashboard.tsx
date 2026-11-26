@@ -9,6 +9,8 @@ import type { LearningCategoryKey, LearningLesson } from "@/types/learning";
 import { findInfographic, findVideo } from "@/data/learn-media";
 import { learnActions, useLearnProgress } from "@/state/learnProgress";
 import { InfographicDetailView, LearnHome, VideoLessonView } from "./learn/LearnMedia";
+import { ProtectionExplained } from "./protection/ProtectionHub";
+import { findProtectionCategory, type ProtectionSlug } from "@/data/protection";
 import { RewardQuiz } from "./learn/RewardQuiz";
 import { cn } from "@/lib/cn";
 
@@ -17,7 +19,8 @@ type LearnRoute =
   | { view: "video"; id: string }
   | { view: "infographic"; id: string }
   | { view: "category"; category: LearningCategoryKey }
-  | { view: "lesson"; lessonId: string };
+  | { view: "lesson"; lessonId: string }
+  | { view: "protection"; slug?: ProtectionSlug };
 
 function readLearnRoute(): LearnRoute {
   const hash = window.location.hash.replace(/^#/, "");
@@ -26,6 +29,12 @@ function readLearnRoute(): LearnRoute {
     if (segments[2] === "category" && segments[3]) {
       const category = demoLearningCategories.find((item) => item.key === segments[3]);
       if (category) return { view: "category", category: category.key };
+    }
+    if (segments[2] === "protection") {
+      if (!segments[3]) return { view: "protection" };
+      const found = findProtectionCategory(segments[3]);
+      if (found) return { view: "protection", slug: found.slug };
+      return { view: "protection" };
     }
     if (segments[2] === "video" && segments[3] && findVideo(segments[3]))
       return { view: "video", id: segments[3] };
@@ -259,6 +268,7 @@ export function LearnDashboard() {
 
   if (route.view === "video") return <VideoLessonView id={route.id} />;
   if (route.view === "infographic") return <InfographicDetailView id={route.id} />;
+  if (route.view === "protection") return <ProtectionExplained key={route.slug ?? "hub"} slug={route.slug} />;
 
   /* ---------- Lesson: a reading layout ---------- */
   if (route.view === "lesson") {
@@ -441,6 +451,12 @@ export function LearnDashboard() {
                   </li>
                 ))}
               </ol>
+              <a
+                href="#app/learn/protection"
+                className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-5 text-body-sm font-semibold text-navy-950 hover:bg-white/90"
+              >
+                See which insurance covers which purpose <ArrowRight size={16} aria-hidden />
+              </a>
             </Container>
           </Band>
         )}
