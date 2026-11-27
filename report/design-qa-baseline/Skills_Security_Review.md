@@ -37,3 +37,32 @@
 | `@axe-core/playwright` | 4.14.1 | WCAG accessibility audit inside Playwright |
 
 Both are dev dependencies only: nothing ships to users. pnpm (v10) blocks install scripts by default, and no `playwright install` was run.
+
+## Line-level record
+
+Line numbers refer to the copies in `.agents/skills/`, as reviewed. Removed files are cited as they were in the originals.
+
+| File : line (function) | Behaviour | Purpose | Risk | Decision | Mitigation |
+|---|---|---|---|---|---|
+| `ui-ux-pro-max/scripts/search.py:110-152` (`--persist`) | Writes `design-system/<slug>/MASTER.md` | Save a generated design system | Low (local write) | **SAFE** in search mode | `--persist` and `--design-system` forbidden (AGENTS.md). Always run with `PYTHONDONTWRITEBYTECODE=1`. |
+| `ui-ux-pro-max/scripts/design_system.py:615` | Reads `COLORTERM` | Terminal colours | None | **SAFE** | — |
+| `ui-ux-pro-max/scripts/core.py:848-896` | Function name contains "requests"; no HTTP | Stack-version lookup | None | **SAFE** | — |
+| `ui-ux-pro-max/scripts/validate_data.py:29` | `urllib.parse` only (URL format checks) | Data validation | None | **SAFE** | — |
+| `design-system/scripts/slide-token-validator.py:30` | `subprocess.run([sys.executable, html-token-validator.py, …])` | Delegates to a sibling script | Low | **SAFE**, NOT APPLICABLE (slides) | Not run |
+| `design-system/scripts/fetch-background.py:144-198` | Returns hard-coded Pexels URLs; no requests | Slide backgrounds | None | **SAFE**, NOT APPLICABLE | Not run |
+| `brand/scripts/sync-brand-to-tokens.cjs:14,228-236` | `writeFileSync` tokens JSON + `execFileSync('node', generate-tokens.cjs)` in the current folder | Regenerate tokens from brand markdown | Medium: would create parallel tokens in this repo | **REVIEW**: never run here | Documented in AGENTS.md |
+| `ui-styling/scripts/tailwind_config_gen.py` | Writes a `tailwind.config` file | Tailwind v3 setup | Low | NOT APPLICABLE (v4) | Never run |
+| `design/scripts/icon/generate.py:28-45, 56, 198-237, 290-325` | Loads `.env` from the skill folder, `~/.claude/skills/.env` and `~/.claude/.env` into the environment; sends prompts to Google Gemini with `GEMINI_API_KEY` | AI icon generation | Medium: third-party transmission, reads global secret files, needs a pip package | **UNSAFE for this project** | **Removed** from the local copy |
+| `design/scripts/logo/generate.py:33-46, 59, 145-172` | Same pattern (logo generation) | AI logo generation | Medium | **UNSAFE for this project** | **Removed** |
+| `design/scripts/cip/generate.py:70-85, 205-247` | Same pattern (corporate identity mock-ups) | AI CIP generation | Medium | **UNSAFE for this project** | **Removed** |
+| `ui-styling/scripts/shadcn_add.py:116-140, 163-186` | `subprocess.run(["npx", "shadcn@<ver>", "add", …])`, which downloads and runs a remote package that rewrites project files | Add shadcn components | High: remote code execution plus a forbidden dependency | **UNSAFE** | **Removed** |
+
+**Not found anywhere:**
+- telemetry or analytics calls;
+- `eval` or `exec` on input;
+- obfuscated code;
+- destructive shell commands (`rm -rf`, `del`);
+- global configuration changes;
+- automatic package installation.
+
+The only browser automation is this project's own QA tooling (`scripts/qa`, Playwright).

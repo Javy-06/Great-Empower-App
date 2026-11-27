@@ -89,6 +89,7 @@ Rules:
 - **Inside cards:** padding of 16 px on mobile and 20–24 px from `md`.
 - **Between related items:** gaps of 8–12 px.
 - **Between sections:** 32–48 px.
+- **Container width:** pass a `max-w-*` class to `Container` to narrow it. It then replaces the default 1200 px. (Before 27 Nov 2026 the default silently won, because `cn()` doesn't merge Tailwind classes.)
 - **Page gutter:** `Container` (`max-w-[1200px]`) with 20 px gutters on mobile, 32 px from `sm` and 48 px from `lg`.
 - **Content width:** 1104 px of content at most (1200 px minus gutters). Running text max ~640 px. **Forms and single-column tools max ~720 px on desktop**, never full-width inputs at 1280+.
 - **Grid:** one column under 640 px, two from `sm`/`md` where items are peers, and 3–4 for galleries from `lg`.
@@ -118,6 +119,9 @@ Rules:
 | Interactive learning | Lesson quiz, myth/fact `<details>`, checklist chips, infographic dialog | One question or idea at a time. The answer appears in place with a visible verdict word ("Fact:", "Correct") plus an icon. The points reward is shown next to the action that earns it. Progress always shows "n of N". |
 | Insurance product information | `ProductRow` in category pages | Show only verified official facts, each with a source link. Use the official name, issuer, and conventional vs takaful. List gaps as "needs confirmation". **No prices, rankings, "best", quotes or buy buttons** until a purchase flow is approved. |
 | Comparison | Savings / insurance / investing grid, bill breakdown, lump sum vs income | At most 3–4 columns on mobile. The row label is a `rowheader`. Marks are ✓/✕/– with sr-only words. Numbers come from code (never images). Add a one-line takeaway under the comparison. Label example figures "Illustrative". |
+| Cover cards (covered / not covered) | `ListCard` in `ProtectionHub.tsx` | Each item is an icon tile, a **short title (≤ 32 characters)** and one supporting line. Not-covered items use a crimson ✕ tile on a crimson-50 panel, equally visible, never collapsed. Titles live in data (`mayHelpTitles`, `notAutomaticTitles`), and tests enforce the count and length. |
+| Term explainer | `protection/TermExplainer.tsx` | Tabs (arrow keys) → one plain sentence + one code-drawn diagram + figures labelled illustrative. Figures must reconcile (e.g. RM10,000 − RM500 deductible − 10% co-pay = RM1,450 you / RM8,550 plan). |
+| Product card + compare | `protection/ProductExplorer.tsx` | Verified products only; user-selected comparison (max 3); every fact shows its source; gaps read "Not in verified sources". The application route is read from official wording. No price, rank, quote or buy button. |
 
 ## 6. Visual assets
 
