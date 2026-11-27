@@ -134,7 +134,7 @@ function ProtectionStart() {
               <button
                 type="button"
                 onClick={() => go(`app/learn/protection/${c.slug}`)}
-                aria-label={`${c.purpose}: ${c.event}`}
+                aria-label={`${homeLabels[c.slug]}: ${c.purpose}`}
                 className="flex w-full flex-col items-center gap-1.5 rounded-xl px-1 py-2 text-center hover:bg-white/[0.06]"
               >
                 <span className={`inline-flex size-11 items-center justify-center rounded-xl ${categoryTones[c.slug]}`}>

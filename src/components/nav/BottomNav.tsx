@@ -25,7 +25,7 @@ export function BottomNav({ active, onChange, className }: { active: NavKey; onC
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   'group flex h-14 w-full flex-col items-center justify-center gap-0.5 rounded-full outline-offset-[-3px] transition-[background-color,color,box-shadow] duration-300',
-                  isActive ? 'bg-navy-900 text-white shadow-e2' : 'text-navy-900/70 hover:bg-navy-900/5 hover:text-navy-900',
+                  isActive ? 'bg-navy-900 text-white shadow-e2' : 'text-navy-800 hover:bg-navy-900/5 hover:text-navy-900',
                 )}
               >
                 <Icon size={20} strokeWidth={isActive ? 2.1 : 1.75} aria-hidden />

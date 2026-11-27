@@ -322,7 +322,6 @@ export function LearnHome() {
                   <button
                     type="button"
                     aria-pressed={selected}
-                    aria-label={`${c.label}: ${count} ${unit.toLowerCase()}${saved ? `, ${saved} saved` : ""}. ${selected ? "Showing this topic." : "Show this topic."}`}
                     onClick={() => setCategory(selected ? "all" : c.key)}
                     className={cn(
                       "ge-lift group relative flex h-full min-h-[12rem] w-full flex-col items-start justify-start overflow-hidden rounded-[1.25rem] bg-gradient-to-br p-4 text-left text-white shadow-e2 md:min-h-[12rem] md:p-5 lg:min-h-[12.5rem] lg:p-4",
@@ -352,6 +351,7 @@ export function LearnHome() {
                     <span className="relative mt-2.5 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 py-1 pl-1.5 pr-2.5 text-caption font-semibold text-navy-950 shadow-e1">
                       <CirclePlay size={16} className="text-crimson-600" aria-hidden />
                       {count} {unit}
+                      {saved > 0 && <span className="sr-only">, {saved} saved</span>}
                     </span>
                   </button>
                 </li>

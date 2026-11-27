@@ -199,7 +199,6 @@ function RiskRow({ category: c }: { category: ProtectionCategory }) {
     <button
       type="button"
       onClick={() => go(`${PROTECTION_HASH}/${c.slug}`)}
-      aria-label={`${c.event}: ${c.problem}. ${c.purpose} (${c.official}). Explore`}
       className="group grid w-full grid-cols-[4.5rem_1fr_auto] items-center gap-3 rounded-2xl bg-surface p-2.5 pr-3 text-left ring-1 ring-ink/[0.08] transition-shadow hover:shadow-e2 sm:grid-cols-[5rem_1fr_1.1fr_auto] sm:gap-4"
     >
       <Spot className="w-[4.5rem] sm:w-20" />
@@ -530,9 +529,9 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
         {c.scenario && (
           <button type="button" onClick={() => go(c.scenario!.href)} className="group flex items-center gap-3 rounded-2xl bg-crimson-600 p-4 text-left text-white hover:bg-crimson-700">
             <span className="min-w-0 flex-1">
-              <span className="block text-caption font-bold uppercase tracking-[0.08em] text-white/75">Try it</span>
+              <span className="block text-caption font-bold uppercase tracking-[0.08em] text-white/90">Try it</span>
               <span className="block text-body font-semibold">{c.scenario.label}</span>
-              <span className="block text-caption text-white/80">{c.scenario.text}</span>
+              <span className="block text-caption text-white/90">{c.scenario.text}</span>
             </span>
             <ArrowRight size={18} className="shrink-0" aria-hidden />
           </button>
