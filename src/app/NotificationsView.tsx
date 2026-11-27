@@ -201,7 +201,7 @@ export function NotificationsView() {
                               )}
                               <span className="min-w-0 flex-1">
                                 <span className="flex items-center justify-between gap-2">
-                                  <span className={cn("truncate rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em]", labelTone[n.category])}>
+                                  <span className={cn("min-w-0 rounded-md px-2 py-0.5 text-[11px] font-bold uppercase leading-tight tracking-[0.06em]", labelTone[n.category])}>
                                     {n.label}
                                   </span>
                                   <span className="flex shrink-0 items-center gap-2 text-caption text-ink-muted">

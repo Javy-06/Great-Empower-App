@@ -97,9 +97,8 @@ export function ApplicationApp() {
   }, []);
 
   const primaryDestinations: NavKey[] = ["home", "learn", "simulate", "analyze", "guide"];
-  const activePrimary: NavKey = primaryDestinations.includes(destination as NavKey)
-    ? (destination as NavKey)
-    : "home";
+  // Pages outside the five destinations (Rewards, Wallet, Notifications…) highlight no tab.
+  const activePrimary: NavKey | null = primaryDestinations.includes(destination as NavKey) ? (destination as NavKey) : null;
   const inGame = currentRoute === GAME_HASH || currentRoute === LEGACY_GAME_HASH;
   const wasInGame = useRef(inGame);
   useEffect(() => {

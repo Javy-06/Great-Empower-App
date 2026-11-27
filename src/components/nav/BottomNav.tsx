@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn'
  * Floating, pill-shaped glass navigation. It sits above the phone's own home indicator using the
  * safe-area inset — it never imitates the operating system's navigation buttons.
  */
-export function BottomNav({ active, onChange, className }: { active: NavKey; onChange?: (k: NavKey) => void; className?: string }) {
+export function BottomNav({ active, onChange, className }: { active: NavKey | null; onChange?: (k: NavKey) => void; className?: string }) {
   return (
     <nav
       aria-label="Primary"

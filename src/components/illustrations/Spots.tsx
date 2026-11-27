@@ -206,3 +206,36 @@ export function ProfileSpot({ className }: { className?: string }) {
     </Frame>
   );
 }
+
+/** A ticket-style pass with a perforated stub and a reward tag — redemption passes (empty state). */
+export function PassSpot({ className }: { className?: string }) {
+  return (
+    <Frame tone="gold" className={className}>
+      <g transform="rotate(-8 60 52)">
+        <path d="M24 32h72v12a6 6 0 0 0 0 12v12H24V56a6 6 0 0 0 0-12Z" className="fill-white" />
+        <path d="M74 34v32" className="stroke-navy-100" strokeWidth="2" strokeDasharray="3 3" fill="none" />
+        <rect x="32" y="42" width="30" height="4" rx="2" className="fill-navy-800" />
+        <rect x="32" y="51" width="20" height="3" rx="1.5" className="fill-navy-100" />
+        <circle cx="85" cy="50" r="6" className="fill-gold-500" />
+        <path d="m82.5 50 1.8 1.8 3.4-3.6" className="stroke-white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      </g>
+      <circle cx="96" cy="24" r="3" className="fill-crimson-600" />
+      <circle cx="22" cy="72" r="2.5" className="fill-teal-500" />
+    </Frame>
+  );
+}
+
+/** A navy voucher card with a shield — GREAT EMPOWER Vouchers kept for later (empty state). */
+export function VoucherSpot({ className }: { className?: string }) {
+  return (
+    <Frame tone="navy" className={className}>
+      <rect x="22" y="30" width="76" height="46" rx="7" className="fill-navy-900" />
+      <path d="M22 62h76v7a7 7 0 0 1-7 7H29a7 7 0 0 1-7-7Z" className="fill-crimson-600" />
+      <rect x="31" y="39" width="26" height="4" rx="2" className="fill-white/80" />
+      <rect x="31" y="48" width="16" height="3" rx="1.5" className="fill-white/40" />
+      <path d="M79 37l9 3.5v6.5c0 5.5-4 9-9 10.5-5-1.5-9-5-9-10.5v-6.5Z" className="fill-white" />
+      <path d="m75.5 46.5 2.5 2.5 5-5" className="stroke-navy-900" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <circle cx="102" cy="24" r="3" className="fill-gold-500" />
+    </Frame>
+  );
+}

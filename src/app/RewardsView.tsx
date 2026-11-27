@@ -20,6 +20,7 @@ import {
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
+import { PassSpot, VoucherSpot } from "@/components/illustrations/Spots";
 import {
   VOUCHER_TERMS,
   WELCOME_PRICE,
@@ -43,7 +44,7 @@ const go = (hash: string) => {
 const pts = (n: number) => `${n.toLocaleString("en-MY")} pts`;
 
 const SIMULATED_NOTE =
-  "Points, Marketplace brands and items are fictional and have no cash value; the brands are not real merchants. Great Empower Vouchers are for future insurance purchases, which are not available yet.";
+  "Points, Marketplace brands and items are fictional and have no cash value; the brands are not real merchants. GREAT EMPOWER Vouchers are for future insurance purchases, which are not available yet.";
 
 const foodAndDrink = activeProducts.filter(isWelcomeEligible);
 const vouchers = activeProducts.filter((p) => p.voucher);
@@ -193,16 +194,16 @@ function RewardsHub() {
         </p>
       </Container>
 
-      {/* Great Empower Vouchers */}
+      {/* GREAT EMPOWER Vouchers */}
       <Container className="mt-8">
         <div className="flex items-end justify-between gap-3">
-          <h2 className="text-heading text-navy-950">Great Empower Vouchers</h2>
+          <h2 className="text-heading text-navy-950">GREAT EMPOWER Vouchers</h2>
           <button type="button" onClick={() => go("app/rewards/marketplace/great-empower")} className="inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-navy-900">
             View all <ArrowRight size={15} aria-hidden />
           </button>
         </div>
         <p className="mt-1 text-body-sm text-ink-secondary">
-          Save towards future Great Empower insurance purchases. Insurance purchasing isn't available yet — vouchers are kept in your wallet until it is.
+          Save towards future GREAT EMPOWER insurance purchases. Insurance purchasing isn't available yet — vouchers are kept in your wallet until it is.
         </p>
         <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {vouchers.map((p) => (
@@ -216,12 +217,12 @@ function RewardsHub() {
       {/* Marketplace entry */}
       <Container className="mt-6">
         <button type="button" onClick={() => go("app/rewards/marketplace")} className="group relative w-full overflow-hidden rounded-[1.5rem] bg-navy-950 p-5 text-left text-white">
-          <span className="text-overline uppercase tracking-[0.2em] text-teal-200">Great Empower</span>
+          <span className="text-overline uppercase tracking-[0.2em] text-teal-200">GREAT EMPOWER</span>
           <span className="mt-1 flex items-center gap-2 font-brand text-[1.75rem] font-semibold">
             <Store size={22} aria-hidden /> Marketplace
           </span>
           <span className="mt-1 block max-w-[20rem] text-body-sm text-white/75">
-            Healthy food and drinks, wellness essentials and Great Empower Vouchers.
+            Healthy food and drinks, wellness essentials and GREAT EMPOWER Vouchers.
           </span>
           <span className="mt-4 flex -space-x-2">
             {activeBrands.filter((b) => b.logo).map((b) => (
@@ -244,7 +245,7 @@ function Marketplace({ brandId }: { brandId?: BrandId }) {
   const list = active ? activeProducts.filter((p) => p.brand === active) : activeProducts;
   return (
     <>
-      <PageHero eyebrow="Great Empower" title="Marketplace" text="Redeem healthy choices, wellness essentials and Great Empower Vouchers." backLabel="Marketplace" onBack={() => go("app/rewards")} titleId="market-title">
+      <PageHero eyebrow="GREAT EMPOWER" title="Marketplace" text="Redeem healthy choices, wellness essentials and GREAT EMPOWER Vouchers." backLabel="Marketplace" onBack={() => go("app/rewards")} titleId="market-title">
         <p className="mt-4 inline-flex h-9 items-center gap-2 rounded-full bg-white/10 px-3.5 text-body-sm font-semibold">
           <Coins size={16} className="text-gold-300" aria-hidden /> {pts(state.points)} available
         </p>
@@ -295,7 +296,7 @@ function VoucherVisual({ product, className }: { product: Product; className?: s
     <span className={cn("relative flex aspect-square w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-navy-950 via-navy-800 to-crimson-700 p-4 text-white", className)}>
       <span aria-hidden className="absolute -right-8 -top-8 size-28 rounded-full bg-white/10" />
       <span aria-hidden className="absolute -bottom-10 -left-6 size-24 rounded-full bg-crimson-500/25" />
-      <span className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-teal-200">Great Empower</span>
+      <span className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-teal-200">GREAT EMPOWER</span>
       <span className="relative">
         <span className="block font-brand text-[2.5rem] font-bold leading-none">{v.face}</span>
         <span className="mt-1 block text-[11px] font-semibold text-white/80">{v.discount.type === "percent" ? `off · up to RM${v.discount.capRm}` : "off"}</span>
@@ -386,7 +387,7 @@ function ProductDetail({ id }: { id: string }) {
         </p>
         {product.voucher && (
           <p className="mt-3 rounded-xl bg-navy-50 px-4 py-3 text-body-sm text-navy-900">
-            Saved in your wallet for a future eligible Great Empower insurance purchase. Insurance purchasing isn't
+            Saved in your wallet for a future eligible GREAT EMPOWER insurance purchase. Insurance purchasing isn't
             available yet, so it can't be used today.
           </p>
         )}
@@ -546,15 +547,24 @@ function WalletView() {
         <h2 className="text-heading text-navy-950">Redemption passes</h2>
         <div className="mt-3 grid grid-cols-2 rounded-full bg-sunken p-1" role="tablist" aria-label="Pass status">
           {(["ready", "used"] as const).map((k) => (
-            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn("h-10 rounded-full text-caption font-bold", tab === k ? "bg-surface text-navy-950 shadow-e1" : "text-ink-muted")}>
+            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={cn("h-11 rounded-full text-caption font-bold", tab === k ? "bg-surface text-navy-950 shadow-e1" : "text-ink-muted")}>
               {k === "ready" ? "Ready to use" : "Used"} ({state.passes.filter((p) => p.status === k).length})
             </button>
           ))}
         </div>
         {list.length === 0 ? (
-          <p className="mt-4 rounded-xl bg-surface px-4 py-6 text-center text-body-sm text-ink-muted ring-1 ring-ink/[0.07]">
-            {tab === "ready" ? "No passes yet — redeem food, drinks or wellness items in the Rewards Hub." : "No used passes yet."}
-          </p>
+          <div className="mt-3 flex items-center gap-4 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
+            <PassSpot className="w-24 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-body-sm font-semibold text-navy-950">{tab === "ready" ? "No passes yet" : "No used passes yet"}</p>
+              <p className="mt-0.5 text-caption text-ink-muted">{tab === "ready" ? "Redeem a food, drink or wellness item and its pass appears here." : "Passes move here once you use them."}</p>
+              {tab === "ready" && (
+                <button type="button" onClick={() => go("app/rewards/marketplace")} className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-crimson-600">
+                  Browse rewards <ArrowRight size={16} aria-hidden />
+                </button>
+              )}
+            </div>
+          </div>
         ) : (
           <ul className="mt-3 grid gap-2.5">
             {list.map((p) => {
@@ -583,9 +593,18 @@ function WalletView() {
       </Container>
 
       <Container className="mt-7">
-        <h2 className="text-heading text-navy-950">Great Empower Vouchers</h2>
+        <h2 className="text-heading text-navy-950">GREAT EMPOWER Vouchers</h2>
         {(state.vouchers ?? []).length === 0 ? (
-          <p className="mt-2 text-body-sm text-ink-muted">Vouchers you redeem are kept here for future Great Empower insurance purchases.</p>
+          <div className="mt-3 flex items-center gap-4 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
+            <VoucherSpot className="w-24 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-body-sm font-semibold text-navy-950">No vouchers yet</p>
+              <p className="mt-0.5 text-caption text-ink-muted">Redeemed vouchers are saved here for future insurance purchases.</p>
+              <button type="button" onClick={() => go("app/rewards/marketplace")} className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-crimson-600">
+                See vouchers <ArrowRight size={16} aria-hidden />
+              </button>
+            </div>
+          </div>
         ) : (
           <ul className="mt-3 grid gap-2.5">
             {(state.vouchers ?? []).map((v) => {
@@ -606,7 +625,7 @@ function WalletView() {
           </ul>
         )}
         <p className="mt-2 text-caption text-ink-muted">
-          For future eligible Great Empower insurance purchases. Insurance purchasing isn't available in the app yet, so vouchers can't be used today. One voucher per purchase; vouchers can't be combined.
+          Insurance purchasing isn't available in the app yet, so vouchers can't be used today. One voucher per purchase; vouchers can't be combined.
         </p>
       </Container>
 

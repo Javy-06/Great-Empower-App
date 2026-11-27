@@ -278,7 +278,7 @@ export function FeaturedHero({
                 onClick={() => goTo(i)}
                 aria-label={`Show ${slide.label}`}
                 aria-current={active ? "true" : undefined}
-                className="group inline-flex h-11 min-w-6 items-center justify-center px-1.5"
+                className="group inline-flex h-11 min-w-11 items-center justify-center"
               >
                 <span
                   className={cn(
