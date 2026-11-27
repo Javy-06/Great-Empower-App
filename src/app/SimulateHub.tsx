@@ -113,11 +113,11 @@ export function SimulateHub() {
                   onClick={() => toStep(i)}
                   aria-current={active ? "step" : undefined}
                   className={cn(
-                    "flex h-11 w-full items-center justify-center gap-1.5 rounded-full px-1 text-[11px] font-bold uppercase tracking-[0.03em] transition-colors sm:text-caption",
+                    "flex h-11 w-full items-center justify-center gap-1.5 rounded-full px-1 text-[12px] font-bold uppercase tracking-[0.03em] transition-colors sm:text-caption",
                     active ? "bg-crimson-50 text-crimson-600" : "text-navy-900",
                   )}
                 >
-                  <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[11px]", active ? "bg-crimson-600 text-white" : done ? "bg-navy-900 text-white" : "bg-sunken text-navy-900")}>
+                  <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[12px]", active ? "bg-crimson-600 text-white" : done ? "bg-navy-900 text-white" : "bg-sunken text-navy-900")}>
                     {done ? <Check size={13} aria-hidden /> : i + 1}
                   </span>
                   <span className="truncate">{label}</span>

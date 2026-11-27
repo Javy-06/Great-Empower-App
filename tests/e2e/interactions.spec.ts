@@ -118,3 +118,23 @@ test("home: next-step path highlights the first unfinished step and links onward
   await expect(page).toHaveURL(/#app\/learn\/protection\/products$/);
   expectClean(problems);
 });
+
+test("family scenario: guided steps gate Next until filled; example reaches the same engine result", async ({ signedIn: page, problems }) => {
+  await go(page, "app/simulate/needs/tool-family");
+  const panel = page.locator("#tool-family");
+  await expect(panel.getByText("Step 1 of 3")).toBeVisible();
+  const next = panel.getByRole("button", { name: "Next" });
+  await expect(next).toBeDisabled();
+  await panel.getByLabel("Monthly support for dependants").fill("400");
+  await panel.getByRole("button", { name: /Parents · 5y/ }).click();
+  await expect(next).toBeEnabled();
+  await next.click();
+  await expect(panel.getByText("Step 2 of 3")).toBeVisible();
+  await expect(panel.getByText("Support: RM400/month for 5 years")).toBeVisible();
+  // The research example fills every step and jumps to the result (engine unchanged).
+  await panel.getByRole("button", { name: /Fill in the research example/ }).click();
+  await expect(panel.getByText("Step 3 of 3")).toBeVisible();
+  await expect(panel).toContainText("RM 40,000");
+  await expect(panel).toContainText("RM 44,000");
+  expectClean(problems);
+});

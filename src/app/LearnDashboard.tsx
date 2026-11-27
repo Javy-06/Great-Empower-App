@@ -373,7 +373,7 @@ export function LearnDashboard() {
                       className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl bg-navy-50 px-4 text-left text-body-sm font-semibold text-navy-900"
                     >
                       <span>
-                        <span className="block text-[10px] font-bold uppercase tracking-[0.1em] text-teal-700">{r.kind}</span>
+                        <span className="block text-[12px] font-bold uppercase tracking-[0.1em] text-teal-700">{r.kind}</span>
                         {r.label}
                       </span>
                       <ArrowRight size={16} aria-hidden />

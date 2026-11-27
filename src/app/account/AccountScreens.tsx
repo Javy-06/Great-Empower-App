@@ -295,7 +295,7 @@ export function WelcomeScreen() {
             title="App Demo"
             subtitle="Watch a quick tour of key features"
             trailing={
-              <span className="shrink-0 rounded-full bg-sunken px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted ring-1 ring-ink/[0.06]">
+              <span className="shrink-0 rounded-full bg-sunken px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted ring-1 ring-ink/[0.06]">
                 Coming soon
               </span>
             }
@@ -312,7 +312,7 @@ export function WelcomeScreen() {
             {features.map(({ label, icon: Icon, tone }) => (
               <li key={label} className={cn("flex aspect-[4/5] flex-col items-center justify-center gap-2 rounded-2xl ring-1 sm:aspect-square", tone)}>
                 <Icon size={24} strokeWidth={1.9} aria-hidden />
-                <span className="text-[11px] font-semibold text-navy-950 sm:text-caption">{label}</span>
+                <span className="text-[12px] font-semibold text-navy-950 sm:text-caption">{label}</span>
               </li>
             ))}
           </ul>

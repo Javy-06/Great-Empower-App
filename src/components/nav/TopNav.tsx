@@ -99,7 +99,7 @@ export function TopNav({
           <Bell size={20} strokeWidth={1.75} aria-hidden />
           {unread > 0 && (
             <span
-              className="absolute right-1.5 top-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-crimson-600 px-1 text-[10px] font-bold leading-4 text-white"
+              className="absolute right-1.5 top-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-crimson-600 px-1 text-[12px] font-bold leading-4 text-white"
               aria-hidden
             >
               {unread > 9 ? "9+" : unread}

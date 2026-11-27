@@ -144,7 +144,7 @@ function ProtectionStart() {
                 <span className={`inline-flex size-11 items-center justify-center rounded-xl ${categoryTones[c.slug]}`}>
                   <Icon size={20} aria-hidden />
                 </span>
-                <span className="text-[11px] font-semibold leading-tight text-white/85">{homeLabels[c.slug]}</span>
+                <span className="text-[12px] font-semibold leading-tight text-white/85">{homeLabels[c.slug]}</span>
               </button>
             </li>
           );

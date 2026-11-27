@@ -166,7 +166,7 @@ export function LearnHome() {
           >
             <LessonCover id={next.id} category={next.category} />
             <span className="min-w-0 flex-1">
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-200">Continue learning</span>
+              <span className="block text-[12px] font-semibold uppercase tracking-[0.18em] text-teal-200">Continue learning</span>
               <span className="mt-0.5 block font-brand text-[1.375rem] font-semibold leading-tight">{next.title}</span>
               <span className="mt-1.5 flex items-center gap-2 text-caption text-white/70">
                 <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15">
@@ -191,7 +191,7 @@ export function LearnHome() {
         >
           <span className="flex items-start justify-between gap-3">
             <span>
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">Protection explained</span>
+              <span className="block text-[12px] font-semibold uppercase tracking-[0.18em] text-teal-700">Protection explained</span>
               <span className="mt-0.5 block font-brand text-[1.5rem] font-semibold leading-tight text-navy-950">What each type of cover does — and doesn't</span>
             </span>
             <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-navy-900 text-white transition-transform group-hover:translate-x-0.5">
@@ -260,7 +260,7 @@ export function LearnHome() {
             <span className="relative block aspect-video">
               <img src={longShown.poster} alt="" className="ge-skeleton h-full w-full object-cover" />
               <span className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent" aria-hidden />
-              <span className="absolute left-3 top-3 rounded-md bg-crimson-600 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">Foundation lesson</span>
+              <span className="absolute left-3 top-3 rounded-md bg-crimson-600 px-2 py-0.5 text-[12px] font-bold uppercase tracking-[0.08em] text-white">Foundation lesson</span>
               <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 text-caption font-semibold text-white">
                 <Clock3 size={12} aria-hidden /> {formatDuration(longShown.seconds)} · {languageLabels[longShown.lang].native}
               </span>
@@ -290,7 +290,7 @@ export function LearnHome() {
                       <CheckCircle2 size={20} className="absolute right-2 top-2 text-success-600 drop-shadow" aria-label="Watched" />
                     )}
                     {lang !== "en" && (
-                      <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-white">
+                      <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[12px] font-bold uppercase tracking-[0.06em] text-white">
                         English only
                       </span>
                     )}
@@ -380,7 +380,7 @@ export function LearnHome() {
                       {c.label}
                     </span>
                     {saved > 0 && (
-                      <span className="absolute right-3 top-3 inline-flex h-7 items-center gap-1 rounded-full bg-white/95 px-2 text-[11px] font-bold text-crimson-600 shadow-e1" aria-hidden>
+                      <span className="absolute right-3 top-3 inline-flex h-7 items-center gap-1 rounded-full bg-white/95 px-2 text-[12px] font-bold text-crimson-600 shadow-e1" aria-hidden>
                         <Heart size={13} className="fill-crimson-600" /> {saved}
                       </span>
                     )}
@@ -412,7 +412,7 @@ export function LearnHome() {
                   <button type="button" onClick={() => go(`app/learn/lesson/${lesson.id}`)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
                     <LessonGlyph id={lesson.id} category={lesson.category} className="size-14 shrink-0" />
                     <span className="min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-muted">{lesson.categoryLabel}</span>
+                      <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-ink-muted">{lesson.categoryLabel}</span>
                       <span className="mt-0.5 block font-brand text-[1.1875rem] font-semibold leading-tight text-navy-950">{lesson.title}</span>
                       <span className="mt-0.5 flex items-center gap-1.5 text-caption text-ink-muted">
                         <Clock3 size={12} aria-hidden /> {lesson.minutes} min read
@@ -668,7 +668,7 @@ function Related({ ids, dark }: { ids: string[]; dark?: boolean }) {
             >
               <img src={m.kind === "video" ? m.poster : m.thumb} alt="" loading="lazy" className="size-14 shrink-0 rounded-xl object-cover object-top" />
               <span className="min-w-0 flex-1">
-                <span className={cn("block text-[10px] font-bold uppercase tracking-[0.1em]", dark ? "text-teal-200" : "text-teal-700")}>
+                <span className={cn("block text-[12px] font-bold uppercase tracking-[0.1em]", dark ? "text-teal-200" : "text-teal-700")}>
                   {m.kind === "video" ? `Video · ${formatDuration(m.seconds)}` : "Infographic"}
                 </span>
                 <span className={cn("block text-body-sm font-semibold", dark ? "text-white" : "text-navy-950")}>{m.title}</span>

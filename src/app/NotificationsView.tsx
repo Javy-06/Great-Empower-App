@@ -140,7 +140,7 @@ export function NotificationsView() {
                   {count > 0 && (
                     <span
                       className={cn(
-                        "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-5 transition-colors duration-300",
+                        "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[12px] font-bold leading-5 transition-colors duration-300",
                         selected ? "bg-white text-navy-950" : "bg-crimson-600 text-white",
                       )}
                     >
@@ -201,7 +201,7 @@ export function NotificationsView() {
                               )}
                               <span className="min-w-0 flex-1">
                                 <span className="flex items-center justify-between gap-2">
-                                  <span className={cn("min-w-0 rounded-md px-2 py-0.5 text-[11px] font-bold uppercase leading-tight tracking-[0.06em]", labelTone[n.category])}>
+                                  <span className={cn("min-w-0 rounded-md px-2 py-0.5 text-[12px] font-bold uppercase leading-tight tracking-[0.06em]", labelTone[n.category])}>
                                     {n.label}
                                   </span>
                                   <span className="flex shrink-0 items-center gap-2 text-caption text-ink-muted">

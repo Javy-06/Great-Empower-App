@@ -121,7 +121,7 @@ export function PassView({ id }: { id: string }) {
           <div className="flex items-center gap-3 p-5 pb-3">
             {brand && <img src={brand.logo} alt="" className="size-12 rounded-xl object-contain ring-1 ring-ink/10" />}
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-crimson-600">In-game pass</p>
+              <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-crimson-600">In-game pass</p>
               <h1 className="font-brand text-[1.625rem] font-semibold leading-tight">{product?.name}</h1>
               <p className="text-caption text-ink-muted">{brand?.name}</p>
             </div>

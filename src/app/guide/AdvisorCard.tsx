@@ -46,7 +46,7 @@ export function AdvisorCard({ advisor, selected, onSelect }: { advisor: Advisor;
         <span className="min-w-0 flex-1">
           <span className="block text-body font-semibold text-navy-950">{advisor.name}</span>
           <span className="block text-caption text-ink-secondary">{advisor.specialization}</span>
-          <span className="mt-0.5 flex items-center gap-1 text-[11px] text-ink-muted">
+          <span className="mt-0.5 flex items-center gap-1 text-[12px] text-ink-muted">
             <Languages size={12} aria-hidden /> {advisor.languages.join(" · ")}
           </span>
         </span>

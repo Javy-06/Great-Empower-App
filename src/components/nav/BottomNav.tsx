@@ -29,7 +29,7 @@ export function BottomNav({ active, onChange, className }: { active: NavKey | nu
                 )}
               >
                 <Icon size={20} strokeWidth={isActive ? 2.1 : 1.75} aria-hidden />
-                <span className={cn('text-[11px] leading-none', isActive ? 'font-semibold' : 'font-medium')}>{label}</span>
+                <span className={cn('text-[12px] leading-none', isActive ? 'font-semibold' : 'font-medium')}>{label}</span>
               </button>
             </li>
           )

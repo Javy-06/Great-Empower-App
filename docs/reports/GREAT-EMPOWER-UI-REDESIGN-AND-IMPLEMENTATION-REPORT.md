@@ -309,3 +309,12 @@ All figures are labelled illustrative and reconcile.
 - Learn at 390 px.
 
 **Known overlap:** the hero carousel's "Continue learning" repeats step 1 of the path. They're kept together for now because the carousel has other slides; consider giving slide 1 a different CTA.
+
+## Addendum: Rewards, Simulate and consistency (final polish)
+Details are in `docs/reports/GREAT-EMPOWER-FINAL-UI-POLISH-REPORT.md`.
+
+**Summary:**
+- **Rewards:** membership-style points card (redeemable count, next-voucher progress); category shortcuts; welcome price shown inline instead of badges over photos; claimable challenges first. Rewards engine and security untouched.
+- **Simulate:** the Family tool becomes a guided three-step flow with Back/Next and a running summary. Engine 3 unchanged, and the test confirms RM 40,000 / RM 44,000.
+- **Consistency:** all text is now at least 12 px (overline token plus 47 overrides). QA warnings went from 130 to 0.
+- **Tests:** 196 unit tests; 202 Playwright; gate 0/0 on 130 checks; visual baselines 12/12 after the intended refresh.

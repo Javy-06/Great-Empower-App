@@ -219,7 +219,7 @@ function CompareTable({ products, onRemove }: { products: ResearchedProduct[]; o
                 {c ? (
                   <>
                     {c.value}
-                    {c.source && <span className="mt-1 flex items-center gap-1 text-[11px] text-teal-800"><BadgeCheck size={12} aria-hidden /> {c.source}</span>}
+                    {c.source && <span className="mt-1 flex items-center gap-1 text-[12px] text-teal-800"><BadgeCheck size={12} aria-hidden /> {c.source}</span>}
                   </>
                 ) : (
                   <span className="text-ink-muted">Not in verified sources</span>

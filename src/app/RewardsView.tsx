@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  HeartPulse,
+  UtensilsCrossed,
   BookOpen,
   CheckCircle2,
   ChevronRight,
@@ -65,6 +67,11 @@ function RewardsHub() {
   const state = useRewards();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const ready = state.passes.filter((p) => p.status === "ready").length;
+  // Display-only helpers (no rewards logic): what the balance covers today, and the next voucher to aim for.
+  const affordable = activeProducts.filter((p) => p.price <= state.points).length;
+  const nextVoucher = [...vouchers].sort((a, b) => a.price - b.price).find((v) => v.price > state.points);
+  // Challenges ready to claim first.
+  const orderedChallenges = [...challenges].sort((a, b) => Number(challengeProgress(state, b.id).complete && !challengeProgress(state, b.id).claimed) - Number(challengeProgress(state, a.id).complete && !challengeProgress(state, a.id).claimed));
 
   return (
     <>
@@ -79,27 +86,61 @@ function RewardsHub() {
       />
 
       <Container className="relative -mt-5">
-        <div className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-2xl bg-surface p-4 shadow-e2 ring-1 ring-ink/5 sm:p-5">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex size-11 items-center justify-center rounded-xl bg-gold-50 text-gold-700">
-              <Coins size={22} aria-hidden />
-            </span>
+        <div className="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-navy-900 via-navy-950 to-navy-950 p-5 text-white shadow-e3 sm:p-6">
+          <span className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-gold-500/15" aria-hidden />
+          <span className="pointer-events-none absolute -bottom-24 right-10 size-48 rounded-full bg-crimson-600/20" aria-hidden />
+          <div className="relative flex items-start justify-between gap-4">
             <div>
-              <p className="text-body-sm font-semibold text-navy-900">Your points</p>
-              <p className="font-brand text-[2rem] font-bold leading-none tabular-nums text-navy-950">
-                {state.points.toLocaleString("en-MY")} <span className="text-body font-semibold">pts</span>
+              <p className="flex items-center gap-1.5 text-caption font-semibold text-gold-300"><Coins size={15} aria-hidden /> Your points</p>
+              <p className="mt-1 font-brand text-[2.75rem] font-bold leading-none tabular-nums">
+                {state.points.toLocaleString("en-MY")} <span className="text-body font-semibold text-white/70">pts</span>
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => go("app/rewards/wallet")}
+              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-4 text-body-sm font-semibold text-navy-950 hover:bg-navy-50"
+            >
+              <Wallet size={16} aria-hidden /> Wallet
+              {ready > 0 && <span className="ml-0.5 rounded-full bg-crimson-600 px-1.5 text-[12px] font-bold text-white">{ready}</span>}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => go("app/rewards/wallet")}
-            className="inline-flex h-11 items-center gap-1.5 rounded-full bg-navy-900 px-4 text-body-sm font-semibold text-white hover:bg-navy-800"
-          >
-            <Wallet size={16} aria-hidden /> Wallet
-            {ready > 0 && <span className="ml-0.5 rounded-full bg-white/20 px-1.5 text-[11px] font-bold">{ready}</span>}
-          </button>
+          <div className="relative mt-5 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2">
+            <p className="text-body-sm text-white/85">
+              <b className="font-semibold text-white">{affordable}</b> {affordable === 1 ? "item" : "items"} you can redeem now
+            </p>
+            {nextVoucher ? (
+              <div>
+                <p className="text-body-sm text-white/85">
+                  <b className="font-semibold text-white">{(nextVoucher.price - state.points).toLocaleString("en-MY")} pts</b> to {nextVoucher.name}
+                </p>
+                <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-white/15" aria-hidden>
+                  <span className="block h-full rounded-full bg-gold-300" style={{ width: `${Math.min(100, (state.points / nextVoucher.price) * 100)}%` }} />
+                </span>
+              </div>
+            ) : (
+              <p className="text-body-sm text-white/85">You can redeem every voucher.</p>
+            )}
+          </div>
         </div>
+      </Container>
+
+      {/* Browse by kind */}
+      <Container className="mt-4">
+        <ul className="grid grid-cols-3 gap-2">
+          {[
+            { label: "Food & drinks", icon: UtensilsCrossed, to: "app/rewards/marketplace", tone: "bg-crimson-50 text-crimson-600" },
+            { label: "Wellness", icon: HeartPulse, to: "app/rewards/marketplace/careplus", tone: "bg-teal-50 text-teal-700" },
+            { label: "Vouchers", icon: Ticket, to: "app/rewards/marketplace/great-empower", tone: "bg-gold-50 text-gold-700" },
+          ].map((c) => (
+            <li key={c.label}>
+              <button type="button" onClick={() => go(c.to)} className="flex min-h-[4.5rem] w-full flex-col items-center justify-center gap-1.5 rounded-2xl bg-surface p-2 text-center ring-1 ring-ink/[0.07] hover:shadow-e1">
+                <span className={cn("inline-flex size-9 items-center justify-center rounded-xl", c.tone)}><c.icon size={18} aria-hidden /></span>
+                <span className="text-caption font-semibold text-navy-950">{c.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
       </Container>
 
       {message && (
@@ -149,7 +190,7 @@ function RewardsHub() {
       <Container className="mt-8">
         <h2 className="text-heading text-navy-950">Earn more points</h2>
         <ul className="mt-3 grid gap-2.5">
-          {challenges.map((c) => {
+          {orderedChallenges.map((c) => {
             const p = challengeProgress(state, c.id);
             return (
               <li key={c.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3.5 ring-1 ring-ink/[0.07]">
@@ -188,17 +229,14 @@ function RewardsHub() {
             );
           })}
         </ul>
-        <p className="mt-2 text-caption text-ink-muted">
-          Earn points by passing lesson and infographic quizzes with a perfect score, watching video lessons in full
-          and finishing your protection profile. Each activity pays once.
-        </p>
+        <p className="mt-2 text-caption text-ink-muted">Perfect quiz scores, full video watches and a finished profile earn points. Each activity pays once.</p>
       </Container>
 
       {/* GREAT EMPOWER Vouchers */}
       <Container className="mt-8">
         <div className="flex items-end justify-between gap-3">
           <h2 className="text-heading text-navy-950">GREAT EMPOWER Vouchers</h2>
-          <button type="button" onClick={() => go("app/rewards/marketplace/great-empower")} className="inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-navy-900">
+          <button type="button" onClick={() => go("app/rewards/marketplace/great-empower")} className="inline-flex min-h-11 shrink-0 items-center gap-1 whitespace-nowrap text-body-sm font-semibold text-navy-900">
             View all <ArrowRight size={15} aria-hidden />
           </button>
         </div>
@@ -296,12 +334,12 @@ function VoucherVisual({ product, className }: { product: Product; className?: s
     <span className={cn("relative flex aspect-square w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-navy-950 via-navy-800 to-crimson-700 p-4 text-white", className)}>
       <span aria-hidden className="absolute -right-8 -top-8 size-28 rounded-full bg-white/10" />
       <span aria-hidden className="absolute -bottom-10 -left-6 size-24 rounded-full bg-crimson-500/25" />
-      <span className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-teal-200">GREAT EMPOWER</span>
+      <span className="relative text-[12px] font-bold uppercase tracking-[0.18em] text-teal-200">GREAT EMPOWER</span>
       <span className="relative">
         <span className="block font-brand text-[2.5rem] font-bold leading-none">{v.face}</span>
-        <span className="mt-1 block text-[11px] font-semibold text-white/80">{v.discount.type === "percent" ? `off · up to RM${v.discount.capRm}` : "off"}</span>
+        <span className="mt-1 block text-[12px] font-semibold text-white/80">{v.discount.type === "percent" ? `off · up to RM${v.discount.capRm}` : "off"}</span>
       </span>
-      <span className="relative flex items-center gap-1.5 border-t border-dashed border-white/30 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/75">
+      <span className="relative flex items-center gap-1.5 border-t border-dashed border-white/30 pt-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-white/75">
         <Ticket size={12} aria-hidden /> Future insurance voucher
       </span>
     </span>
@@ -329,15 +367,18 @@ function ProductCard({ product, welcome }: { product: Product; welcome: boolean 
       className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-ink/[0.07] transition-shadow hover:shadow-e2"
     >
       <ProductVisual product={product} />
-      {welcome && (
-        <span className="absolute left-2 top-2 rounded-full bg-crimson-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-white shadow-e1">
-          Welcome {WELCOME_PRICE}
-        </span>
-      )}
       <span className="flex flex-1 flex-col p-3">
-        <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-muted">{brand.name}</span>
+        <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-ink-muted">{brand.name}</span>
         <span className="mt-0.5 line-clamp-2 text-body-sm font-semibold text-navy-950">{product.name}</span>
-        <span className="mt-auto pt-2 text-body-sm font-bold text-crimson-600">{pts(product.price)}</span>
+        {welcome ? (
+          <span className="mt-auto flex flex-wrap items-baseline gap-x-1.5 pt-2">
+            <span className="text-body-sm font-bold text-crimson-600">{pts(WELCOME_PRICE)}</span>
+            <s className="text-caption text-ink-muted">{pts(product.price)}</s>
+            <span className="w-full text-caption font-semibold text-crimson-700">Welcome price</span>
+          </span>
+        ) : (
+          <span className="mt-auto pt-2 text-body-sm font-bold text-crimson-600">{pts(product.price)}</span>
+        )}
       </span>
     </button>
   );
@@ -581,7 +622,7 @@ function WalletView() {
                       <span className="block text-body-sm font-semibold text-navy-950">{product?.name}</span>
                       <span className="block font-mono text-caption text-ink-muted">{p.code}</span>
                     </span>
-                    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold", p.status === "ready" ? "bg-gold-50 text-gold-700" : "bg-success-50 text-success-700")}>
+                    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[12px] font-bold", p.status === "ready" ? "bg-gold-50 text-gold-700" : "bg-success-50 text-success-700")}>
                       {p.status === "ready" ? "Ready to use" : "Used"}
                     </span>
                   </button>
@@ -618,7 +659,7 @@ function WalletView() {
                     <span className="block text-body-sm font-semibold text-navy-950">{product?.name}</span>
                     <span className="block font-mono text-caption text-ink-muted">{v.code}</span>
                   </span>
-                  <span className="shrink-0 rounded-full bg-navy-50 px-2.5 py-1 text-[11px] font-bold text-navy-900">Saved for later</span>
+                  <span className="shrink-0 rounded-full bg-navy-50 px-2.5 py-1 text-[12px] font-bold text-navy-900">Saved for later</span>
                 </li>
               );
             })}
@@ -640,7 +681,7 @@ function WalletView() {
                   <span className="block text-body-sm font-semibold text-navy-950">{findProduct(b.productId)?.name}</span>
                   <span className="block text-caption text-ink-secondary">{b.benefit.effect}</span>
                 </span>
-                <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-navy-900">Stored</span>
+                <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[12px] font-bold text-navy-900">Stored</span>
               </li>
             ))}
           </ul>

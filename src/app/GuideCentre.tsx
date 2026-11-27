@@ -175,7 +175,7 @@ function GuideHome() {
                 >
                   <img src={g.image} alt="" className="ge-skeleton h-full min-h-[10rem] w-full object-cover" />
                   <span className="flex flex-col justify-center gap-1.5 p-4">
-                    <span className={cn("inline-flex w-fit items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em]", categoryTone[g.category])}>
+                    <span className={cn("inline-flex w-fit items-center gap-1 rounded-md px-2 py-0.5 text-[12px] font-bold uppercase tracking-[0.06em]", categoryTone[g.category])}>
                       <ListOrdered size={12} aria-hidden /> {formatLabel[g.format]}
                     </span>
                     <span className="font-brand text-[1.375rem] font-semibold leading-tight text-navy-950">{g.title}</span>
@@ -184,7 +184,7 @@ function GuideHome() {
                     <span className="mt-2 hidden gap-1.5 sm:grid" aria-hidden>
                       {g.points.slice(0, 3).map((pt, n) => (
                         <span key={n} className="flex items-center gap-2 text-caption text-navy-950">
-                          <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-navy-50 text-[11px] font-bold text-navy-800">{n + 1}</span>
+                          <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-navy-50 text-[12px] font-bold text-navy-800">{n + 1}</span>
                           <span className="line-clamp-1">{pt}</span>
                         </span>
                       ))}
@@ -263,7 +263,7 @@ function GuideCard({ guide }: { guide: Guide }) {
     <button type="button" onClick={() => go(`app/guide/article/${guide.id}`)} className="flex h-full w-full flex-col overflow-hidden rounded-2xl bg-surface text-left shadow-e1 ring-1 ring-ink/[0.06]">
       <img src={guide.image} alt="" loading="lazy" className="ge-skeleton h-24 w-full object-cover" />
       <span className="flex flex-1 flex-col p-3">
-        <span className={cn("inline-flex w-fit items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]", categoryTone[guide.category])}>
+        <span className={cn("inline-flex w-fit items-center gap-1 rounded-md px-1.5 py-0.5 text-[12px] font-bold uppercase tracking-[0.08em]", categoryTone[guide.category])}>
           <Icon size={11} aria-hidden /> {guideCategories.find((c) => c.key === guide.category)?.label}
         </span>
         <span className="mt-1.5 text-body-sm font-semibold leading-snug text-navy-950">{guide.title}</span>
@@ -278,7 +278,7 @@ function GuideRow({ guide }: { guide: Guide }) {
     <button type="button" onClick={() => go(`app/guide/article/${guide.id}`)} className="flex w-full items-center gap-3 rounded-2xl bg-surface p-3 text-left ring-1 ring-ink/[0.07]">
       <img src={guide.image} alt="" loading="lazy" className="size-16 shrink-0 rounded-xl object-cover" />
       <span className="min-w-0 flex-1">
-        <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-teal-700">{formatLabel[guide.format]}</span>
+        <span className="block text-[12px] font-bold uppercase tracking-[0.08em] text-teal-700">{formatLabel[guide.format]}</span>
         <span className="block text-body-sm font-semibold text-navy-950">{guide.title}</span>
         <span className="block text-caption text-ink-muted">{guide.minutes} min</span>
       </span>
@@ -299,7 +299,7 @@ function GuideArticle({ guide }: { guide: Guide }) {
         </button>
       </div>
       <Container className="-mt-6 relative max-w-[44rem]">
-        <span className={cn("inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em]", categoryTone[guide.category])}>
+        <span className={cn("inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[12px] font-bold uppercase tracking-[0.06em]", categoryTone[guide.category])}>
           {formatLabel[guide.format]} · {guideCategories.find((c) => c.key === guide.category)?.label}
         </span>
         <h1 id="guide-article-title" className="mt-2 font-brand text-[2.25rem] font-semibold leading-[1.05] text-navy-950">{guide.title}</h1>

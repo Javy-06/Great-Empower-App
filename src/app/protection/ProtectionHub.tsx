@@ -259,7 +259,7 @@ function MoneyToolsCompare() {
           <div key={name} role="columnheader" className="flex flex-col items-center px-2 py-4 text-center">
             <span className={cn("inline-flex size-11 items-center justify-center rounded-2xl", tone)}><Icon size={20} aria-hidden /></span>
             <span className="mt-2 text-body-sm font-bold text-navy-950">{name}</span>
-            <span className="text-[11px] leading-snug text-ink-muted sm:text-caption">{line}</span>
+            <span className="text-[12px] leading-snug text-ink-muted sm:text-caption">{line}</span>
           </div>
         ))}
       </div>
@@ -464,7 +464,7 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
             <div className="min-w-0 max-w-[15rem] sm:max-w-none">
               <h1 id="category-title" className="font-brand text-[2.25rem] font-semibold leading-[1.05] [text-shadow:0_1px_12px_rgb(10_28_51/0.45)] sm:text-[2.75rem]">{c.purpose}</h1>
               <p className="mt-2 inline-flex flex-wrap items-center gap-2 text-body-sm">
-                <span className="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-white/80">Official category</span>
+                <span className="rounded-md bg-white/10 px-2 py-0.5 text-[12px] font-bold uppercase tracking-[0.06em] text-white/80">Official category</span>
                 <span className="font-semibold">{c.official}</span>
               </p>
             </div>
@@ -751,7 +751,7 @@ function Row({ term, children }: { term: string; children: ReactNode }) {
 
 function Chip({ children, tone }: { children: ReactNode; tone?: "gold" }) {
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold", tone === "gold" ? "bg-gold-100 text-gold-700" : "bg-sunken text-navy-900")}>
+    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-bold", tone === "gold" ? "bg-gold-100 text-gold-700" : "bg-sunken text-navy-900")}>
       {children}
     </span>
   );

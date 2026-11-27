@@ -178,7 +178,7 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
       <Container className="relative -mt-5 max-w-[40rem]">
         <ol className="grid grid-cols-4 gap-1 rounded-full bg-surface p-1.5 shadow-e2 ring-1 ring-ink/[0.06]" aria-label="Booking steps">
           {stepNames.map((label, i) => (
-            <li key={label} aria-current={i === step ? "step" : undefined} className={cn("flex h-10 items-center justify-center gap-1 rounded-full text-[11px] font-bold uppercase tracking-[0.03em]", i === step ? "bg-crimson-50 text-crimson-600" : i < step ? "text-navy-900" : "text-ink-muted")}>
+            <li key={label} aria-current={i === step ? "step" : undefined} className={cn("flex h-10 items-center justify-center gap-1 rounded-full text-[12px] font-bold uppercase tracking-[0.03em]", i === step ? "bg-crimson-50 text-crimson-600" : i < step ? "text-navy-900" : "text-ink-muted")}>
               {i < step ? <Check size={13} aria-hidden /> : <span>{i + 1}</span>}
               <span className="truncate">{label}</span>
             </li>
@@ -233,7 +233,7 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
                   const sel = date === k;
                   return (
                     <button key={k} type="button" aria-pressed={sel} onClick={() => { setDate(k); setTime(null); }} className={cn("flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-2xl text-center", sel ? "bg-navy-900 text-white" : "bg-surface text-navy-900 ring-1 ring-ink/10")}>
-                      <span className="text-[11px] font-semibold uppercase">{d.toLocaleDateString("en-MY", { weekday: "short" })}</span>
+                      <span className="text-[12px] font-semibold uppercase">{d.toLocaleDateString("en-MY", { weekday: "short" })}</span>
                       <span className="text-heading font-bold leading-none">{d.getDate()}</span>
                     </button>
                   );
@@ -372,7 +372,7 @@ function MySessions({ bookings, onNew }: { bookings: Booking[]; onNew: () => voi
                     </p>
                     <p className="mt-1 font-mono text-caption text-navy-900">Ref {b.ref}</p>
                   </div>
-                  <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold", b.status === "booked" ? "bg-success-50 text-success-700" : "bg-sunken text-ink-muted")}>
+                  <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[12px] font-bold", b.status === "booked" ? "bg-success-50 text-success-700" : "bg-sunken text-ink-muted")}>
                     {b.status === "booked" ? "Booked (simulated)" : "Cancelled"}
                   </span>
                 </div>

@@ -67,7 +67,7 @@ export function Badge({ tone = 'neutral', variant = 'soft', size = 'md', icon: I
     <span
       className={cn(
         'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md font-semibold',
-        size === 'sm' ? 'h-5 px-1.5 text-[11px] leading-4' : 'h-6 px-2 text-caption font-semibold',
+        size === 'sm' ? 'h-5 px-1.5 text-[12px] leading-4' : 'h-6 px-2 text-caption font-semibold',
         variant === 'soft' && soft[tone],
         variant === 'solid' && solid[tone],
         variant === 'outline' && cn('border bg-transparent', outline[tone]),

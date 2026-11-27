@@ -33,7 +33,7 @@ export function ProtectJourney() {
               >
                 <span className="relative inline-flex size-10 items-center justify-center rounded-full bg-navy-900 text-white ring-4 ring-canvas">
                   <s.icon size={18} aria-hidden />
-                  <span className="absolute -right-1 -top-1 inline-flex size-5 items-center justify-center rounded-full bg-crimson-600 text-[11px] font-bold">{s.n}</span>
+                  <span className="absolute -right-1 -top-1 inline-flex size-5 items-center justify-center rounded-full bg-crimson-600 text-[12px] font-bold">{s.n}</span>
                 </span>
                 <span>
                   <span className="block text-body-sm font-semibold text-navy-950">{s.label}</span>

@@ -199,7 +199,7 @@ export function AccidentStory() {
           <li key={s.label} className="relative flex gap-3 sm:flex-col">
             <span className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-crimson-50 text-crimson-600 ring-4 ring-surface">
               <s.icon size={20} aria-hidden />
-              <span className="absolute -right-1 -top-1 inline-flex size-5 items-center justify-center rounded-full bg-navy-900 text-[11px] font-bold text-white">{i + 1}</span>
+              <span className="absolute -right-1 -top-1 inline-flex size-5 items-center justify-center rounded-full bg-navy-900 text-[12px] font-bold text-white">{i + 1}</span>
             </span>
             <span>
               <span className="block text-body-sm font-semibold text-navy-950">{s.label}</span>

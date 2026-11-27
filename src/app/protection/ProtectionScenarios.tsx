@@ -1,5 +1,5 @@
 import { useId, useState, type ReactNode } from "react";
-import { ChevronDown, Info, Ribbon, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Info, Ribbon, Sparkles, Users } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useProfile } from "@/state/profile";
 import {
@@ -39,6 +39,8 @@ export function FamilyProtectionScenario() {
   const [personal, setPersonal] = useState<Money>("");
   const [employer, setEmployer] = useState<Money>("");
   const [kappa, setKappa] = useState(0);
+  // Guided flow: one group of questions per step. Inputs and the engine are unchanged.
+  const [step, setStep] = useState(0);
 
   const fields = [support, debt, other, finalExp, savings, personal, employer];
   const missing = years === null || fields.some((f) => num(f) === null);
@@ -66,7 +68,18 @@ export function FamilyProtectionScenario() {
     setPersonal("25000");
     setEmployer("0");
     setKappa(0);
+    setStep(2);
   };
+  const filled = (...v: Money[]) => v.every((x) => num(x) !== null);
+  const stepDone = [filled(support) && years !== null, filled(debt, other, finalExp), filled(savings, personal, employer)];
+  const sum = (...v: Money[]) => v.reduce((t, x) => t + (num(x) ?? 0), 0);
+  const rm = (n: number) => `RM${n.toLocaleString("en-MY")}`;
+  const so = [
+    stepDone[0] ? `Support: ${rm(sum(support))}/month for ${years} years` : null,
+    stepDone[1] ? `Costs to cover: ${rm(sum(debt, other, finalExp))}` : null,
+    stepDone[2] ? `What you have: ${rm(sum(savings, personal, employer))}` : null,
+  ].filter(Boolean) as string[];
+  const STEPS = ["Who relies on you", "What would need paying", "What you already have"];
 
   return (
     <ScenarioShell
@@ -78,6 +91,16 @@ export function FamilyProtectionScenario() {
       exampleLabel="Fill in the research example (a fresh graduate supporting parents)"
       inputs={
         <>
+          <div>
+            <p className="flex items-baseline justify-between text-caption font-semibold text-ink-muted">
+              <span>Step {step + 1} of 3</span>
+              <span className="text-navy-950">{STEPS[step]}</span>
+            </p>
+            <div className="mt-1.5 grid grid-cols-3 gap-1" aria-hidden>
+              {STEPS.map((t, i) => <span key={t} className={cn("h-1.5 rounded-full", i < step || stepDone[i] ? "bg-teal-600" : i === step ? "bg-navy-900" : "bg-sunken")} />)}
+            </div>
+          </div>
+          {step === 0 && (<>
           <MoneyField label="Monthly support for dependants" hint="What you give each month to people who rely on you" value={support} onChange={setSupport} />
           <div>
             <p className="text-body-sm font-semibold text-navy-950" id="years-label">Years of support</p>
@@ -96,13 +119,36 @@ export function FamilyProtectionScenario() {
               </label>
             </div>
           </div>
+          </>)}
+          {step === 1 && (<>
           <MoneyField label="Debts your family may face" hint="e.g. a car loan or a loan someone co-signed" value={debt} onChange={setDebt} />
           <MoneyField label="Other liabilities" value={other} onChange={setOther} />
           <MoneyField label="Final expenses" hint="Research example RM25,000 — change it to your own estimate" value={finalExp} onChange={setFinalExp} />
+          </>)}
+          {step === 2 && (<>
           <MoneyField label="Savings you could use" hint="Cash or savings your family could access" value={savings} onChange={setSavings} />
           <MoneyField label="Your own life cover" hint="Sum assured on policies you own (your own answer)" value={personal} onChange={setPersonal} />
           <MoneyField label="Employer group life cover" value={employer} onChange={setEmployer} />
           {num(employer) ? <PortabilitySlider value={kappa} onChange={setKappa} /> : null}
+          </>)}
+          {so.length > 0 && (
+            <ul className="grid gap-1 rounded-xl bg-sunken p-3 text-caption text-navy-950" aria-label="Your answers so far">
+              {so.map((t) => <li key={t} className="flex items-center gap-1.5"><Check size={13} className="text-teal-700" aria-hidden />{t}</li>)}
+            </ul>
+          )}
+          <div className="flex items-center justify-between gap-2">
+            <button type="button" onClick={() => setStep((x) => Math.max(0, x - 1))} disabled={step === 0} className="inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-body-sm font-semibold text-navy-900 disabled:invisible">
+              <ArrowLeft size={16} aria-hidden /> Back
+            </button>
+            {step < 2 ? (
+              <button type="button" onClick={() => setStep((x) => x + 1)} disabled={!stepDone[step]} className="inline-flex h-11 items-center gap-1.5 rounded-full bg-navy-900 px-5 text-body-sm font-semibold text-white disabled:opacity-40">
+                Next <ArrowRight size={16} aria-hidden />
+              </button>
+            ) : (
+              <span className="text-caption text-ink-muted">{stepDone[2] ? "Your result is ready" : "Enter 0 where something doesn't apply"}</span>
+            )}
+          </div>
+          {!stepDone[step] && step < 2 && <p className="-mt-1 text-right text-caption text-ink-muted">Fill in every amount — enter 0 if none.</p>}
         </>
       }
       result={
@@ -140,7 +186,7 @@ function VariantCard({ variant: v, coverSen }: { variant: GapVariant; coverSen: 
   return (
     <div className="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10">
       <p className="text-caption font-semibold text-white/80">{v.label}</p>
-      <p className="mt-0.5 text-[11px] leading-snug text-white/55">{v.explanation}</p>
+      <p className="mt-0.5 text-[12px] leading-snug text-white/55">{v.explanation}</p>
       <p className="mt-2 text-caption text-white/70">Estimated gap</p>
       <p className="font-brand text-[2rem] font-bold leading-none tabular-nums text-white break-all">{formatSen(v.gapSen)}</p>
       {v.gapSen === 0n && <p className="mt-1 text-caption font-semibold text-teal-200">No gap in this illustration — the cover you counted meets the need.</p>}
@@ -339,7 +385,7 @@ function Workings({ steps, assumptions, changes }: { steps: Engine3Step[]; assum
           {steps.map((s, i) => (
             <li key={`${s.id}-${i}`} className="rounded-lg bg-white/[0.05] p-2.5">
               <p className="text-caption font-semibold text-white">{s.label}</p>
-              <p className="text-[11px] text-white/60">{s.formula}</p>
+              <p className="text-[12px] text-white/60">{s.formula}</p>
               <p className="mt-0.5 text-caption tabular-nums text-white/85">
                 {s.working} = <strong className="font-semibold text-white">{formatSen(s.resultSen)}</strong>
               </p>
@@ -353,7 +399,7 @@ function Workings({ steps, assumptions, changes }: { steps: Engine3Step[]; assum
       <Disclosure title="What could change the result">
         <ul className="grid gap-1.5">{changes.map((a) => <li key={a} className="text-caption text-white/80">{a}</li>)}</ul>
       </Disclosure>
-      <p className="flex gap-1.5 text-[11px] leading-snug text-white/55">
+      <p className="flex gap-1.5 text-[12px] leading-snug text-white/55">
         <Info size={12} className="mt-0.5 shrink-0" aria-hidden />
         Formula from the GREAT EMPOWER V2 research blueprint (Engine 3). An educational illustration from your own numbers — not a quote, a needs analysis, a recommendation to buy any amount or product, or a promise that a claim would be paid.
       </p>
