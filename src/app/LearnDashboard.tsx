@@ -13,6 +13,8 @@ import { ProtectionExplained } from "./protection/ProtectionHub";
 import { ProductExplorer } from "./protection/ProductExplorer";
 import { findProtectionCategory, type ProtectionSlug } from "@/data/protection";
 import { RewardQuiz } from "./learn/RewardQuiz";
+import { ClaimFlow } from "@/components/diagrams/ClaimFlow";
+import { TermExplainer } from "./protection/TermExplainer";
 import { cn } from "@/lib/cn";
 
 type LearnRoute =
@@ -103,6 +105,12 @@ const lessonKeyPoints: Record<string, string[]> = {
   ],
 };
 
+
+/** Lessons whose idea is a picture: shown above the key points. */
+const lessonVisual: Record<string, "claim-flow" | "cost-terms"> = {
+  "hospital-bills": "claim-flow",
+  deductibles: "cost-terms",
+};
 
 type RelatedLink = { kind: string; label: string; href: string };
 const defaultRelated: RelatedLink[] = [
@@ -299,6 +307,12 @@ export function LearnDashboard() {
           <div className="aspect-[21/9] overflow-hidden rounded-2xl">
             <LessonArt art={lesson.art ?? "shield"} tone={lesson.tone ?? "teal"} />
           </div>
+          {lessonVisual[lesson.id] && (
+            <section aria-labelledby="lesson-glance" className="mt-6">
+              <h2 id="lesson-glance" className="text-overline uppercase tracking-[0.16em] text-teal-700">At a glance</h2>
+              <div className="mt-2">{lessonVisual[lesson.id] === "claim-flow" ? <ClaimFlow /> : <TermExplainer />}</div>
+            </section>
+          )}
           <h2 className="mt-6 text-subheading text-navy-950">Key points</h2>
           <p className="text-caption text-ink-muted">
             General examples only — not personal financial, insurance or medical advice.

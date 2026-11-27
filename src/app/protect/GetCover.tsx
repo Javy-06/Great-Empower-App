@@ -3,13 +3,27 @@ import { useEffect } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  BadgeCheck,
   Check,
   ClipboardList,
   ExternalLink,
+  FileSearch,
+  FileText,
+  HeartPulse,
+  Hourglass,
   Info,
+  KeyRound,
+  Layers,
+  MessagesSquare,
+  ShieldCheck,
+  Stethoscope,
+  Store,
   UserRound,
+  Users,
+  Wallet,
   X,
 } from "lucide-react";
+import { AdviserSpot, ChecklistSpot } from "@/components/illustrations/Spots";
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { GeIcon } from "@/components/illustrations/GeIcons";
@@ -252,8 +266,13 @@ function ReadyStep({ area }: { area: ProtectionArea }) {
   const toggle = (id: string) => checklistStore.set({ done: done.includes(id) ? done.filter((x) => x !== id) : [...done, id] });
   return (
     <div className="pt-5">
-      <h2 className="font-brand text-[1.625rem] font-semibold text-navy-950">Before you apply</h2>
-      <p className="text-body-sm text-ink-secondary">Tick what&apos;s true for you. It&apos;s the same checklist as in Guide, saved on this device. Nothing here is required.</p>
+      <div className="flex items-center gap-3">
+        <ChecklistSpot className="w-16 shrink-0" />
+        <div>
+          <h2 className="font-brand text-[1.625rem] font-semibold leading-tight text-navy-950">Before you apply</h2>
+          <p className="text-body-sm text-ink-secondary">Tick what&apos;s true. Optional, and shared with Guide.</p>
+        </div>
+      </div>
       <ul className="mt-3 grid gap-2">
         {readinessChecklist.map((item) => {
           const checked = done.includes(item.id);
@@ -275,12 +294,12 @@ function ReadyStep({ area }: { area: ProtectionArea }) {
           );
         })}
       </ul>
-      <section aria-labelledby="always" className="mt-4 rounded-2xl bg-navy-50 p-4">
-        <h2 id="always" className="text-body font-semibold text-navy-950">Whichever way you apply</h2>
-        <ul className="mt-2 grid gap-1.5 text-body-sm text-navy-950">
-          <li>Read the Product Disclosure Sheet (PDS): it lists the benefits, limits, exclusions and costs.</li>
-          <li>Answer every health question honestly. Leaving something out can mean a claim is refused later.</li>
-          <li>Most new life and medical policies have a free-look period, usually 15 days, to cancel after you receive them.</li>
+      <section aria-labelledby="always" className="mt-5">
+        <h2 id="always" className="text-body font-semibold text-navy-950">Three things that always matter</h2>
+        <ul className="mt-2 grid gap-2 sm:grid-cols-3">
+          <Tile icon={FileSearch}>Read the PDS: benefits, limits, exclusions and costs.</Tile>
+          <Tile icon={ShieldCheck}>Answer health questions honestly, or a claim can be refused.</Tile>
+          <Tile icon={Hourglass}>Free-look period: usually 15 days to cancel a new policy.</Tile>
         </ul>
       </section>
       <StepNav back={stepHash(area, "understand")} next={{ label: "Continue to apply", to: stepHash(area, "how") }} />
@@ -299,11 +318,21 @@ function HowStep({ area }: { area: ProtectionArea }) {
         <span className="inline-flex size-12 items-center justify-center rounded-xl bg-white/10"><ClipboardList size={22} aria-hidden /></span>
         <h3 className="mt-3 font-brand text-[1.625rem] font-semibold leading-tight">Apply in GREAT EMPOWER</h3>
         <p className="mt-1 text-body-sm text-white/80">Fill in your application here. It takes about five minutes.</p>
-        <ul className="mt-3 grid gap-1.5 text-body-sm">
-          {["Four short steps: your details, your cover, health questions, review", "Saved on this device as you go; come back any time", "Check every answer before you finish", "Not sent to an insurer yet: you'll see exactly what that means"].map((t) => (
-            <li key={t} className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-teal-300" aria-hidden />{t}</li>
+        <ol className="mt-4 grid grid-cols-4 gap-1 text-center" aria-label="The four steps">
+          {[
+            { icon: UserRound, label: "Your details" },
+            { icon: ShieldCheck, label: "Your cover" },
+            { icon: HeartPulse, label: "Health" },
+            { icon: ClipboardList, label: "Review" },
+          ].map((st, i) => (
+            <li key={st.label} className="relative flex flex-col items-center gap-1.5">
+              {i < 3 && <span className="absolute left-[calc(50%+1.25rem)] right-[calc(-50%+1.25rem)] top-5 h-px bg-white/30" aria-hidden />}
+              <span className="inline-flex size-10 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/25"><st.icon size={18} aria-hidden /></span>
+              <span className="text-[12px] font-semibold leading-tight text-white/90">{i + 1}. {st.label}</span>
+            </li>
           ))}
-        </ul>
+        </ol>
+        <p className="mt-3 text-caption text-white/75">Saved on this device as you go · You review every answer · Not sent to an insurer yet</p>
         <button type="button" onClick={() => go(`${APPLY}/${area}/${!app ? "details" : app.status === "completed" ? "done" : firstIncompleteStep(app)}`)} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body-sm font-bold text-white hover:bg-crimson-700 sm:w-auto sm:px-6">
           {cta} <ArrowRight size={16} aria-hidden />
         </button>
@@ -394,6 +423,16 @@ function OfficialLink({ href, children }: { href: string; children: ReactNode })
   );
 }
 
+/** A small icon tile: the shape of a list item without a paragraph. */
+function Tile({ icon: Icon, children, tone = "bg-navy-50 text-navy-800" }: { icon: typeof Check; children: ReactNode; tone?: string }) {
+  return (
+    <li className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-ink/[0.07]">
+      <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-xl", tone)}><Icon size={19} aria-hidden /></span>
+      <span className="text-body-sm font-medium text-navy-950">{children}</span>
+    </li>
+  );
+}
+
 function AdviserHandoff({ area }: { area: ProtectionArea }) {
   const p = useProfile();
   const answered = protectAreas.filter((a) => p.coverage[a.key]);
@@ -402,28 +441,49 @@ function AdviserHandoff({ area }: { area: ProtectionArea }) {
       area={area}
       eyebrow={`Adviser guidance · ${areaLabels[area]}`}
       title="Get guidance from an adviser."
-      text="Guidance, not an application. A licensed agent or adviser can explain plans and help you apply with an insurer. GREAT EMPOWER doesn't arrange this for you."
+      text="Guidance, not an application. A licensed adviser explains plans and helps you apply with an insurer."
     >
+      <div className="flex items-center gap-4 rounded-2xl bg-navy-50 p-4">
+        <AdviserSpot className="w-24 shrink-0 sm:w-28" />
+        <p className="text-body-sm text-navy-950">
+          <span className="block font-semibold">Talk first, decide later.</span>
+          GREAT EMPOWER doesn&apos;t arrange advisers. Use this page to prepare, then contact one through an official channel.
+        </p>
+      </div>
+
       <Block id="why-adviser" title="When an adviser helps most">
-        <ul className="grid gap-1.5 text-body-sm text-navy-950">
-          {["You have a health condition or a higher-risk job", "You're looking at more than one kind of cover", "The plan you want is only sold through agents", "You'd like someone to explain the terms before you decide"].map((t) => (
-            <li key={t} className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-teal-700" aria-hidden />{t}</li>
-          ))}
+        <ul className="grid gap-2 sm:grid-cols-2">
+          <Tile icon={HeartPulse}>A health condition or a higher-risk job</Tile>
+          <Tile icon={Layers}>More than one kind of cover</Tile>
+          <Tile icon={Store}>Plans only sold through agents</Tile>
+          <Tile icon={MessagesSquare}>You want terms explained first</Tile>
         </ul>
       </Block>
+
       <Block id="ask-adviser" title="Questions to ask">
-        <ul className="grid list-disc pl-5 marker:text-navy-300 gap-1.5 text-body-sm text-navy-950">
-          {["What does this plan cover, and what doesn't it cover?", "What are the annual limit, deductible and co-payment?", "Is there a waiting period?", "How can the premium or contribution change over time?", "How do I make a claim?", "Are you paid a commission for this plan?"].map((t) => (
-            <li key={t}>{t}</li>
+        <ol className="grid gap-2 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07] sm:grid-cols-2 sm:gap-x-6">
+          {[
+            "What's covered, and what isn't?",
+            "Annual limit, deductible and co-payment?",
+            "Is there a waiting period?",
+            "Can the premium or contribution rise?",
+            "How do I make a claim?",
+            "Are you paid a commission for this plan?",
+          ].map((q, i) => (
+            <li key={q} className="flex items-start gap-2.5 text-body-sm text-navy-950">
+              <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-navy-900 text-[12px] font-bold text-white">{i + 1}</span>
+              {q}
+            </li>
           ))}
-        </ul>
+        </ol>
       </Block>
+
       <Block id="prepare-adviser" title="What to bring">
-        <ul className="grid list-disc pl-5 marker:text-navy-300 gap-1.5 text-body-sm text-navy-950">
-          <li>Cover you already have, including from work or your parents</li>
-          <li>What you can comfortably spend each month</li>
-          <li>Who depends on your income</li>
-          <li>Your health history, to answer questions accurately</li>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          <Tile icon={FileText} tone="bg-teal-50 text-teal-800">Cover you already have (work, parents)</Tile>
+          <Tile icon={Wallet} tone="bg-teal-50 text-teal-800">What you can spend each month</Tile>
+          <Tile icon={Users} tone="bg-teal-50 text-teal-800">Who depends on your income</Tile>
+          <Tile icon={Stethoscope} tone="bg-teal-50 text-teal-800">Your health history</Tile>
         </ul>
         {answered.length > 0 && (
           <div className="mt-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]">
@@ -436,15 +496,17 @@ function AdviserHandoff({ area }: { area: ProtectionArea }) {
           </div>
         )}
       </Block>
-      <Block id="check-adviser" title="Check who you're talking to">
-        <ul className="grid list-disc pl-5 marker:text-navy-300 gap-1.5 text-body-sm text-navy-950">
-          <li>Ask which insurer or takaful operator they represent, and for their registration details. Confirm with that company.</li>
-          <li>Never share passwords or one-time codes (OTPs).</li>
-          <li>Take time to decide. Read the PDS before you sign.</li>
+
+      <Block id="check-adviser" title="Stay safe">
+        <ul className="grid gap-2">
+          <Tile icon={BadgeCheck} tone="bg-gold-50 text-gold-700">Ask which insurer they represent and for their registration details, then confirm with that company.</Tile>
+          <Tile icon={KeyRound} tone="bg-gold-50 text-gold-700">Never share passwords or one-time codes (OTPs).</Tile>
+          <Tile icon={Hourglass} tone="bg-gold-50 text-gold-700">Take your time. Read the PDS before you sign.</Tile>
         </ul>
       </Block>
-      <Block id="contact-adviser" title="Reach an adviser through an official channel">
-        <p className="text-body-sm text-ink-secondary">Contact the insurer or takaful operator you&apos;re interested in through its own website or customer line. One example:</p>
+
+      <Block id="contact-adviser" title="Reach an adviser officially">
+        <p className="text-body-sm text-ink-secondary">Use the insurer&apos;s own website or customer line. One example:</p>
         <div className="mt-2 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]">
           <h3 className="text-body font-semibold text-navy-950">{adviserCallBack.label}</h3>
           <ul className="mt-1 grid list-disc pl-5 marker:text-navy-300 gap-1 text-body-sm text-navy-950">

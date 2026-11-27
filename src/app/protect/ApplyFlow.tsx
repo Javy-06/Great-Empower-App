@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AlertCircle, ArrowLeft, ArrowRight, Check, CircleCheck, Info, Pencil, ShieldAlert, Trash2, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Check, CircleCheck, ClipboardCheck, HeartPulse, Info, Minus, Pencil, ShieldAlert, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { TextField } from "@/components/ui/Field";
@@ -222,6 +222,10 @@ export function ApplyFlow({ area, step }: { area: ProtectionArea; step: Step }) 
   );
 }
 
+const stepIcons = [UserRound, ShieldCheck, HeartPulse, ClipboardCheck];
+const stepShort = ["You", "Cover", "Health", "Review"];
+
+/** A connected four-node timeline: done (✓, a link back), unfinished (!, a link back), current, upcoming. */
 function Progress({ area, index, valid }: { area: ProtectionArea; index: number; valid: boolean[] }) {
   const step = APPLICATION_STEPS[index];
   return (
@@ -229,24 +233,39 @@ function Progress({ area, index, valid }: { area: ProtectionArea; index: number;
       <p className="text-body-sm font-semibold text-navy-950">
         Step {index + 1} of {APPLICATION_STEPS.length} <span className="font-normal text-ink-muted">· {step.label}</span>
       </p>
-      <div className="mt-2 h-2 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-label="Application progress" aria-valuemin={1} aria-valuemax={APPLICATION_STEPS.length} aria-valuenow={index + 1}>
-        <div className="h-full rounded-full bg-teal-600 transition-[width] duration-300" style={{ width: `${((index + 1) / APPLICATION_STEPS.length) * 100}%` }} />
-      </div>
-      <ol className="mt-2 hidden grid-cols-4 gap-2 sm:grid">
-        {APPLICATION_STEPS.map((s, i) => (
-          <li key={s.key}>
-            {i < index ? (
-              <a href={`#${stepHash(area, s.key)}`} className="inline-flex min-h-11 items-center gap-1.5 text-caption font-semibold text-navy-800 underline-offset-2 hover:underline">
-                {valid[i] ? <Check size={14} aria-hidden /> : <AlertCircle size={14} className="text-gold-700" aria-hidden />} {s.label}
-                {!valid[i] && <span className="sr-only"> (not finished)</span>}
-              </a>
-            ) : (
-              <span aria-current={i === index ? "step" : undefined} className={cn("inline-flex min-h-11 items-center text-caption font-semibold", i === index ? "text-crimson-600" : "text-ink-muted")}>
-                {s.label}
+      <ol className="relative mt-3 grid grid-cols-4">
+        <span className="absolute left-[12.5%] right-[12.5%] top-5 h-0.5 bg-sunken" aria-hidden />
+        <span className="absolute left-[12.5%] top-5 h-0.5 bg-teal-600 transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${(index / (APPLICATION_STEPS.length - 1)) * 75}%` }} aria-hidden />
+        {APPLICATION_STEPS.map((s, i) => {
+          const Icon = stepIcons[i];
+          const past = i < index;
+          const node = (
+            <>
+              <span
+                className={cn(
+                  "relative inline-flex size-10 items-center justify-center rounded-full ring-4 ring-canvas",
+                  i === index ? "bg-crimson-600 text-white" : past && valid[i] ? "bg-teal-600 text-white" : past ? "bg-gold-500 text-navy-950" : "bg-surface text-ink-muted ring-offset-0 [box-shadow:inset_0_0_0_1.5px_var(--color-line-strong)]",
+                )}
+              >
+                {past ? valid[i] ? <Check size={18} strokeWidth={2.5} aria-hidden /> : <AlertCircle size={18} aria-hidden /> : <Icon size={18} aria-hidden />}
               </span>
-            )}
-          </li>
-        ))}
+              <span className={cn("mt-1.5 text-caption font-semibold", i === index ? "text-crimson-600" : past ? "text-navy-800" : "text-ink-muted")}>
+                <span className="sm:hidden">{stepShort[i]}</span>
+                <span className="hidden sm:inline">{s.label}</span>
+              </span>
+              {past && !valid[i] && <span className="sr-only"> (not finished)</span>}
+            </>
+          );
+          return (
+            <li key={s.key} className="relative flex flex-col items-center text-center">
+              {past ? (
+                <a href={`#${stepHash(area, s.key)}`} className="flex min-h-11 flex-col items-center rounded-xl outline-offset-2">{node}</a>
+              ) : (
+                <span aria-current={i === index ? "step" : undefined} className="flex flex-col items-center">{node}</span>
+              )}
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );
@@ -461,11 +480,27 @@ function Done({ app }: { app: InsuranceApplication }) {
               <p className="text-body-sm text-ink-secondary">Completed {when}</p>
             </div>
           </div>
-          <dl className="mt-4 grid gap-2 border-t border-ink/10 pt-3 text-body-sm">
-            <div className="flex justify-between gap-3"><dt className="text-ink-secondary">In GREAT EMPOWER</dt><dd className="font-semibold text-success-700">Completed</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-ink-secondary">Sent to an insurer</dt><dd className="font-semibold text-navy-950">No</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-ink-secondary">Cover</dt><dd className="font-semibold text-navy-950">None yet</dd></div>
+          {/* Status track: what has happened (✓) and what hasn't (–), in order. */}
+          <div className="relative mt-4 border-t border-ink/10 pt-4">
+          <span className="absolute left-[16.7%] right-[16.7%] top-9 h-0.5 bg-sunken" aria-hidden />
+          <dl className="relative grid grid-cols-3 text-center">
+            {[
+              { k: "In GREAT EMPOWER", v: "Completed", done: true },
+              { k: "Sent to an insurer", v: "No", done: false },
+              { k: "Cover", v: "None yet", done: false },
+            ].map((x) => (
+              <div key={x.k} className="flex flex-col items-center gap-1">
+                <dt className="flex flex-col items-center gap-1.5 text-caption text-ink-secondary">
+                  <span className={cn("inline-flex size-10 items-center justify-center rounded-full ring-4 ring-surface", x.done ? "bg-success-600 text-white" : "bg-sunken text-ink-muted")} aria-hidden>
+                    {x.done ? <Check size={18} strokeWidth={2.5} /> : <Minus size={18} strokeWidth={2.5} />}
+                  </span>
+                  {x.k}
+                </dt>
+                <dd className={cn("text-body-sm font-semibold", x.done ? "text-success-700" : "text-navy-950")}>{x.v}</dd>
+              </div>
+            ))}
           </dl>
+          </div>
         </section>
 
         <section aria-labelledby="means-title" className="mt-5">

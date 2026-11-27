@@ -5,11 +5,13 @@ import {
   ArrowRight,
   ArrowUpRight,
   Calculator,
+  Check,
   CheckSquare,
   ClipboardList,
   Clock3,
   HeartPulse,
   LayoutGrid,
+  Lightbulb,
   ListOrdered,
   Search,
   ShieldPlus,
@@ -30,6 +32,8 @@ const entryTrio = trioForSession(`entry|${new Date().toDateString()}`);
 
 // The store lives in src/state so Protect can share it; re-exported here for existing imports.
 import { checklistStore } from "@/state/checklist";
+import { ClaimFlow } from "@/components/diagrams/ClaimFlow";
+import { TermExplainer } from "./protection/TermExplainer";
 export { CHECKLIST_KEY, checklistStore } from "@/state/checklist";
 
 const categoryIcons: Record<GuideCategory, typeof ShieldPlus> = {
@@ -307,16 +311,36 @@ function GuideArticle({ guide }: { guide: Guide }) {
         <p className="mt-2 text-body-lg text-ink-secondary">{guide.summary}</p>
         <p className="mt-1 flex items-center gap-1 text-caption text-ink-muted"><Clock3 size={12} aria-hidden /> {guide.minutes} min read</p>
 
-        <ol className="mt-6 grid gap-3">
-          {guide.points.map((point, i) => (
-            <li key={point} className="flex gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-              <span className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-full text-body-sm font-bold", ordered ? "bg-navy-900 text-white" : "bg-teal-50 text-teal-700")}>
-                {ordered ? i + 1 : "•"}
-              </span>
-              <span className="text-body text-ink">{point}</span>
-            </li>
-          ))}
-        </ol>
+        {guide.visual && (
+          <section aria-labelledby="glance-title" className="mt-6">
+            <h2 id="glance-title" className="text-overline uppercase tracking-[0.16em] text-teal-700">At a glance</h2>
+            <div className="mt-2">{guide.visual === "claim-flow" ? <ClaimFlow /> : <TermExplainer />}</div>
+          </section>
+        )}
+
+        {guide.format === "step-by-step" ? (
+          /* A timeline: one connected line, a numbered node per step. */
+          <ol className="mt-6 grid" aria-label="Steps">
+            {guide.points.map((point, i) => (
+              <li key={point} className="relative flex gap-4 pb-5 last:pb-0">
+                {i < guide.points.length - 1 && <span className="absolute left-[1.0625rem] top-9 bottom-0 w-0.5 bg-navy-200" aria-hidden />}
+                <span className="relative inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-navy-900 text-body-sm font-bold text-white">{i + 1}</span>
+                <span className="pt-1.5 text-body text-ink">{point}</span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <ul className="mt-6 grid gap-3">
+            {guide.points.map((point) => (
+              <li key={point} className="flex gap-3">
+                <span className={cn("mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full", ordered ? "bg-teal-600 text-white" : "bg-teal-50 text-teal-700")}>
+                  {ordered ? <Check size={15} aria-hidden /> : <Lightbulb size={15} aria-hidden />}
+                </span>
+                <span className="text-body text-ink">{point}</span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {guide.related && (
           <section className="mt-7">

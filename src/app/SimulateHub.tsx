@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import { MedicalClaimSimulator } from "./MedicalClaimSimulator";
 import { GeIcon, type GeIconName } from "@/components/illustrations/GeIcons";
 import { CiRunwayScenario, FamilyProtectionScenario } from "./protection/ProtectionScenarios";
+import { TermExplainer } from "./protection/TermExplainer";
 
 const TOOL_IDS = ["tool-bill", "tool-fund", "tool-family", "tool-ci"] as const;
 
@@ -74,11 +75,6 @@ const tools: Array<{ id: ToolId; title: string; short: string; hint: string; nee
   { id: "tool-ci", title: "Critical illness runway", short: "Critical illness", hint: "A critical illness payout is a one-off lump sum, not a salary. Compare it with a recovery period.", need: "A lump-sum amount and your monthly costs while you recover.", cant: "Whether a diagnosis would qualify for a payout.", icon: "ribbon" },
 ];
 
-const keyTerms = [
-  { term: "Deductible", text: "A fixed amount you pay first before the plan pays." },
-  { term: "Co-payment", text: "A percentage of the eligible bill you pay yourself after any deductible, e.g. 10%. Some policies call this co-insurance." },
-  { term: "Annual limit", text: "The most a plan pays in one policy year." },
-];
 
 const learnMore: Partial<Record<ToolId, { href: string; label: string }>> = {
   "tool-bill": { href: "#app/learn/protection/medical", label: "About medical cover" },
@@ -166,24 +162,19 @@ function NeedsStep({ tool, onTool }: { tool: ToolId; onTool: (t: ToolId) => void
       <Container className="max-w-[60rem] pt-6">
         <details className="group rounded-2xl bg-navy-50 px-4">
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between text-body-sm font-semibold text-navy-900">
-            Key terms used in the simulators
+            Key terms, in pictures
             <ArrowRight size={16} className="rotate-90 transition-transform group-open:-rotate-90" aria-hidden />
           </summary>
-          <dl className="grid gap-2 pb-4">
-            {keyTerms.map((k) => (
-              <div key={k.term}>
-                <dt className="text-body-sm font-semibold text-navy-950">{k.term}</dt>
-                <dd className="text-body-sm text-ink-secondary">{k.text}</dd>
-              </div>
-            ))}
-            <p className="text-caption text-ink-muted">
+          <div className="pb-4">
+            <TermExplainer />
+            <p className="mt-3 text-caption text-ink-muted">
               Sources:{" "}
               <a className="underline" href="https://www.bnm.gov.my/documents/20124/938039/pd_mhit_dec25.pdf" target="_blank" rel="noreferrer">BNM MHIT policy document</a>
               {" · "}
               <a className="underline" href="https://insuranceinfo.com.my/learn-the-basics/insurance-glossary/" target="_blank" rel="noreferrer">InsuranceInfo glossary</a>
               . Plans differ — check your own policy wording.
             </p>
-          </dl>
+          </div>
         </details>
         <section aria-labelledby="sim-next" className="mt-5 rounded-2xl bg-navy-950 p-5 text-white">
           <h2 id="sim-next" className="font-brand text-[1.5rem] font-semibold leading-tight">What next?</h2>

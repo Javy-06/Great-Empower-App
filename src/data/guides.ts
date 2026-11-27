@@ -26,6 +26,8 @@ export interface Guide {
   related?: Array<{ label: string; href: string }>;
   furtherReading?: Array<{ label: string; href: string }>;
   featured?: boolean;
+  /** An "at a glance" diagram shown above the text: a claim flow, or the cost-sharing terms in pictures. */
+  visual?: "claim-flow" | "cost-terms";
 }
 
 const img = {
@@ -40,6 +42,7 @@ const img = {
 export const guides: Guide[] = [
   {
     id: "make-a-claim",
+    visual: "claim-flow",
     category: "medical-claims",
     format: "step-by-step",
     title: "How to make a medical claim",
@@ -62,6 +65,7 @@ export const guides: Guide[] = [
   },
   {
     id: "cost-sharing-explained",
+    visual: "cost-terms",
     category: "insurance-basics",
     format: "explainer",
     title: "Deductible, co-payment and annual limit explained",
@@ -150,6 +154,7 @@ export const guides: Guide[] = [
   },
   {
     id: "hospital-costs",
+    visual: "claim-flow",
     category: "medical-claims",
     format: "explainer",
     title: "How hospital costs affect planning",

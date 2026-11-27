@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Accessibility, ArrowRight, ChevronDown, HeartPulse, ShieldPlus, Users } from "lucide-react";
+import { Accessibility, ArrowRight, Check, ChevronDown, CircleHelp, HeartPulse, ShieldPlus, TriangleAlert, Users, X } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
 import {
   areaLabels,
@@ -188,11 +188,12 @@ function SampleAnalysis() {
 
 type AreaStatus = "covered" | "review" | "gap" | "not-assessed";
 
-const statusStyle: Record<AreaStatus, { label: string; cls: string }> = {
-  covered: { label: "Covered", cls: "bg-success-50 text-success-700" },
-  review: { label: "Review", cls: "bg-gold-50 text-gold-700" },
-  gap: { label: "Gap", cls: "bg-crimson-50 text-crimson-700" },
-  "not-assessed": { label: "Not assessed", cls: "bg-sunken text-ink-muted" },
+/** Each status has a colour AND a shape, so it never depends on colour alone. */
+const statusStyle: Record<AreaStatus, { label: string; cls: string; bar: string; icon: typeof Check }> = {
+  covered: { label: "Covered", cls: "bg-success-50 text-success-700", bar: "bg-success-600 text-white", icon: Check },
+  review: { label: "Review", cls: "bg-gold-50 text-gold-700", bar: "bg-gold-500 text-navy-950", icon: TriangleAlert },
+  gap: { label: "Gap", cls: "bg-crimson-50 text-crimson-700", bar: "bg-crimson-600 text-white", icon: X },
+  "not-assessed": { label: "Not assessed", cls: "bg-sunken text-ink-muted", bar: "bg-sunken text-ink-muted", icon: CircleHelp },
 };
 
 const areaMeta: Record<ProtectionArea, { icon: typeof HeartPulse; tone: string; what: string }> = {
@@ -218,25 +219,25 @@ function assess(
   if (answer === "yes")
     return {
       status: "covered",
-      why: "You told us you have this cover. GREAT EMPOWER hasn't checked the policy — review its limits and exclusions.",
+      why: "Your answer, not verified. Check its limits and exclusions.",
       next: { label: "Deductibles & limits explained", href: "app/guide/article/cost-sharing-explained" },
     };
   if (answer === "no" && priority)
     return {
       status: "gap",
-      why: "You marked this as a priority but said you don't have cover for it yet.",
+      why: "A priority for you, with no cover yet.",
       next: { label: "Explore cover options", href: `${GET_COVER}/${area}` },
     };
   if (answer === "no")
     return {
       status: "review",
-      why: "You don't have this cover and haven't marked it as a priority. Worth a second look as your life changes.",
+      why: "No cover, not a priority. Revisit as your life changes.",
       next: { label: "How much cover do I need?", href: "app/guide/article/how-much-cover" },
     };
   if (answer === "not-sure")
     return {
       status: "review",
-      why: "You're not sure whether you have this cover. Check your existing policies and employer benefits.",
+      why: "Not sure? Check your policies and work benefits.",
       next: { label: "Learn the basics", href: "app/learn" },
     };
   return {
@@ -330,6 +331,7 @@ function ProtectOverview() {
 
       <Container className="mt-7" id="protect-gaps">
         <h2 className="text-heading text-navy-950">Your gaps</h2>
+        {assessed.length > 0 && <GapSummary results={results} />}
         {assessed.length > 0 && (
           <ul className="mt-3 grid gap-2.5">
             {assessed.map(({ area, status, why, next }) => {
@@ -345,7 +347,8 @@ function ProtectOverview() {
                       <span className="block text-body font-semibold text-navy-950">{areaLabels[area]}</span>
                       <span className="block text-caption text-ink-muted">{meta.what}</span>
                     </span>
-                    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-caption font-bold", statusStyle[status].cls)}>
+                    <span className={cn("inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-caption font-bold", statusStyle[status].cls)}>
+                      {(() => { const I = statusStyle[status].icon; return <I size={13} strokeWidth={2.5} aria-hidden />; })()}
                       {statusStyle[status].label}
                     </span>
                   </div>
@@ -420,5 +423,39 @@ function ProtectOverview() {
         </p>
       </Container>
     </>
+  );
+}
+
+/** At a glance: one segment per area (colour + icon + name), then a count per status. */
+function GapSummary({ results }: { results: Array<{ area: ProtectionArea; status: AreaStatus }> }) {
+  const order: AreaStatus[] = ["covered", "review", "gap", "not-assessed"];
+  const counts = order.map((st) => ({ st, n: results.filter((r) => r.status === st).length })).filter((c) => c.n);
+  return (
+    <figure className="mt-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
+      <ul className="grid grid-cols-4 gap-1.5" aria-label="Your four areas at a glance">
+        {results.map(({ area, status }) => {
+          const st = statusStyle[status];
+          const Icon = st.icon;
+          return (
+            <li key={area} className={cn("flex min-h-[4.25rem] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center", st.bar)}>
+              <Icon size={18} strokeWidth={2.5} aria-hidden />
+              <span className="text-[12px] font-semibold leading-tight">{areaLabels[area]}</span>
+              <span className="sr-only">: {st.label}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <figcaption className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-caption text-ink-secondary">
+        {counts.map(({ st, n }) => {
+          const Icon = statusStyle[st].icon;
+          return (
+            <span key={st} className="inline-flex items-center gap-1.5">
+              <span className={cn("inline-flex size-5 items-center justify-center rounded-full", statusStyle[st].bar)}><Icon size={12} strokeWidth={2.5} aria-hidden /></span>
+              {n} {statusStyle[st].label.toLowerCase()}
+            </span>
+          );
+        })}
+      </figcaption>
+    </figure>
   );
 }
