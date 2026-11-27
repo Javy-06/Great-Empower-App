@@ -50,7 +50,7 @@
 |---|---|
 | App code | **None** |
 | Files added | `report/device-only-preview/` (9 reports) |
-| Commits | 1 local commit (reports) |
+| Commits | 2 local commits (`ce0a0c2` reports, `60fc108` a wording correction) |
 | Pushed | **No.** Pushing would auto-build a live-connected branch Preview (see Known Issues #1). |
 | Deployment | 1 device-only Preview (above) |
 

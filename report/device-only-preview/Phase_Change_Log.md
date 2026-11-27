@@ -5,7 +5,7 @@
 ## Repository
 - No application code changed.
 - No changes to Engine 2, `supabase/`, `src/rewards/`, account code, `public/advisor/*` or main.
-- **Added:** `report/device-only-preview/` (9 reports), as one local commit.
+- **Added:** `report/device-only-preview/` (9 reports) in local commits `ce0a0c2` and `60fc108` (a wording correction).
 - **Not pushed** (would trigger a live-connected branch Preview).
 
 ## Vercel (one action)
