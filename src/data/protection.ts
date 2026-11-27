@@ -14,6 +14,16 @@
  *    labelled as not a quote. No ranking and no "for you" product suggestions.
  */
 
+import type { GeIconName } from "../components/illustrations/GeIcons";
+
+/** Real photography for a category hero (Pexels licence: free to use, credit given anyway). */
+export interface HeroPhoto {
+  src: string;
+  /** CSS object-position for the crop. */
+  position: string;
+  credit: { photographer: string; url: string };
+}
+
 export type ProtectionSlug = "medical" | "critical-illness" | "life" | "tpd" | "personal-accident";
 
 export interface Source {
@@ -35,6 +45,11 @@ export interface ProtectionCategory {
   summary: string;
   example: { title: string; text: string };
   mayHelp: string[];
+  /** The category's icon in the GREAT EMPOWER icon set. */
+  iconName: GeIconName;
+  /** One icon per mayHelp item (same order). */
+  mayHelpIcons: GeIconName[];
+  photo: HeroPhoto;
   notAutomatic: string[];
   misunderstandings: Array<{ myth: string; reality: string }>;
   /** "Not the same as" distinctions the brief requires (e.g. Life ≠ debt cancellation). */
@@ -61,6 +76,7 @@ export const protectionSources = S;
 export const protectionCategories: ProtectionCategory[] = [
   {
     slug: "medical",
+    iconName: "heartPulse",
     event: "Hospital stay",
     problem: "Big hospital bills",
     official: "Medical & Hospitalisation",
@@ -79,6 +95,8 @@ export const protectionCategories: ProtectionCategory[] = [
       "Some treatment before and after a hospital stay, and certain outpatient treatment, depending on the plan",
       "Direct billing at panel hospitals through a Guarantee Letter (GL), so you may not need to pay the full bill upfront",
     ],
+    mayHelpIcons: ["bed","scalpel","stethoscope","letter"],
+    photo: { src: "/images/pexels/protection-medical-hospital-rest.webp", position: "62% 40%", credit: { photographer: "Andrea Piacquadio", url: "https://www.pexels.com/photo/photo-of-woman-lying-in-hospital-bed-3769151/" } },
     notAutomatic: [
       "Every medical cost — annual limits, sub-limits, room-and-board limits and exclusions still apply",
       "Conditions you had before buying (pre-existing conditions), especially if not disclosed",
@@ -103,6 +121,7 @@ export const protectionCategories: ProtectionCategory[] = [
   },
   {
     slug: "critical-illness",
+    iconName: "ribbon",
     event: "Serious illness diagnosis",
     problem: "Treatment costs and time off work",
     official: "Critical Illness",
@@ -120,6 +139,8 @@ export const protectionCategories: ProtectionCategory[] = [
       "Money you can use for living costs, debts or recovery while you can't work",
       "Some plans also pay for early-stage diagnoses or allow more than one claim",
     ],
+    mayHelpIcons: ["cash","home","steps"],
+    photo: { src: "/images/pexels/protection-critical-illness-recovery.webp", position: "30% 35%", credit: { photographer: "Michelle Leman", url: "https://www.pexels.com/photo/happy-asian-woman-suffering-from-cancer-near-window-6798572/" } },
     notAutomatic: [
       "A monthly salary — the lump sum is fixed and may run out",
       "Every illness — only listed conditions that meet the policy's definition and severity",
@@ -138,6 +159,7 @@ export const protectionCategories: ProtectionCategory[] = [
   },
   {
     slug: "life",
+    iconName: "family",
     event: "A breadwinner dies",
     problem: "Family loses their support",
     official: "Life",
@@ -156,6 +178,8 @@ export const protectionCategories: ProtectionCategory[] = [
       "Term life: affordable, pure protection for a fixed period",
       "Whole life or investment-linked plans: longer cover, with savings or investment features whose values may not be guaranteed",
     ],
+    mayHelpIcons: ["family","receipt","calendar","chart"],
+    photo: { src: "/images/pexels/protection-family-living-room.webp", position: "50% 45%", credit: { photographer: "Annushka Ahuja", url: "https://www.pexels.com/photo/family-on-a-living-room-8055807/" } },
     notAutomatic: [
       "Cancelling your debts — the payout goes to your nominee or estate, not straight to your lenders",
       "Paying out while you're alive, unless the plan has a TPD or critical illness benefit",
@@ -176,6 +200,7 @@ export const protectionCategories: ProtectionCategory[] = [
   },
   {
     slug: "tpd",
+    iconName: "walletPause",
     event: "Can never work again",
     problem: "Income stops for good",
     official: "Total and Permanent Disability (TPD)",
@@ -192,6 +217,8 @@ export const protectionCategories: ProtectionCategory[] = [
       "A benefit — usually a lump sum, sometimes paid in instalments — when you can't earn again",
       "Disability caused by illness or by accident, if it meets the definition",
     ],
+    mayHelpIcons: ["cash","shieldCheck"],
+    photo: { src: "/images/pexels/protection-income-planning.webp", position: "55% 30%", credit: { photographer: "ANTONI SHKRABA production", url: "https://www.pexels.com/photo/a-businessman-with-documents-on-the-table-8374283/" } },
     notAutomatic: [
       "Temporary or partial disability — it must meet the policy's definition of total and permanent",
       "A monthly salary, unless the policy says so",
@@ -209,6 +236,7 @@ export const protectionCategories: ProtectionCategory[] = [
   },
   {
     slug: "personal-accident",
+    iconName: "bandage",
     event: "An accident",
     problem: "Injury costs or disability",
     official: "Personal Accident",
@@ -227,6 +255,8 @@ export const protectionCategories: ProtectionCategory[] = [
       "Accident medical expenses, up to a limit",
       "Sometimes a daily hospital income after an accident",
     ],
+    mayHelpIcons: ["shieldPlus","percent","bandage","calendarCoin"],
+    photo: { src: "/images/pexels/protection-accident-rider.webp", position: "50% 40%", credit: { photographer: "Erik Mclean", url: "https://www.pexels.com/photo/man-on-motorcycle-in-city-10125985/" } },
     notAutomatic: [
       "Illness — unless the policy adds a specific extension",
       "Every activity — exclusions often apply, for example certain hazardous activities",

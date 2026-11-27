@@ -102,3 +102,16 @@ test("no checkout or purchase flow exists in the protection feature", () => {
     assert.ok(!/checkout|add to cart|purchase now|apply now|get a quote/i.test(src), f);
   }
 });
+
+test("visual assets: one icon per 'may help' item, and each category has a credited local hero photo", () => {
+  for (const c of protectionCategories) {
+    assert.equal(c.mayHelpIcons.length, c.mayHelp.length, c.slug);
+    assert.ok(c.iconName, c.slug);
+    assert.match(c.photo.src, /^\/images\/pexels\/[a-z0-9-]+\.webp$/, c.slug);
+    const file = new URL(`../../public${c.photo.src}`, import.meta.url);
+    assert.ok(readFileSync(file).length > 10_000, `${c.photo.src} exists and isn't empty`);
+    assert.match(c.photo.credit.url, /^https:\/\/www\.pexels\.com\/photo\//, c.slug);
+    assert.ok(c.photo.credit.photographer, c.slug);
+  }
+  assert.equal(new Set(protectionCategories.map((c) => c.photo.src)).size, 5, "no photo reused across categories");
+});
