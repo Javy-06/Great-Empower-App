@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:engine-1": "node --experimental-strip-types --test src/calculation-engine/engine-1.test.ts",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "qa:ui": "node scripts/qa/ui-qa.mjs",
+    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",

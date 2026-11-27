@@ -25,3 +25,6 @@ logs/
 /ui reference/
 /insurance study video/
 /insurance infographic/
+
+# UI QA runner output (screenshots, reports, device-only build)
+/.qa/
