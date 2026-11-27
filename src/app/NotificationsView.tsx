@@ -28,7 +28,7 @@ const categoryIcon: Record<NotificationCategory, typeof Gift> = {
 
 const labelTone: Record<NotificationCategory, string> = {
   updates: "bg-navy-100 text-navy-800",
-  learning: "bg-gold-100 text-gold-700",
+  learning: "bg-gold-50 text-gold-700 ring-1 ring-inset ring-gold-300/60",
   gameplay: "bg-success-50 text-success-700",
   rewards: "bg-crimson-50 text-crimson-700",
 };

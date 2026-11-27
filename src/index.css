@@ -185,6 +185,13 @@
     scroll-padding-top: 5rem;
   }
 
+  /* Mobile: keep keyboard-focused controls clear of the fixed bottom navigation (WCAG 2.4.11). */
+  @media (max-width: 47.999rem) {
+    html {
+      scroll-padding-bottom: 6.5rem;
+    }
+  }
+
   body {
     background-color: var(--color-canvas);
     color: var(--color-ink);
