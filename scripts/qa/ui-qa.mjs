@@ -8,10 +8,10 @@
 // Safety: the build blanks VITE_SUPABASE_* so the app runs in device-only mode (local accounts, no cloud).
 // The runner refuses to continue if the built bundle still references a Supabase host.
 // Output: .qa/report.json, .qa/report.md, .qa/shots/<width>/<route>.jpg   (.qa/ is gitignored)
-import { spawn, spawnSync } from "node:child_process";
-import { createServer } from "node:http";
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { extname, join, resolve } from "node:path";
+import { spawn } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { assertDeviceOnly, buildDeviceOnly, serve } from "./device-only.mjs";
 import { tmpdir } from "node:os";
 import { routes as allRoutes, viewports as allViewports } from "./routes.mjs";
 
@@ -26,28 +26,9 @@ const viewports = allViewports.filter((v) => !widths || widths.has(v.width));
 const shots = !args["no-shots"];
 const log = (...m) => console.log("[qa]", ...m);
 
-// ---------- 1. Device-only build ----------
-if (!args["no-build"] || !existsSync(DIST)) {
-  log("building device-only bundle…");
-  const b = spawnSync("npx", ["vite", "build", "--outDir", DIST, "--emptyOutDir"], {
-    cwd: ROOT, shell: true, stdio: "inherit",
-    env: { ...process.env, VITE_SUPABASE_URL: "", VITE_SUPABASE_PUBLISHABLE_KEY: "" },
-  });
-  if (b.status !== 0) { console.error("build failed"); process.exit(1); }
-}
-const bundle = readdirSync(join(DIST, "assets")).filter((f) => f.endsWith(".js")).map((f) => readFileSync(join(DIST, "assets", f), "utf8")).join("\n");
-if (/https:\/\/[a-z0-9]+\.supabase\.co/.test(bundle)) { console.error("ABORT: bundle references a Supabase project. QA must run device-only."); process.exit(2); }
-
-// ---------- 2. Static server ----------
-const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".json": "application/json", ".mp4": "video/mp4", ".woff2": "font/woff2", ".vtt": "text/vtt", ".ico": "image/x-icon" };
-const server = createServer((req, res) => {
-  let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
-  let f = join(DIST, p);
-  if (!f.startsWith(DIST) || !existsSync(f) || statSync(f).isDirectory()) f = p === "/" || !extname(p) ? join(DIST, "index.html") : null;
-  if (!f) { res.writeHead(404).end(); return; }
-  res.writeHead(200, { "content-type": types[extname(f)] || "application/octet-stream" }).end(readFileSync(f));
-});
-await new Promise((r) => server.listen(0, "127.0.0.1", r));
+// ---------- 1–2. Device-only build + static server (shared with Playwright) ----------
+if (!args["no-build"] || !existsSync(DIST)) { log("building device-only bundle…"); buildDeviceOnly(DIST); } else assertDeviceOnly(DIST);
+const server = await serve(DIST);
 const BASE = `http://127.0.0.1:${server.address().port}`;
 
 // ---------- 3. Chrome ----------
@@ -199,7 +180,12 @@ for (const vp of viewports) {
   }
   log(`${vp.width}px: ${routes.length} routes checked`);
 }
-pageLog = null; ws.close(); chrome.kill(); server.close();
+pageLog = null;
+// Close through the protocol: on Windows, killing the launcher process leaves Chrome child processes running.
+await Promise.race([send("Browser.close"), wait(3000)]);
+await Promise.race([new Promise((r) => chrome.once("exit", r)), wait(5000)]);
+if (chrome.exitCode === null) chrome.kill();
+ws.close(); server.close();
 try { rmSync(profile, { recursive: true, force: true }); } catch {}
 
 // ---------- 6. Gate + report ----------

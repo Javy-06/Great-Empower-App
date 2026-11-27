@@ -1,0 +1,4 @@
+/* Applied only while Playwright takes visual-regression screenshots.
+   Full-page captures draw fixed elements once at their viewport position, so the floating
+   mobile bottom nav would land mid-page. It is covered by the smoke/interaction tests instead. */
+div.fixed.inset-x-3.z-40 { display: none !important; }

@@ -10,7 +10,13 @@
     "test:engine-1": "node --experimental-strip-types --test src/calculation-engine/engine-1.test.ts",
     "format": "oxfmt",
     "qa:ui": "node scripts/qa/ui-qa.mjs",
-    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\""
+    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\"",
+    "qa:e2e": "playwright test",
+    "qa:smoke": "playwright test smoke interactions",
+    "qa:a11y": "playwright test a11y",
+    "qa:visual": "playwright test visual",
+    "qa:visual:update": "playwright test visual --update-snapshots=all",
+    "qa:report": "playwright show-report .qa/pw-report"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.2",
@@ -19,6 +25,8 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.1",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
