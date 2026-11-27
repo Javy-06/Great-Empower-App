@@ -3,6 +3,8 @@
 Status: **COMPLETED. All 6 logos and all 13 product photos are in place and verified.**
 Last updated: 2026-11-25
 
+> **Storage update, 2026-11-27:** the 2048 px product JPGs and logo PNGs were moved to `media-originals/` (same sub-paths) so they are no longer deployed. The app serves the `-640.webp` product photos and 512 px logo PNGs at the original `brands/*-logo.png` paths. See `docs/reports/GREAT-EMPOWER-STORAGE-OPTIMIZATION.md`.
+
 This manifest is for planning and tracking. Final files live directly in the project folders listed below.
 
 ## Status key

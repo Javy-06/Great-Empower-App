@@ -17,9 +17,7 @@ export type NewsStory = {
   url: string;
   summary: string;
   infographic: {
-    /** The original asset as supplied (kept untouched). */
-    original: string;
-    /** Web-sized copies of the same artwork. */
+    /** Web-sized copies of the artwork. The supplied original is kept out of the deployed folder, in media-originals/images/news/. */
     inline: string;
     full: string;
     width: number;
@@ -46,7 +44,6 @@ export const mediAsasStory: NewsStory = {
   summary:
     "In an email interview with Bernama, Bank Negara Malaysia Deputy Governor Aznan Abdul Aziz said MediAsas, scheduled for January 2027, is meant to be an affordable entry point to medical insurance — and part of wider reforms to manage rising medical costs, not just another product.",
   infographic: {
-    original: "/images/news/mediasas-overview-2027.jpg",
     inline: "/images/news/mediasas/mediasas-overview-2027-1080.webp",
     full: "/images/news/mediasas/mediasas-overview-2027-1856.webp",
     width: 1856,
