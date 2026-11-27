@@ -13,7 +13,6 @@ import { SimulateHub } from "./SimulateHub";
 import { AnalyzeView } from "./AnalyzeView";
 import { RewardsView } from "./RewardsView";
 import { NotificationsView } from "./NotificationsView";
-import { AboutView } from "./AboutView";
 import { AppSplash } from "./AppSplash";
 import { GameShell } from "./game/GameShell";
 import { exitGame, GAME_HASH, gameReturnScroll, LEGACY_GAME_HASH } from "./game/gameRoute";
@@ -34,7 +33,6 @@ const destinations: DashboardDestination[] = [
   "guide",
   "rewards",
   "notifications",
-  "about",
 ];
 
 function readDestination(): DashboardDestination {
@@ -66,8 +64,7 @@ function DestinationView({
   if (destination === "analyze") return <AnalyzeView />;
   if (destination === "guide") return <GuideCentre />;
   if (destination === "notifications") return <NotificationsView />;
-  if (destination === "about") return <AboutView />;
-  return <HomeDashboard onNavigate={(next) => navigateTo(next)} />;
+  return <HomeDashboard />;
 }
 
 export function navigateTo(destination: DashboardDestination) {
@@ -181,17 +178,11 @@ export function ApplicationApp() {
             <DestinationView destination={destination} route={currentRoute} />
           </div>
 
-          {/* One slim line, not a website footer. Full notice lives in About & legal. */}
+          {/* One slim line, not a website footer: the essential independence and not-advice notice. */}
           <Container className="pb-6 pt-2 md:pb-10">
             <p className="border-t border-ink/10 pt-4 text-caption text-ink-muted">
-              Independent financial protection education. Not financial advice or an official
-              insurer product.{" "}
-              <a
-                href="#app/about"
-                className="font-semibold text-navy-900 underline-offset-2 hover:underline"
-              >
-                About &amp; legal
-              </a>
+              Independent financial protection education for young Malaysians. Not financial advice,
+              and not an official product of, or endorsed by, any insurer. Examples are illustrative.
             </p>
           </Container>
         </main>

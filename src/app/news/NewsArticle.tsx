@@ -170,7 +170,8 @@ export function NewsArticle({ story, onBack }: { story: NewsStory; onBack: () =>
           <div className="mt-10 flex flex-col gap-4 border-t border-ink/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-caption text-ink-muted">
               Source: {story.publication}, {formatDate(story.publishedOn)}. GREAT EMPOWER is
-              independent and not affiliated with the publisher or any insurer.
+              independent and not affiliated with the publisher or any insurer. This summary restates the
+              linked source; details can change, so check Bank Negara Malaysia or the insurer for current terms.
             </p>
             <a
               href={story.url}

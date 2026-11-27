@@ -1,9 +1,10 @@
-import { ArrowRight, CalendarDays, ChevronRight, Megaphone } from "lucide-react";
+import { ArrowRight, CalendarDays, Megaphone } from "lucide-react";
 import { Container } from "@/components/layout/Editorial";
 import { useSession } from "@/account/session";
 import { useLearnProgress } from "@/state/learnProgress";
 import { demoLessons } from "@/data/demo-courses";
-import { primaryNav, type NavKey } from "@/components/nav/navItems";
+import { protectionCategories } from "@/data/protection";
+import { categoryIcons, categoryTones } from "./protection/ProtectionHub";
 import { mediAsasStory, NEWS_HASH_PREFIX } from "@/data/news";
 import { FeaturedHero } from "./home/FeaturedHero";
 import { openGame } from "./game/gameRoute";
@@ -15,8 +16,7 @@ export type DashboardDestination =
   | "analyze"
   | "guide"
   | "rewards"
-  | "notifications"
-  | "about";
+  | "notifications";
 
 const go = (hash: string) => {
   window.location.hash = hash;
@@ -24,12 +24,8 @@ const go = (hash: string) => {
 };
 
 
-/** Home — compact and app-first: featured carousel, one update, quick actions, the game. */
-export function HomeDashboard({
-  onNavigate,
-}: {
-  onNavigate: (destination: DashboardDestination) => void;
-}) {
+/** Home — compact and app-first: featured carousel, one update, a protection starting point, the game. */
+export function HomeDashboard() {
   const session = useSession();
   const profileName = session.kind === "ready" ? session.account.displayName : undefined;
   const learn = useLearnProgress();
@@ -53,7 +49,7 @@ export function HomeDashboard({
         <Container className="grid gap-7 sm:gap-9 lg:grid-cols-2 lg:items-start lg:gap-x-12">
           <div className="grid gap-7 sm:gap-9">
             <LatestUpdate />
-            <QuickActions onNavigate={onNavigate} />
+            <ProtectionStart />
           </div>
           <GameEntrance />
         </Container>
@@ -119,40 +115,44 @@ function LatestUpdate() {
   );
 }
 
-const quickHints: Record<Exclude<NavKey, "home">, string> = {
-  learn: "Build your knowledge",
-  simulate: "Try real-life scenarios",
-  analyze: "Understand your needs",
-  guide: "Get step-by-step help",
-};
+const homeLabels: Record<string, string> = { medical: "Hospital", "critical-illness": "Illness", life: "Family", tpd: "Disability", "personal-accident": "Accident" };
 
-const quickDestinations = primaryNav.filter(
-  (item): item is (typeof primaryNav)[number] & { key: Exclude<NavKey, "home"> } =>
-    item.key !== "home",
-);
-
-function QuickActions({ onNavigate }: { onNavigate: (destination: DashboardDestination) => void }) {
+/** Start here: the five kinds of cover at a glance, each tappable, plus one way into the full guide. */
+function ProtectionStart() {
   return (
-    <section aria-labelledby="quick-title">
-      <SectionHeading id="quick-title" overline="Explore" title="Quick Actions" />
-      <ul className="mt-3 grid grid-cols-2 gap-2.5 sm:gap-3">
-        {quickDestinations.map(({ key, label, icon: Icon }) => (
-          <li key={key}>
-            <button
-              type="button"
-              onClick={() => onNavigate(key)}
-              className="flex min-h-[4.5rem] w-full items-center gap-3 rounded-2xl bg-navy-900 px-3.5 py-3 text-left text-white shadow-e2 transition-colors hover:bg-navy-800 active:bg-navy-950 sm:px-4"
-            >
-              <Icon size={24} strokeWidth={1.75} className="shrink-0" aria-hidden />
-              <span className="min-w-0 flex-1">
-                <span className="block text-body font-semibold">{label}</span>
-                <span className="block text-[12px] leading-tight text-white/70">{quickHints[key]}</span>
-              </span>
-              <ChevronRight size={18} className="shrink-0 text-white/60" aria-hidden />
-            </button>
-          </li>
-        ))}
+    <section aria-labelledby="start-title" className="rounded-[1.25rem] bg-navy-950 p-4 text-white shadow-e2 sm:p-5">
+      <p className="text-overline uppercase tracking-[0.18em] text-teal-200">Start here</p>
+      <h2 id="start-title" className="mt-1 font-brand text-[1.75rem] font-semibold leading-tight">
+        Five risks, five kinds of cover
+      </h2>
+      <p className="mt-1 text-body-sm text-white/70">See what each one does — and doesn't — in two minutes.</p>
+      <ul className="mt-4 grid grid-cols-5 gap-1.5">
+        {protectionCategories.map((c) => {
+          const Icon = categoryIcons[c.slug];
+          return (
+            <li key={c.slug}>
+              <button
+                type="button"
+                onClick={() => go(`app/learn/protection/${c.slug}`)}
+                aria-label={`${c.purpose}: ${c.event}`}
+                className="flex w-full flex-col items-center gap-1.5 rounded-xl px-1 py-2 text-center hover:bg-white/[0.06]"
+              >
+                <span className={`inline-flex size-11 items-center justify-center rounded-xl ${categoryTones[c.slug]}`}>
+                  <Icon size={20} aria-hidden />
+                </span>
+                <span className="text-[11px] font-semibold leading-tight text-white/85">{homeLabels[c.slug]}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
+      <button
+        type="button"
+        onClick={() => go("app/learn/protection")}
+        className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-body-sm font-bold text-navy-950 hover:bg-white/90"
+      >
+        Protection explained <ArrowRight size={16} aria-hidden />
+      </button>
     </section>
   );
 }
