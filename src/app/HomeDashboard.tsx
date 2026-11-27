@@ -151,7 +151,7 @@ function ProtectionStart() {
         onClick={() => go("app/learn/protection")}
         className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-body-sm font-bold text-navy-950 hover:bg-white/90"
       >
-        Protection explained <ArrowRight size={16} aria-hidden />
+        How protection works <ArrowRight size={16} aria-hidden />
       </button>
     </section>
   );

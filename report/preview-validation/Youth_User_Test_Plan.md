@@ -23,7 +23,7 @@
 ## 3. Tasks
 | # | Task (read aloud) | Success criterion |
 |---|---|---|
-| 1 | "Find out what medical insurance covers." | Reaches the Medical page and names 2+ items from "What it may help with" |
+| 1 | "Find out what medical insurance covers." | Reaches the Medical page and names 2+ items from "May help with" |
 | 2 | "Explain the difference between medical insurance and critical illness cover." | Says medical pays bills; CI pays a lump sum on a covered diagnosis |
 | 3 | "Explain the difference between life insurance and critical illness cover." | Life pays on death (to nominee or estate); CI pays while alive on diagnosis |
 | 4 | "Does medical insurance mean you pay nothing at the hospital?" | Says no, mentioning a deductible, co-payment, limits or exclusions |
@@ -32,6 +32,18 @@
 | 7 | "What does this result mean? Is it a price you would pay?" | Explains it as an illustrated gap. **Does not** call it a quote or a recommendation. |
 | 8 | "Find an official source for one product." | Opens an official Great Eastern link from a product card |
 | 9 | "What would you still need to check before buying?" | Points to "Needs official confirmation" and/or the before-you-buy checklist |
+| 10 | "From the Home screen, what do you think your next step is? Why?" | Identifies the highlighted step in "Your next step" and can explain what it means in their own words |
+| 11 | "Compare two medical products. What information do you think is missing or unclear?" | Names at least one gap (e.g. "Not in verified sources") and understands GREAT EMPOWER doesn't have every verified product fact |
+| 12 | "Use the hospital bill tool. For a RM20,000 hospital bill, how much do you think you would personally pay?" | Finds the result, reads the "You pay" amount correctly, and says it's illustrative (not their real policy) |
+
+**Observation point (not a task), Protect → Simulate context switch (audit A3, accepted for the RC).** When the participant presses "Check" in Protect, note:
+- Do they expect the check to stay inside Protect?
+- Are they confused on arriving in Simulate?
+- Do they understand why they're filling in a profile?
+
+Don't teach or guide unless they're completely stuck for 2 minutes.
+
+_Updated 27 Nov 2026 for the current build: Protect tab, Home "Your next step", product comparison, hospital-bill tool, and the "How protection works" Learn hub (was "Protection explained")._
 
 ## 4. Moderator script (short)
 1. **Welcome:** "Thanks for helping. We're testing the app, not you. There are no wrong answers. Please think aloud."

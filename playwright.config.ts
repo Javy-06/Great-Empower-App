@@ -16,7 +16,8 @@ export default defineConfig({
   globalTimeout: 25 * 60_000,
   reporter: [["list"], ["html", { outputFolder: ".qa/pw-report", open: "never" }]],
   // Absolute pixel budget: a ratio lets small real changes (one word on a tall page) slip through.
-  expect: { toHaveScreenshot: { maxDiffPixels: 100, animations: "disabled" } },
+  // 300px: photo/raster rendering noise was observed at 110–200px; a one-word text change is ~700px.
+  expect: { toHaveScreenshot: { maxDiffPixels: 300, animations: "disabled" } },
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
     reducedMotion: "reduce",

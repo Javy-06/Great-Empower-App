@@ -96,7 +96,7 @@ function HubView() {
   return (
     <>
       <PageHero
-        eyebrow="Protection explained"
+        eyebrow="How protection works"
         title="A bad day shouldn't wreck your finances."
         text="Five kinds of cover, explained in pictures."
         image="/images/pexels/family-protection-conversation.webp"
@@ -455,7 +455,7 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
         </div>
         <Container className="max-w-[56rem] pb-7 pt-3 md:pt-10">
           <button type="button" onClick={() => go(PROTECTION_HASH)} className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-body-sm font-semibold text-white/85 hover:text-white">
-            <ArrowLeft size={18} aria-hidden /> Protection explained
+            <ArrowLeft size={18} aria-hidden /> How protection works
           </button>
           <div className="mt-3 flex items-start gap-4">
             <span className={cn("inline-flex size-14 shrink-0 items-center justify-center rounded-2xl", categoryTones[c.slug])}>

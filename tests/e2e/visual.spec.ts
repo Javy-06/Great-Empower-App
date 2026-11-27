@@ -20,11 +20,15 @@ for (const s of screens) {
   test(`visual ${s.key}`, async ({ signedIn: page }) => {
     await go(page, s.hash);
     await page.evaluate(() => document.fonts.ready);
+    // Photos must be fully decoded first; a half-decoded hero caused an occasional ~200px diff.
+    await page.evaluate(() => Promise.all([...document.images].map((i) => { i.loading = "eager"; return i.decode().catch(() => undefined); })));
     // Carousels and videos move on their own; hide what can't be frozen.
     await expect(page).toHaveScreenshot(`${s.key}.png`, {
       fullPage: true,
       stylePath: "tests/e2e/screenshot.css",
-      mask: [page.locator("video"), page.locator("[data-carousel], [aria-roledescription=carousel]")],
+      // Infographic thumbnails are large supplied images scaled down; their resampling varies by a few
+      // hundred pixels between runs. Their loading is covered by the smoke tests' broken-image check.
+      mask: [page.locator("video"), page.locator("[data-carousel], [aria-roledescription=carousel]"), page.locator('img[src*="/media/learn/infographics/"]')],
     });
   });
 }

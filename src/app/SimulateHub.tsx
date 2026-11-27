@@ -440,7 +440,7 @@ function PlanStep({ onBack }: { onBack: () => void }) {
       <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
         {[
           { label: "See your protection check", href: "app/protect" },
-          { label: "Protection explained", href: "app/learn/protection" },
+          { label: "How protection works", href: "app/learn/protection" },
           { label: "Practical guides", href: "app/guide" },
         ].map((l) => (
           <button key={l.href} type="button" onClick={() => go(l.href)} className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-navy-900 px-4 text-body-sm font-semibold text-white">

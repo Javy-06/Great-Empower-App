@@ -52,10 +52,10 @@ export function ProductExplorer() {
   return (
     <>
       <PageHero
-        eyebrow="Protection explained"
+        eyebrow="How protection works"
         title="Explore products"
         text="Products whose facts we could check in official documents. Pick up to three to compare side by side."
-        backLabel="Protection explained"
+        backLabel="How protection works"
         onBack={() => go(PROTECTION_HASH)}
         titleId="products-title"
       />

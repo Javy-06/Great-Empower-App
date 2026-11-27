@@ -182,7 +182,7 @@ export function LearnHome() {
         </Container>
       )}
 
-      {/* Protection explained */}
+      {/* How protection works */}
       <Container className="mt-5">
         <button
           type="button"
@@ -191,7 +191,7 @@ export function LearnHome() {
         >
           <span className="flex items-start justify-between gap-3">
             <span>
-              <span className="block text-[12px] font-semibold uppercase tracking-[0.18em] text-teal-700">Protection explained</span>
+              <span className="block text-[12px] font-semibold uppercase tracking-[0.18em] text-teal-700">How protection works</span>
               <span className="mt-0.5 block font-brand text-[1.5rem] font-semibold leading-tight text-navy-950">What each type of cover does — and doesn't</span>
             </span>
             <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-navy-900 text-white transition-transform group-hover:translate-x-0.5">
