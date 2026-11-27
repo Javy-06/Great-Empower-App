@@ -44,7 +44,7 @@
 
 ## Not done (by design)
 - **No browser test of the live URL itself.** It needs a Vercel login, and creating a bypass token is out of bounds. Instead, the **exact bytes** were tested locally (see the functional and responsive reports). **Open it in your logged-in browser to confirm visually.**
-- **No push.** The three-commit history stays local until the branch Preview's Supabase variables are changed (see Known Issues).
+- **No push.** This phase's report commit stays local until the branch Preview's Supabase variables are changed (see Known Issues).
 
 ## Safe for usability testing?
 **Yes, for data safety.** No backend exists in this build, so nothing a participant does can reach the live points ledger.

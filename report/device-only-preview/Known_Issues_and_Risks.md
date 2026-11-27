@@ -2,7 +2,7 @@
 
 | # | Issue / risk | Severity | Status | Recommended action |
 |---|---|---|---|---|
-| 1 | **Pushing the branch auto-builds a Preview connected to the live Supabase project** (branch-scoped Preview variables) | High | **Blocker for pushing.** The 3 local commits from this and the previous phase stay unpushed. | Change the branch's Preview variables (blank them, or point to a staging Supabase project). Pushing after that is safe. Needs your approval (env change). |
+| 1 | **Pushing the branch auto-builds a Preview connected to the live Supabase project** (branch-scoped Preview variables) | High | **Blocker for pushing.** This phase's 1 local commit (reports) stays unpushed. (The previous phase's commits were already pushed and auto-built a live-connected Preview at the time.) | Change the branch's Preview variables (blank them, or point to a staging Supabase project). Pushing after that is safe. Needs your approval (env change). |
 | 2 | **Participants can't open the protected Preview** without a Vercel team login | Medium | Open | Run sessions on the moderator's device, or decide on a share link (bypasses protection) |
 | 3 | The live Preview URL wasn't browser-tested by me (protected) | Low | Mitigated: identical bytes (98/98 SHA-1) were tested locally | Open the URL in your logged-in browser for a visual check |
 | 4 | The Supabase library chunk (`cloud-*.js`) is still shipped in device-only builds (never requested) | Low | Accepted: contains no project data | Optional: tree-shake cloud code when `cloudConfigured` is false (touches account architecture, so it needs approval) |
