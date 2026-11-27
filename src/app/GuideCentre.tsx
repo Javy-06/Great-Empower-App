@@ -20,7 +20,7 @@ import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import { guideCategories, guides, readinessChecklist, type Guide, type GuideCategory } from "@/data/guides";
-import { createStore, useStore } from "@/state/store";
+import { useStore } from "@/state/store";
 import { SessionsView } from "./guide/SessionsView";
 import { AdvisorAvatar } from "./guide/AdvisorCard";
 import { trioForSession } from "./guide/advisorSelection";
@@ -28,8 +28,9 @@ import { trioForSession } from "./guide/advisorSelection";
 /** Today's featured trio — one Malay, one Chinese, one Indian advisor (guaranteed). */
 const entryTrio = trioForSession(`entry|${new Date().toDateString()}`);
 
-export const CHECKLIST_KEY = "ge-guide-checklist-v1";
-export const checklistStore = createStore<{ done: string[] }>(CHECKLIST_KEY, () => ({ done: [] }));
+// The store lives in src/state so Protect can share it; re-exported here for existing imports.
+import { checklistStore } from "@/state/checklist";
+export { CHECKLIST_KEY, checklistStore } from "@/state/checklist";
 
 const categoryIcons: Record<GuideCategory, typeof ShieldPlus> = {
   "insurance-basics": ShieldPlus,
@@ -245,8 +246,8 @@ function GuideHome() {
                 ))}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-subheading">Book a guidance session</span>
-                <span className="block text-body-sm text-white/70">Talk through protection basics with a fictional advisor</span>
+                <span className="block text-subheading">Practice booking a session <span className="ml-1 rounded-full bg-white/15 px-2 py-0.5 align-middle text-[12px] font-bold uppercase tracking-[0.08em]">Demo</span></span>
+                <span className="block text-body-sm text-white/70">See how booking could work. Fictional advisors; nothing is booked or sent.</span>
               </span>
               <ArrowRight size={18} className="shrink-0" aria-hidden />
             </button>
@@ -392,8 +393,11 @@ function ChecklistView() {
             );
           })}
         </ul>
-        <button type="button" onClick={() => go("app/simulate")} className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-semibold text-white">
-          Build your protection profile <ArrowRight size={18} aria-hidden />
+        <button type="button" onClick={() => go("app/protect/check")} className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-semibold text-white">
+          Check your protection <ArrowRight size={18} aria-hidden />
+        </button>
+        <button type="button" onClick={() => go("app/protect/get-cover")} className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1.5 text-body-sm font-semibold text-navy-800">
+          Ready to apply? Explore cover options <ArrowRight size={16} aria-hidden />
         </button>
       </Container>
     </>

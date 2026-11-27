@@ -1,7 +1,8 @@
 import { createStore, useStore } from "./store";
 
 /**
- * The learner's self-reported protection profile (Simulate step 1). Stored on this device only.
+ * The learner's self-reported protection profile (Protect → Check). Stored on this device only.
+ * `monthlyBudget` is kept for saved profiles but no longer asked: nothing in the app used it.
  * Nothing here is verified — Analyze always labels findings as based on what the user entered.
  */
 export type CoverageAnswer = "yes" | "no" | "not-sure";
@@ -24,7 +25,8 @@ export const emptyProfile = (): ProtectionProfile => ({
   monthlyExpenses: "",
   dependants: "",
   monthlyBudget: 150,
-  priorities: ["medical", "critical", "life", "accident"],
+  // Nothing pre-selected: an area only becomes a "Gap" when the user marks it as a priority.
+  priorities: [],
   coverage: { medical: "", critical: "", life: "", accident: "" },
 });
 

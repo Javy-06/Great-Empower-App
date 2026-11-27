@@ -56,14 +56,14 @@ export function FeaturedHero({
   greeting,
   profileName,
   onContinue,
-  onBookSession,
+  onGetCover,
 }: {
   greeting: string;
   /** Optional: new accounts may not have a name. */
   profileName?: string;
   onContinue: () => void;
-  /** Opens the existing Guidance Sessions booking flow. */
-  onBookSession: () => void;
+  /** Opens Protect → Get cover (understand, get ready, then apply online or with an adviser). */
+  onGetCover: () => void;
 }) {
   const story = mediAsasStory;
 
@@ -111,19 +111,19 @@ export function FeaturedHero({
       media: { kind: "infographic" },
     },
     {
-      id: "advisor",
-      label: "Book an advisor",
-      eyebrow: "Guidance sessions · Fictional demo advisor",
-      title: "Book an Advisor for Guidance",
-      text: "Get guidance to better understand financial protection.",
-      cta: "Book a Session",
-      onAction: onBookSession,
+      id: "get-cover",
+      label: "Get cover",
+      eyebrow: "When you're ready",
+      title: "Explore cover and how to apply.",
+      text: "Understand a kind of cover, get ready, then apply right here in the app, or get an adviser's help.",
+      cta: "Explore cover options",
+      onAction: onGetCover,
       media: {
         kind: "photo",
-        src: "/advisor/web/advisor-malay-woman-1280.webp",
-        alt: "Farah Nadia, a fictional demonstration advisor (AI-generated portrait).",
-        position: "50% 18%",
-        desktopPosition: "50% 22%",
+        src: "/images/pexels/young-professional-savings-planning.webp",
+        alt: "A young woman reading through documents at a desk, beside a laptop.",
+        position: "40% 30%",
+        desktopPosition: "35% 30%",
       },
     },
   ];

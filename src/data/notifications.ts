@@ -69,11 +69,12 @@ export const notifications: AppNotification[] = [
     id: "gameplay-lifetrack",
     category: "gameplay",
     label: "Gameplay",
-    title: "LifeTrack is getting ready",
-    body: "The new LifeTrack board game is being connected. Peek at the game space from Home.",
+    title: "Play LifeTrack",
+    body: "Our insurance board game now has its own website. It opens in a new tab.",
     date: "2026-11-20",
     image: "/images/lifetrack/lifetrack-cover-960.webp",
-    href: "app/play/lifetrack",
+    href: "https://lifetrack-plum.vercel.app/",
+    external: true,
   },
 ];
 

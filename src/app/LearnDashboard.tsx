@@ -120,7 +120,7 @@ const lessonRelated: Record<string, RelatedLink[]> = {
   ],
   deductibles: [
     { kind: "Guide", label: "Deductible, co-payment and annual limit explained", href: "app/guide/article/cost-sharing-explained" },
-    { kind: "Simulate", label: "Try the medical bill simulator", href: "app/simulate" },
+    { kind: "Simulate", label: "Try the medical bill simulator", href: "app/simulate/needs/tool-bill" },
   ],
   "income-replacement": [
     { kind: "Infographic", label: "Life insurance in Malaysia", href: "app/learn/infographic/life-insurance-malaysia" },
@@ -128,7 +128,7 @@ const lessonRelated: Record<string, RelatedLink[]> = {
   ],
   "emergency-fund": [
     { kind: "Guide", label: "Building an emergency fund", href: "app/guide/article/emergency-fund" },
-    { kind: "Simulate", label: "Size your emergency fund", href: "app/simulate" },
+    { kind: "Simulate", label: "Size your emergency fund", href: "app/simulate/needs/tool-fund" },
   ],
   "first-salary": [{ kind: "Guide", label: "Starting your first job", href: "app/guide/article/first-job" }],
   "money-talks": [{ kind: "Video", label: "How risk pooling powers insurance", href: "app/learn/video/risk-pooling-powers-insurance" }],

@@ -163,3 +163,114 @@ test("rewards: a reward above the balance can't be redeemed and says how many po
   await expect(page.getByRole("button", { name: /Not enough points \(.+ short\)/ })).toBeDisabled();
   expectClean(problems);
 });
+
+test("protect: the check lives in Protect, saves, and no gap appears without a chosen priority", async ({ signedIn: page, problems }) => {
+  await go(page, "app/protect");
+  await page.getByRole("button", { name: /Start your check|Finish your check/ }).click();
+  await expect(page).toHaveURL(/#app\/protect\/check$/);
+  for (const name of ["Medical cover", "Critical illness cover", "Life & income cover", "Personal accident cover"]) {
+    await page.getByRole("radiogroup", { name }).getByRole("radio", { name: "No", exact: true }).click();
+  }
+  // Nothing is pre-selected as a priority.
+  for (const box of await page.getByRole("checkbox").all()) await expect(box).toHaveAttribute("aria-checked", "false");
+  await page.getByRole("button", { name: "Save and see my results" }).click();
+  await expect(page).toHaveURL(/#app\/protect$/);
+  const gaps = page.locator("#protect-gaps");
+  await expect(gaps.getByText("Review", { exact: true }).first()).toBeVisible();
+  await expect(gaps.getByText("Gap", { exact: true })).toHaveCount(0);
+  expectClean(problems);
+});
+
+test("get cover: understand → skip → ready → apply step offers the in-app application and adviser guidance", async ({ signedIn: page, problems }) => {
+  for (const [name, area] of [["Medical", "medical"], ["Critical illness", "critical"], ["Life & income", "life"], ["Personal accident", "accident"]] as const) {
+    await go(page, "app/protect/get-cover");
+    await page.getByRole("button", { name: new RegExp(`^${name}`) }).click();
+    await expect(page).toHaveURL(new RegExp(`#app/protect/get-cover/${area}$`));
+  }
+  await go(page, "app/protect/get-cover/medical");
+  await expect(page.getByText("Optional", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Skip and continue" }).click();
+  await expect(page).toHaveURL(/get-cover\/medical\/ready$/);
+  await page.getByRole("button", { name: "Continue to apply" }).click();
+  await expect(page).toHaveURL(/get-cover\/medical\/how$/);
+  await page.getByRole("button", { name: "Get Adviser Guidance" }).click();
+  await expect(page).toHaveURL(/get-cover\/medical\/adviser$/);
+  await expect(page.getByRole("link", { name: /official call-back page/ })).toHaveAttribute("target", "_blank");
+  await page.getByRole("button", { name: /Apply in GREAT EMPOWER/ }).click();
+  await expect(page).toHaveURL(/#app\/protect\/apply\/medical\/details$/);
+  // The old external "online" route now forwards into the in-app application.
+  await page.evaluate(() => { location.hash = "app/protect/get-cover/life/online"; });
+  await expect(page).toHaveURL(/#app\/protect\/apply\/life\/details$/);
+  expectClean(problems);
+});
+
+test("apply in app: validation, back without losing answers, review, honest completion", async ({ signedIn: page, problems }) => {
+  await go(page, "app/protect/get-cover/medical/how");
+  await page.getByRole("button", { name: "Start your application" }).click();
+  await expect(page).toHaveURL(/apply\/medical\/details$/);
+  await expect(page.getByText("Step 1 of 4")).toBeVisible();
+  // Empty submit shows an error summary and field errors, and stays on the step.
+  await page.getByLabel("Full name").fill("");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByRole("alert")).toContainText("answers need attention");
+  await expect(page.getByLabel("Full name")).toHaveAttribute("aria-invalid", "true");
+  await expect(page).toHaveURL(/apply\/medical\/details$/);
+  await page.getByLabel("Full name").fill("Aisyah Rahman");
+  await page.getByLabel("Date of birth").fill("2002-05-14");
+  await page.getByRole("radio", { name: "Malaysian citizen" }).click();
+  await page.getByLabel("Occupation").fill("Student");
+  await page.getByLabel("Mobile number").fill("12345");
+  await page.getByLabel("Email").fill("aisyah@example.com");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByLabel("Mobile number")).toHaveAttribute("aria-invalid", "true");
+  await page.getByLabel("Mobile number").fill("012-345 6789");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(/apply\/medical\/cover$/);
+  await page.getByRole("radio", { name: "Not sure yet" }).click();
+  await page.getByLabel("What you could spend a month").fill("120");
+  await page.getByRole("radio", { name: "Monthly" }).click();
+  await page.getByRole("radio", { name: "Either is fine" }).click();
+  await page.getByRole("radiogroup", { name: /already have medical cover/ }).getByRole("radio", { name: "No", exact: true }).click();
+  // Back keeps what was typed.
+  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await expect(page).toHaveURL(/apply\/medical\/details$/);
+  await expect(page.getByLabel("Occupation")).toHaveValue("Student");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(/apply\/medical\/health$/);
+  for (const group of await page.getByRole("radiogroup").all()) await group.getByRole("radio", { name: "No", exact: true }).click();
+  await page.getByRole("button", { name: "Review my application" }).click();
+  await expect(page).toHaveURL(/apply\/medical\/review$/);
+  await expect(page.getByText("Aisyah Rahman")).toBeVisible();
+  // The declaration is required.
+  await page.getByRole("button", { name: "Complete application" }).click();
+  await expect(page.getByRole("alert")).toBeVisible();
+  await page.getByLabel(/My answers are true and complete/).check();
+  await page.getByLabel(/doesn.t send it to an insurer/).check();
+  await page.getByRole("button", { name: "Complete application" }).click();
+  await expect(page).toHaveURL(/apply\/medical\/done$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Application completed in GREAT EMPOWER.");
+  await expect(page.locator("dt", { hasText: "Sent to an insurer" }).locator("xpath=following-sibling::dd")).toHaveText("No");
+  // Never claims submission, approval or a reference number.
+  await expect(page.locator("main")).not.toContainText(/(has been|was|successfully) submitted|you('re| are) (approved|covered)|application (is )?approved|reference number|policy number/i);
+  expect(page.url()).toContain("127.0.0.1");
+  expectClean(problems);
+});
+
+test("lifetrack: the Home card opens the external game site in a new tab", async ({ signedIn: page, problems }) => {
+  await go(page, "app/home");
+  const link = page.getByRole("link", { name: /Play LifeTrack/ });
+  await expect(link).toHaveAttribute("href", "https://lifetrack-plum.vercel.app/");
+  await expect(link).toHaveAttribute("target", "_blank");
+  await page.evaluate(() => { location.hash = "app/play/lifetrack"; });
+  await expect(page).toHaveURL(/#app\/home$/);
+  expectClean(problems);
+});
+
+test("simulate: opens straight on the tools, with no profile form", async ({ signedIn: page, problems }) => {
+  await go(page, "app/simulate");
+  await expect(page.getByRole("tablist", { name: "Simulation tools" })).toBeVisible();
+  await expect(page.getByLabel("Monthly income")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Check your protection" })).toBeVisible();
+  expectClean(problems);
+});

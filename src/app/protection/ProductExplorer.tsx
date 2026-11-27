@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BadgeCheck, Check, ChevronDown, ExternalLink, Globe, Info, Plus, Scale, UserRound, X } from "lucide-react";
+import { ArrowRight, BadgeCheck, Check, ChevronDown, ExternalLink, Globe, Info, Plus, Scale, UserRound, X } from "lucide-react";
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { GeIcon } from "@/components/illustrations/GeIcons";
@@ -30,7 +30,8 @@ const channelInfo: Record<Channel, { label: string; icon: typeof Globe; tone: st
   closed: { label: "Not open to new applications", icon: X, tone: "bg-crimson-50 text-crimson-700" },
 };
 
-export function ProductExplorer() {
+/** `context`: where the explorer was opened from, so Back and the tab stay where the user was. */
+export function ProductExplorer({ context = "learn" }: { context?: "learn" | "protect" }) {
   const [filter, setFilter] = useState<ProtectionSlug | "all">("all");
   const [picked, setPicked] = useState<string[]>([]);
   const products = researchedProducts.filter((p) => p.evidence !== "ISSUER_NOTICE");
@@ -52,11 +53,11 @@ export function ProductExplorer() {
   return (
     <>
       <PageHero
-        eyebrow="How protection works"
+        eyebrow={context === "protect" ? "Protect · Compare" : "How protection works"}
         title="Explore products"
         text="Products whose facts we could check in official documents. Pick up to three to compare side by side."
-        backLabel="How protection works"
-        onBack={() => go(PROTECTION_HASH)}
+        backLabel="Explore products"
+        onBack={() => go(context === "protect" ? "app/protect" : PROTECTION_HASH)}
         titleId="products-title"
       />
       <Container className="max-w-[56rem]">
@@ -114,7 +115,18 @@ export function ProductExplorer() {
           </p>
           {compared.length >= 2 && <CompareTable products={compared} onRemove={toggle} />}
         </section>
-        <p className="mt-8 pb-6 text-caption text-ink-muted">
+        <button
+          type="button"
+          onClick={() => go("app/protect/get-cover")}
+          className="mt-8 flex w-full items-center gap-4 rounded-2xl bg-navy-950 p-4 text-left text-white shadow-e2"
+        >
+          <span className="min-w-0 flex-1">
+            <span className="block text-body font-semibold">Ready to look at applying?</span>
+            <span className="block text-caption text-white/80">Get ready, then apply right here in GREAT EMPOWER.</span>
+          </span>
+          <ArrowRight size={18} className="shrink-0" aria-hidden />
+        </button>
+        <p className="mt-4 pb-6 text-caption text-ink-muted">
           Information only — not advice, a quote or an offer. Benefits, limits and eligibility are set by each policy&apos;s official documents.
         </p>
       </Container>
@@ -154,10 +166,10 @@ function ProductCard({ product: p, picked, disabled, onToggle }: { product: Rese
           How to apply <ChevronDown size={16} className="transition-transform group-open:rotate-180" aria-hidden />
         </summary>
         <p className="text-body-sm text-ink-secondary">{p.howToApply}</p>
-        <a href={p.sources[0]?.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-crimson-600">
-          Official page <ExternalLink size={14} aria-hidden /><span className="sr-only"> (opens in a new tab)</span>
-        </a>
       </details>
+      <a href={p.sources[0]?.url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-crimson-600">
+        Official page <ExternalLink size={14} aria-hidden /><span className="sr-only"> (leaves GREAT EMPOWER, opens in a new tab)</span>
+      </a>
       <div className="mt-auto pt-3">
         <button
           type="button"

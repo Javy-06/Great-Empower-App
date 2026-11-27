@@ -143,14 +143,17 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
         <span className="inline-flex size-16 items-center justify-center rounded-full bg-success-50 text-success-600">
           <CalendarCheck2 size={32} aria-hidden />
         </span>
-        <p className="mt-4 text-overline uppercase tracking-[0.2em] text-crimson-600">Simulated booking</p>
-        <h1 className="mt-1 font-brand text-[2rem] font-semibold text-navy-950">Session reserved</h1>
+        <p className="mt-4 text-overline uppercase tracking-[0.2em] text-crimson-600">Demo booking · nothing was sent</p>
+        <h1 className="mt-1 font-brand text-[2rem] font-semibold text-navy-950">Practice session saved</h1>
         <p className="mt-1 text-body text-ink-secondary">
           {confirmed.topic} · {new Date(`${confirmed.date}T00:00:00`).toLocaleDateString("en-MY", { weekday: "short", day: "numeric", month: "short" })} at {confirmed.time}
           {confirmed.area ? ` · ${confirmed.area}` : " · Online"}
         </p>
         <p className="mt-2 font-mono text-body-sm text-navy-900">Ref {confirmed.ref}</p>
         <p className="mt-4 rounded-xl bg-gold-50 px-4 py-3 text-caption text-gold-700">{PROTOTYPE_NOTE}</p>
+        <a href="#app/protect/get-cover" className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-navy-800 underline underline-offset-2">
+          Want real guidance? See how to reach a licensed adviser
+        </a>
         <button type="button" onClick={onDone} className="mt-5 inline-flex h-12 items-center gap-2 rounded-full bg-navy-900 px-6 text-body-sm font-semibold text-white">
           View my sessions <ArrowRight size={16} aria-hidden />
         </button>
@@ -161,9 +164,9 @@ function BookingFlow({ onDone, hasBookings, onList }: { onDone: () => void; hasB
   return (
     <>
       <PageHero
-        eyebrow="Guidance sessions · prototype"
-        title="Book a guidance session."
-        text="Pick a topic and a time to talk through protection basics with a guide."
+        eyebrow="Demo · nothing is booked"
+        title="Practice booking a session."
+        text="A demo of how booking could work, with fictional advisors. For real guidance, see Protect → Get cover → Talk to an adviser."
         backLabel="Guide"
         onBack={() => (step > 0 ? setStep(step - 1) : go("app/guide"))}
         titleId="sessions-title"
@@ -355,7 +358,7 @@ function MySessions({ bookings, onNew }: { bookings: Booking[]; onNew: () => voi
     bookingStore.set({ bookings: bookingStore.get().bookings.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b)) });
   return (
     <>
-      <PageHero eyebrow="Guidance sessions · prototype" title="My sessions" text="Your simulated bookings on this device." backLabel="Guide" onBack={() => go("app/guide")} titleId="my-sessions-title" />
+      <PageHero eyebrow="Demo · nothing is booked" title="My practice sessions" text="Demo bookings saved on this device. No adviser was contacted." backLabel="Guide" onBack={() => go("app/guide")} titleId="my-sessions-title" />
       <Container className="max-w-[40rem] pt-5">
         {bookings.length === 0 ? (
           <p className="rounded-2xl bg-surface p-6 text-center text-body-sm text-ink-muted ring-1 ring-ink/[0.07]">No sessions yet.</p>

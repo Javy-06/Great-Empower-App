@@ -41,7 +41,7 @@ export function NextSteps() {
       progress: check.done / check.total,
       done: check.done === check.total,
       action: check.done ? "Finish your check" : "Start your check",
-      to: "app/simulate",
+      to: "app/protect/check",
     },
     {
       key: "compare",

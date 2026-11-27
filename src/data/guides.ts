@@ -57,7 +57,7 @@ export const guides: Guide[] = [
     ],
     related: [
       { label: "Hospital bills: what to expect", href: "app/learn/lesson/hospital-bills" },
-      { label: "Try the medical claim simulator", href: "app/simulate" },
+      { label: "Try the medical bill simulator", href: "app/simulate/needs/tool-bill" },
     ],
   },
   {
@@ -77,7 +77,7 @@ export const guides: Guide[] = [
     ],
     related: [
       { label: "Deductibles, limits and shared costs", href: "app/learn/lesson/deductibles" },
-      { label: "Explore cost sharing in Simulate", href: "app/simulate" },
+      { label: "Try cost sharing in the medical bill simulator", href: "app/simulate/needs/tool-bill" },
     ],
   },
   {
@@ -96,7 +96,7 @@ export const guides: Guide[] = [
       "Decide what you want to protect first: medical bills, a serious illness, income or accidents.",
       "Set a monthly amount you can keep paying comfortably, even in a tight month.",
     ],
-    related: [{ label: "Build your protection profile", href: "app/simulate" }],
+    related: [{ label: "Check your protection", href: "app/protect/check" }],
   },
   {
     id: "first-job",
@@ -114,7 +114,7 @@ export const guides: Guide[] = [
     ],
     related: [
       { label: "Plan confidently for your first payslip", href: "app/learn/lesson/first-salary" },
-      { label: "Size your emergency fund", href: "app/simulate" },
+      { label: "Size your emergency fund", href: "app/simulate/needs/tool-fund" },
     ],
   },
   {
@@ -162,7 +162,7 @@ export const guides: Guide[] = [
       "Medical cover is not automatically salary replacement. Check the specific terms and claim requirements.",
     ],
     furtherReading: [
-      { label: "Bank Negara Malaysia: MHIT overview", href: "https://www.bnm.gov.my/faqs/ins-tkf/life-family" },
+      { label: "Bank Negara Malaysia: medical and health insurance/takaful policy document (PDF)", href: "https://www.bnm.gov.my/documents/20124/938039/pd_mhit_dec25.pdf" },
       { label: "InsuranceInfo: medical and health cover", href: "https://insuranceinfo.com.my/learn-the-basics/types-of-insurance/medical-health-insurance/" },
     ],
   },

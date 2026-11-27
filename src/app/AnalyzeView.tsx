@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Accessibility, ArrowRight, ChevronDown, HeartPulse, ShieldPlus, Users } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
 import {
@@ -12,6 +12,10 @@ import { Band, Chapter, Container } from "@/components/layout/Editorial";
 import { cn } from "@/lib/cn";
 import { ProfileSpot } from "@/components/illustrations/Spots";
 import { ExploreCover, ProtectJourney } from "./protect/ProtectSections";
+import { ProtectCheck } from "./protect/ProtectCheck";
+import { GetCover, GET_COVER } from "./protect/GetCover";
+import { ApplyFlow, readApply } from "./protect/ApplyFlow";
+import { ProductExplorer } from "./protection/ProductExplorer";
 
 const rm = (value: number) => `RM ${value.toLocaleString("en-MY")}`;
 
@@ -221,7 +225,7 @@ function assess(
     return {
       status: "gap",
       why: "You marked this as a priority but said you don't have cover for it yet.",
-      next: { label: "Explore it in Simulate", href: "app/simulate" },
+      next: { label: "Explore cover options", href: `${GET_COVER}/${area}` },
     };
   if (answer === "no")
     return {
@@ -237,8 +241,8 @@ function assess(
     };
   return {
     status: "not-assessed",
-    why: "Answer this in your protection profile to see a finding.",
-    next: { label: "Complete your profile", href: "app/simulate" },
+    why: "Answer this in your check to see a finding.",
+    next: { label: "Answer in your check", href: "app/protect/check" },
   };
 }
 
@@ -247,7 +251,32 @@ const goHash = (hash: string) => {
   window.scrollTo({ top: 0 });
 };
 
+/** Protect's own sub-routes: `#app/protect/check`, `/products`, `/get-cover/…`, `/apply/…` (the tab stays Protect). */
+function readProtectRoute() {
+  const parts = window.location.hash.replace(/^#/, "").split(/[?]/)[0].split("/");
+  return parts[0] === "app" && (parts[1] === "protect" || parts[1] === "analyze") ? parts.slice(2) : [];
+}
+
 export function AnalyzeView() {
+  const [route, setRoute] = useState(readProtectRoute);
+  useEffect(() => {
+    const onHash = () => setRoute(readProtectRoute());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  if (route[0] === "check") return <ProtectCheck />;
+  if (route[0] === "products") return <ProductExplorer context="protect" />;
+  if (route[0] === "get-cover") return <GetCover segments={route.slice(1)} />;
+  if (route[0] === "apply") {
+    const { area, step } = readApply(route.slice(1));
+    // Keyed by area so each kind of cover has its own form state.
+    if (area) return <ApplyFlow key={area} area={area} step={step} />;
+    return <GetCover segments={[]} />;
+  }
+  return <ProtectOverview />;
+}
+
+function ProtectOverview() {
   const p = useProfile();
   const completeness = profileCompleteness(p);
   const results = (Object.keys(areaMeta) as ProtectionArea[]).map((area) => ({ area, ...assess(area, p) }));
@@ -276,22 +305,22 @@ export function AnalyzeView() {
               className="relative size-20 shrink-0 rounded-full"
               style={{ background: `conic-gradient(var(--color-teal-600) ${completeness.percent * 3.6}deg, var(--color-sunken) 0deg)` }}
               role="img"
-              aria-label={`Profile ${completeness.percent}% complete`}
+              aria-label={`Check ${completeness.percent}% complete`}
             >
               <span className="absolute inset-2 flex items-center justify-center rounded-full bg-surface text-heading font-bold tabular-nums text-navy-950">
                 {completeness.percent}%
               </span>
             </div>
             <div className="min-w-0">
-              <h2 id="completeness-title" className="text-subheading text-navy-950">Data completeness</h2>
+              <h2 id="completeness-title" className="text-subheading text-navy-950">Your check</h2>
               <p className="text-body-sm text-ink-secondary">
                 {completeness.done} of {completeness.total} answers. Findings use only what you entered and aren't verified.
               </p>
             </div>
           </div>
           {completeness.done < completeness.total && (
-            <button type="button" onClick={() => goHash("app/simulate")} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-navy-900 text-body-sm font-semibold text-white">
-              {hasData ? "Complete your profile" : "Start your profile"} <ArrowRight size={16} aria-hidden />
+            <button type="button" onClick={() => goHash("app/protect/check")} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-navy-900 text-body-sm font-semibold text-white">
+              {hasData ? "Finish your check" : "Start your check"} <ArrowRight size={16} aria-hidden />
             </button>
           )}
         </section>
@@ -334,7 +363,7 @@ export function AnalyzeView() {
             <div className="flex items-center gap-3">
               {!assessed.length && <ProfileSpot className="w-24 shrink-0" />}
               <p className="text-body-sm font-semibold text-navy-950">
-                {assessed.length ? "Not assessed yet" : "Answer your profile to see a finding for each area"}
+                {assessed.length ? "Not assessed yet" : "Answer your check to see a finding for each area"}
               </p>
             </div>
             <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -366,11 +395,11 @@ export function AnalyzeView() {
             </p>
             <p className="mt-1 text-body-sm text-white/75">
               {gaps.length
-                ? `Start with ${gaps.map((g) => areaLabels[g.area].toLowerCase()).join(" and ")} — explore costs in Simulate and read the practical guides.`
-                : "Keep reviewing as your income, commitments and life stage change."}
+                ? `Start with ${areaLabels[gaps[0].area].toLowerCase()}: understand it, get ready, then choose to apply online or with an adviser. There's no rush.`
+                : "Keep reviewing as your income, commitments and life stage change. You can still explore cover and how to apply."}
             </p>
-            <button type="button" onClick={() => goHash("app/simulate")} className="mt-4 inline-flex h-12 items-center gap-2 rounded-full bg-crimson-600 px-5 text-body-sm font-bold text-white">
-              Improve my protection plan <ArrowRight size={16} aria-hidden />
+            <button type="button" onClick={() => goHash(gaps.length ? `${GET_COVER}/${gaps[0].area}` : GET_COVER)} className="mt-4 inline-flex h-12 items-center gap-2 rounded-full bg-crimson-600 px-5 text-body-sm font-bold text-white">
+              {gaps.length ? `Explore ${areaLabels[gaps[0].area].toLowerCase()} cover` : "Explore cover options"} <ArrowRight size={16} aria-hidden />
             </button>
           </div>
         </Container>

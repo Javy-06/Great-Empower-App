@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { AppTopBar } from "@/components/nav/AppHeader";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { TopNav } from "@/components/nav/TopNav";
@@ -15,7 +15,6 @@ const SimulateHub = lazy(() => import("./SimulateHub").then((m) => ({ default: m
 const AnalyzeView = lazy(() => import("./AnalyzeView").then((m) => ({ default: m.AnalyzeView })));
 const RewardsView = lazy(() => import("./RewardsView").then((m) => ({ default: m.RewardsView })));
 const NotificationsView = lazy(() => import("./NotificationsView").then((m) => ({ default: m.NotificationsView })));
-const GameShell = lazy(() => import("./game/GameShell").then((m) => ({ default: m.GameShell })));
 
 /** Shown while a destination's code loads: reserves the hero area so the layout doesn't jump. */
 function RouteLoading() {
@@ -26,7 +25,7 @@ function RouteLoading() {
     </div>
   );
 }
-import { exitGame, GAME_HASH, gameReturnScroll, LEGACY_GAME_HASH } from "./game/gameRoute";
+import { RETIRED_GAME_HASHES } from "./game/lifetrack";
 import { NewsArticle } from "./news/NewsArticle";
 import { findStory, NEWS_HASH_PREFIX } from "@/data/news";
 import { goBack } from "@/lib/nav";
@@ -98,16 +97,15 @@ export function ApplicationApp() {
   useEffect(() => {
     const onHashChange = () => {
       const route = routeKey();
-      // Old links to the retired in-page game land in the new game shell instead.
-      if (route === LEGACY_GAME_HASH) {
-        window.location.replace(`#${GAME_HASH}`);
+      // LifeTrack is now its own website (opened from Home). Old in-app game links land on Home.
+      if (RETIRED_GAME_HASHES.includes(route)) {
+        window.location.replace("#app/home");
         return;
       }
-      // While in the game, the app underneath keeps its current destination (and state).
-      if (route !== GAME_HASH) setDestination(readDestination());
+      setDestination(readDestination());
       setCurrentRoute(route);
     };
-    if (routeKey() === LEGACY_GAME_HASH) window.location.replace(`#${GAME_HASH}`);
+    if (RETIRED_GAME_HASHES.includes(routeKey())) window.location.replace("#app/home");
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
@@ -115,16 +113,6 @@ export function ApplicationApp() {
   const primaryDestinations: NavKey[] = ["home", "learn", "simulate", "analyze", "guide"];
   // Pages outside the five destinations (Rewards, Wallet, Notifications…) highlight no tab.
   const activePrimary: NavKey | null = primaryDestinations.includes(destination as NavKey) ? (destination as NavKey) : null;
-  const inGame = currentRoute === GAME_HASH || currentRoute === LEGACY_GAME_HASH;
-  const wasInGame = useRef(inGame);
-  useEffect(() => {
-    // Returning from the game: put the player back where they were on the page.
-    if (wasInGame.current && !inGame) {
-      const y = gameReturnScroll();
-      requestAnimationFrame(() => window.scrollTo({ top: y }));
-    }
-    wasInGame.current = inGame;
-  }, [inGame]);
   const newsStory = destination === "home" ? readStory(currentRoute) : undefined;
   const navigate = (next: NavKey) => navigateTo(next);
 
@@ -141,14 +129,7 @@ export function ApplicationApp() {
     <>
       <AppSplash />
 
-      {/* The game is an app-in-app: its own full-screen shell, outside the standard layout. */}
-      {inGame && (
-        <Suspense fallback={null}>
-          <GameShell onExit={exitGame} />
-        </Suspense>
-      )}
-
-      <div hidden={inGame} inert={inGame} className="min-h-screen overflow-x-hidden bg-canvas">
+      <div className="min-h-screen overflow-x-hidden bg-canvas">
         <a
           href="#main-content"
           onClick={(event) => {

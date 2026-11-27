@@ -536,51 +536,6 @@
     }
   }
 
-  /*
-   * Game shell — the game's own atmosphere, scoped here so it never leaks into the app.
-   * Leaf green comes from the new LifeTrack build's palette.
-   */
-  .ge-game-shell {
-    --game-leaf: #16845b;
-    --game-night: #06131f;
-    background: var(--game-night);
-  }
-  .ge-game-backdrop {
-    background:
-      radial-gradient(120% 70% at 50% 0%, rgb(22 132 91 / 0.45), transparent 60%),
-      radial-gradient(90% 60% at 100% 100%, rgb(200 16 46 / 0.25), transparent 60%),
-      linear-gradient(180deg, rgb(6 19 31 / 0.55), var(--game-night) 85%),
-      url("/images/lifetrack/lifetrack-cover-960.webp") center / cover no-repeat;
-    filter: saturate(1.15);
-  }
-  .ge-game-backdrop::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    background: rgb(6 19 31 / 0.55);
-  }
-  .ge-game-wordmark {
-    background: linear-gradient(90deg, #ffe08a, #ffffff 55%, #9be7c4);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .ge-game-enter {
-    animation: ge-game-enter 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  }
-  @keyframes ge-game-enter {
-    from {
-      opacity: 0;
-      transform: scale(1.04);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
   @keyframes ge-pager-fill {
     from {
       width: 0%;
@@ -609,9 +564,6 @@
     transform: none;
   }
   @media (prefers-reduced-motion: reduce) {
-    .ge-game-enter {
-      animation: none;
-    }
     .ge-slide,
     .ge-slide[data-active="true"],
     .ge-slide .ge-slide-text {

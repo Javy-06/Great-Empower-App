@@ -13,6 +13,7 @@ import { emptyRewardsState } from "@/rewards/economy";
 import { REWARDS_KEY, WATCH_COVERAGE_KEY, watchCoverageStore } from "@/rewards/store";
 import { LEARN_KEY } from "@/state/learnProgress";
 import { PROFILE_KEY, profileStore } from "@/state/profile";
+import { APPLICATION_KEY } from "@/state/application";
 import { SESSIONS_KEY } from "@/app/guide/SessionsView";
 import { CHECKLIST_KEY } from "@/app/GuideCentre";
 import { NOTIFICATIONS_KEY } from "@/data/notifications";
@@ -33,7 +34,7 @@ export type SessionStatus =
 export const sessionStore = createStore<SessionStatus>("ge-session", () => ({ kind: "signed-out" }), "memory");
 export const useSession = () => useStore(sessionStore);
 
-const ACCOUNT_KEYS = [REWARDS_KEY, LEARN_KEY, PROFILE_KEY, SESSIONS_KEY, CHECKLIST_KEY, NOTIFICATIONS_KEY, WATCH_COVERAGE_KEY];
+const ACCOUNT_KEYS = [REWARDS_KEY, LEARN_KEY, PROFILE_KEY, SESSIONS_KEY, CHECKLIST_KEY, NOTIFICATIONS_KEY, WATCH_COVERAGE_KEY, APPLICATION_KEY];
 const loadCloud = () => import("./cloud");
 
 /* ------------------------------------------------------------------------------------------

@@ -411,6 +411,9 @@ function Channels() {
           </li>
         ))}
       </ul>
+      <button type="button" onClick={() => go("app/protect/get-cover")} className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-navy-900 text-body-sm font-semibold text-white sm:w-auto sm:px-6">
+        See how to apply in GREAT EMPOWER <ArrowRight size={16} aria-hidden />
+      </button>
       <Disclosure title="Good to know">
         <ul className="grid gap-2 text-body-sm text-ink-secondary">
           <li>BNM introduced commission-free standalone protection sold directly — term life from July 2017, critical illness and medical from July 2018. <SourceLink source={protectionSources.bnmDirect} /></li>

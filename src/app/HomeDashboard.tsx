@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, Megaphone } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CalendarDays, Megaphone } from "lucide-react";
 import { Container } from "@/components/layout/Editorial";
 import { useSession } from "@/account/session";
 import { protectionCategories } from "@/data/protection";
@@ -6,7 +6,7 @@ import { categoryIcons, categoryTones } from "./protection/ProtectionHub";
 import { mediAsasStory, NEWS_HASH_PREFIX } from "@/data/news";
 import { FeaturedHero } from "./home/FeaturedHero";
 import { NextSteps } from "./home/NextSteps";
-import { openGame } from "./game/gameRoute";
+import { LIFETRACK_URL } from "./game/lifetrack";
 
 export type DashboardDestination =
   | "home"
@@ -36,10 +36,7 @@ export function HomeDashboard() {
         greeting={greeting}
         profileName={profileName}
         onContinue={() => go("app/protect")}
-        onBookSession={() => {
-          go("app/guide/sessions");
-          window.scrollTo({ top: 0 });
-        }}
+        onGetCover={() => go("app/protect/get-cover")}
       />
 
       <div className="bg-canvas pb-6 pt-5 sm:pt-8">
@@ -161,10 +158,11 @@ function GameEntrance() {
   return (
     <section aria-labelledby="game-entry-title">
       <SectionHeading id="game-entry-title" overline="Insurance gameplay" title="LifeTrack" />
-      <button
-        type="button"
-        onClick={openGame}
-        aria-label="Enter LifeTrack"
+      <p className="mt-1 text-body-sm text-ink-secondary">Our insurance board game has its own website. It opens in a new tab, and GREAT EMPOWER stays open here.</p>
+      <a
+        href={LIFETRACK_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         className="group relative mt-3 block w-full overflow-hidden rounded-[1.5rem] shadow-e2 ring-1 ring-black/5"
       >
         <picture className="block">
@@ -175,7 +173,7 @@ function GameEntrance() {
           />
           <img
             src="/images/lifetrack/lifetrack-cover-960.webp"
-            alt="LifeTrack game cover: four young adults gather around a city board game with dice and coins."
+            alt=""
             width={1600}
             height={1195}
             loading="lazy"
@@ -184,10 +182,11 @@ function GameEntrance() {
           />
         </picture>
         <span className="absolute bottom-3 right-3 inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-5 text-body font-bold text-navy-950 shadow-e3 transition-transform group-hover:translate-x-0.5">
-          Enter
-          <ArrowRight size={17} aria-hidden />
+          Play LifeTrack
+          <span className="sr-only"> (opens in a new tab)</span>
+          <ArrowUpRight size={17} aria-hidden />
         </span>
-      </button>
+      </a>
     </section>
   );
 }

@@ -24,7 +24,6 @@ import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import { PassSpot, VoucherSpot } from "@/components/illustrations/Spots";
 import {
-  VOUCHER_TERMS,
   WELCOME_PRICE,
   activeBrands,
   activeProducts,
@@ -46,7 +45,19 @@ const go = (hash: string) => {
 const pts = (n: number) => `${n.toLocaleString("en-MY")} pts`;
 
 const SIMULATED_NOTE =
-  "Points, Marketplace brands and items are fictional and have no cash value; the brands are not real merchants. GREAT EMPOWER Vouchers are for future insurance purchases, which are not available yet.";
+  "Points, Marketplace brands and items are fictional and have no cash value; the brands are not real merchants. GREAT EMPOWER Vouchers are collectible rewards: GREAT EMPOWER doesn't sell insurance, so vouchers can't be used to pay for insurance and have no cash value.";
+
+/** Shown instead of the catalogue's voucher description, which predates the education-only decision. */
+const voucherDescription = "A collectible GREAT EMPOWER reward for your learning. It has no cash value and can't be used to pay for insurance.";
+/**
+ * Voucher terms as shown in the app. The catalogue's VOUCHER_TERMS still describe a future insurance
+ * purchase; GREAT EMPOWER is education-only, so the UI states what a voucher actually is today.
+ */
+const voucherTermsShown = [
+  "A collectible reward for your learning. GREAT EMPOWER doesn't sell insurance, so this voucher can't be used to pay for insurance.",
+  "No cash value and not transferable. It isn't an insurance policy, an offer from any insurer, or a promise of cover.",
+  "You can hold one of each voucher at a time.",
+];
 
 const foodAndDrink = activeProducts.filter(isWelcomeEligible);
 const vouchers = activeProducts.filter((p) => p.voucher);
@@ -241,7 +252,7 @@ function RewardsHub() {
           </button>
         </div>
         <p className="mt-1 text-body-sm text-ink-secondary">
-          Save towards future GREAT EMPOWER insurance purchases. Insurance purchasing isn't available yet — vouchers are kept in your wallet until it is.
+          Collectible rewards for your learning, kept in your wallet. GREAT EMPOWER doesn't sell insurance, so vouchers can't be used to pay for insurance and have no cash value.
         </p>
         <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {vouchers.map((p) => (
@@ -337,10 +348,10 @@ function VoucherVisual({ product, className }: { product: Product; className?: s
       <span className="relative text-[12px] font-bold uppercase tracking-[0.18em] text-teal-200">GREAT EMPOWER</span>
       <span className="relative">
         <span className="block font-brand text-[2.5rem] font-bold leading-none">{v.face}</span>
-        <span className="mt-1 block text-[12px] font-semibold text-white/80">{v.discount.type === "percent" ? `off · up to RM${v.discount.capRm}` : "off"}</span>
+        <span className="mt-1 block text-[12px] font-semibold text-white/80">{v.discount.type === "percent" ? `voucher · up to RM${v.discount.capRm}` : "voucher"}</span>
       </span>
       <span className="relative flex items-center gap-1.5 border-t border-dashed border-white/30 pt-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-white/75">
-        <Ticket size={12} aria-hidden /> Future insurance voucher
+        <Ticket size={12} aria-hidden /> Collectible voucher
       </span>
     </span>
   );
@@ -436,8 +447,7 @@ function ProductDetail({ id }: { id: string }) {
         </dl>
         {product.voucher && (
           <p className="mt-3 rounded-xl bg-navy-50 px-4 py-3 text-body-sm text-navy-900">
-            Saved in your wallet for a future eligible GREAT EMPOWER insurance purchase. Insurance purchasing isn't
-            available yet, so it can't be used today.
+            Saved in your wallet as a collectible reward. GREAT EMPOWER doesn&apos;t sell insurance, so vouchers can&apos;t be used to pay for insurance and have no cash value.
           </p>
         )}
         <div className="mt-6 flex gap-3">
@@ -466,7 +476,7 @@ function ProductDetail({ id }: { id: string }) {
           <span className="text-caption font-bold uppercase tracking-[0.1em] text-ink-muted">{brand.name}</span>
         </div>
         <h1 className="mt-2 font-brand text-[2rem] font-semibold leading-tight text-navy-950">{product.name}</h1>
-        <p className="mt-1 text-body text-ink-secondary">{product.description}</p>
+        <p className="mt-1 text-body text-ink-secondary">{product.voucher ? voucherDescription : product.description}</p>
 
         {/* Can I redeem it now? (display only — the quote comes from the rewards economy) */}
         <div className="mt-4 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]">
@@ -479,7 +489,7 @@ function ProductDetail({ id }: { id: string }) {
           </span>
           <ol className="mt-4 grid grid-cols-3 gap-2 text-center">
             {(product.voucher
-              ? ["Redeem with points", "Saved in your Wallet", "For a future insurance purchase"]
+              ? ["Redeem with points", "Saved in your Wallet", "A collectible: no cash value"]
               : ["Redeem with points", "A pass appears in your Wallet", "Show the pass when you collect"]
             ).map((t, i) => (
               <li key={t} className="flex flex-col items-center gap-1.5">
@@ -493,7 +503,7 @@ function ProductDetail({ id }: { id: string }) {
           <div className="mt-4 rounded-2xl bg-navy-50 p-4 text-body-sm text-navy-900">
             <p className="font-semibold">Voucher terms</p>
             <ul className="mt-2 grid list-disc gap-1.5 pl-5">
-              {VOUCHER_TERMS.map((t) => (
+              {voucherTermsShown.map((t) => (
                 <li key={t}>{t}</li>
               ))}
             </ul>
@@ -670,7 +680,7 @@ function WalletView() {
             <VoucherSpot className="w-24 shrink-0" />
             <div className="min-w-0">
               <p className="text-body-sm font-semibold text-navy-950">No vouchers yet</p>
-              <p className="mt-0.5 text-caption text-ink-muted">Redeemed vouchers are saved here for future insurance purchases.</p>
+              <p className="mt-0.5 text-caption text-ink-muted">Redeemed vouchers are kept here as collectible rewards.</p>
               <button type="button" onClick={() => go("app/rewards/marketplace")} className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-crimson-600">
                 See vouchers <ArrowRight size={16} aria-hidden />
               </button>
@@ -696,7 +706,7 @@ function WalletView() {
           </ul>
         )}
         <p className="mt-2 text-caption text-ink-muted">
-          Insurance purchasing isn't available in the app yet, so vouchers can't be used today. One voucher per purchase; vouchers can't be combined.
+          GREAT EMPOWER doesn&apos;t sell insurance, so vouchers can&apos;t be used to pay for insurance and have no cash value.
         </p>
       </Container>
 
