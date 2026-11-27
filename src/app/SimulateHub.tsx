@@ -28,6 +28,7 @@ import {
 } from "@/state/profile";
 import { rewardsActions } from "@/rewards/store";
 import { MedicalClaimSimulator } from "./MedicalClaimSimulator";
+import { GeIcon, type GeIconName } from "@/components/illustrations/GeIcons";
 import { CiRunwayScenario, FamilyProtectionScenario } from "./protection/ProtectionScenarios";
 
 const TOOL_IDS = ["tool-bill", "tool-fund", "tool-family", "tool-ci"] as const;
@@ -287,11 +288,11 @@ function Field({ icon: Icon, label, prefix, suffix, children }: { icon: typeof W
 
 type ToolId = (typeof TOOL_IDS)[number];
 
-const tools: Array<{ id: ToolId; title: string; short: string; hint: string; icon: typeof Wallet }> = [
-  { id: "tool-bill", title: "Medical bill", short: "Medical bill", hint: "How a hospital bill is shared between you, an employer and a plan.", icon: HeartPulse },
-  { id: "tool-fund", title: "Emergency fund", short: "Emergency fund", hint: "How many months your savings could cover essentials.", icon: Wallet },
-  { id: "tool-family", title: "Family protection", short: "Family", hint: "What your dependants might need, compared with life cover you count. Life insurance doesn't cancel debts.", icon: Users },
-  { id: "tool-ci", title: "Critical illness runway", short: "Critical illness", hint: "A critical illness payout is a one-off lump sum, not a salary. Compare it with a recovery period.", icon: Ribbon },
+const tools: Array<{ id: ToolId; title: string; short: string; hint: string; icon: GeIconName }> = [
+  { id: "tool-bill", title: "Medical bill", short: "Medical bill", hint: "How a hospital bill is shared between you, an employer and a plan.", icon: "heartPulse" },
+  { id: "tool-fund", title: "Emergency fund", short: "Emergency fund", hint: "How many months your savings could cover essentials.", icon: "cash" },
+  { id: "tool-family", title: "Family protection", short: "Family", hint: "What your dependants might need, compared with life cover you count. Life insurance doesn't cancel debts.", icon: "family" },
+  { id: "tool-ci", title: "Critical illness runway", short: "Critical illness", hint: "A critical illness payout is a one-off lump sum, not a salary. Compare it with a recovery period.", icon: "ribbon" },
 ];
 
 const keyTerms = [
@@ -344,7 +345,7 @@ function NeedsStep({ tool, onTool, onNext }: { tool: ToolId; onTool: (t: ToolId)
                 )}
               >
                 <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-xl", on ? "bg-white/15 text-white" : "bg-navy-50 text-navy-800")}>
-                  <t.icon size={18} aria-hidden />
+                  <GeIcon name={t.icon} size={18} aria-hidden />
                 </span>
                 {t.short}
               </button>

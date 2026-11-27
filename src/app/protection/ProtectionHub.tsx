@@ -1,11 +1,8 @@
 import { useState, type ReactNode } from "react";
 import {
-  Accessibility,
   ArrowLeft,
   ArrowRight,
-  Bandage,
   BadgeCheck,
-  Briefcase,
   CalendarClock,
   Check,
   ChevronDown,
@@ -13,21 +10,16 @@ import {
   ExternalLink,
   FileSearch,
   FileText,
-  Globe,
-  Hospital,
-  HeartPulse,
   Info,
   Landmark,
   Minus,
   PiggyBank,
   Receipt,
-  Ribbon,
   Scale,
   ShieldCheck,
   ShieldX,
   TrendingUp,
   UserRound,
-  Users,
   Wallet,
   X,
   Zap,
@@ -36,6 +28,18 @@ import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import { findInfographic } from "@/data/learn-media";
+import { AccidentIcon, CriticalIllnessIcon, FamilyIcon, GeIcon, IncomeIcon, MedicalIcon, type GeIconName, type IconLike } from "@/components/illustrations/GeIcons";
+import {
+  AccidentSpot,
+  AdviserSpot,
+  ChecklistSpot,
+  DiagnosisSpot,
+  FamilyUmbrellaSpot,
+  HospitalSpot,
+  IncomePauseSpot,
+  LaptopSpot,
+  OfficeSpot,
+} from "@/components/illustrations/Spots";
 import {
   PRODUCT_RESEARCH_DATE,
   findProtectionCategory,
@@ -56,12 +60,19 @@ const go = (hash: string) => {
 
 export const PROTECTION_HASH = "app/learn/protection";
 
-export const categoryIcons: Record<ProtectionSlug, typeof HeartPulse> = {
-  medical: HeartPulse,
-  "critical-illness": Ribbon,
-  life: Users,
-  tpd: Accessibility,
-  "personal-accident": Bandage,
+export const categoryIcons: Record<ProtectionSlug, IconLike> = {
+  medical: MedicalIcon,
+  "critical-illness": CriticalIllnessIcon,
+  life: FamilyIcon,
+  tpd: IncomeIcon,
+  "personal-accident": AccidentIcon,
+};
+const categorySpots: Record<ProtectionSlug, (p: { className?: string }) => ReactNode> = {
+  medical: HospitalSpot,
+  "critical-illness": DiagnosisSpot,
+  life: FamilyUmbrellaSpot,
+  tpd: IncomePauseSpot,
+  "personal-accident": AccidentSpot,
 };
 export const categoryTones: Record<ProtectionSlug, string> = {
   medical: "bg-crimson-50 text-crimson-600",
@@ -183,17 +194,15 @@ function Section({ id, overline, title, children }: { id: string; overline: stri
 }
 
 function RiskRow({ category: c }: { category: ProtectionCategory }) {
-  const Icon = categoryIcons[c.slug];
+  const Spot = categorySpots[c.slug];
   return (
     <button
       type="button"
       onClick={() => go(`${PROTECTION_HASH}/${c.slug}`)}
       aria-label={`${c.event}: ${c.problem}. ${c.purpose} (${c.official}). Explore`}
-      className="group grid w-full grid-cols-[3rem_1fr_auto] items-center gap-3 rounded-2xl bg-surface p-3 text-left ring-1 ring-ink/[0.08] transition-shadow hover:shadow-e2 sm:grid-cols-[3rem_1fr_1.1fr_auto] sm:gap-4"
+      className="group grid w-full grid-cols-[4.5rem_1fr_auto] items-center gap-3 rounded-2xl bg-surface p-2.5 pr-3 text-left ring-1 ring-ink/[0.08] transition-shadow hover:shadow-e2 sm:grid-cols-[5rem_1fr_1.1fr_auto] sm:gap-4"
     >
-      <span className={cn("inline-flex size-12 items-center justify-center rounded-xl", categoryTones[c.slug])}>
-        <Icon size={22} aria-hidden />
-      </span>
+      <Spot className="w-[4.5rem] sm:w-20" />
       <span className="min-w-0">
         <span className="block text-body-sm font-semibold text-navy-950">{c.event}</span>
         <span className="flex items-center gap-1 text-caption text-crimson-700">
@@ -280,7 +289,7 @@ function BillBreakdown() {
   return (
     <figure className="overflow-hidden rounded-2xl bg-surface ring-1 ring-ink/[0.08]">
       <div className="flex items-center justify-between gap-3 bg-navy-950 px-4 py-3 text-white">
-        <span className="flex items-center gap-2 text-body-sm font-semibold"><Hospital size={18} aria-hidden /> Hospital bill</span>
+        <span className="flex items-center gap-2 whitespace-nowrap text-body-sm font-semibold"><HospitalSpot onDark className="-my-2 w-12 shrink-0" /> Hospital bill</span>
         <span className="font-brand text-[1.75rem] font-bold tabular-nums">{rm(BILL.total)}</span>
       </div>
       <ol className="divide-y divide-ink/[0.06]">
@@ -329,6 +338,7 @@ function BuyChecklist() {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <>
+      <div className="grid items-center gap-4 lg:grid-cols-[1fr_11rem]">
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {CHECKS.map(({ icon: Icon, q }, i) => (
           <li key={q}>
@@ -348,6 +358,8 @@ function BuyChecklist() {
           </li>
         ))}
       </ul>
+      <ChecklistSpot className="hidden lg:block" />
+      </div>
       <div id="check-answer" aria-live="polite" className="min-h-[3.25rem]">
         {open !== null && (
           <p className="ge-reveal mt-2 rounded-xl bg-teal-50 px-4 py-3 text-body-sm text-navy-950">
@@ -373,16 +385,16 @@ function BuyChecklist() {
 
 function Channels() {
   const channels = [
-    { icon: Globe, title: "Online, direct", text: "Some simple plans — term life, critical illness or medical — are sold on insurers' own websites." },
-    { icon: UserRound, title: "Agent or adviser", text: "Guidance for complex plans. Some products are only sold this way." },
-    { icon: Briefcase, title: "Your employer", text: "Group cover from your job — it usually ends when you leave." },
+    { spot: LaptopSpot, title: "Online, direct", text: "Some simple plans — term life, critical illness or medical — are sold on insurers' own websites." },
+    { spot: AdviserSpot, title: "Agent or adviser", text: "Guidance for complex plans. Some products are only sold this way." },
+    { spot: OfficeSpot, title: "Your employer", text: "Group cover from your job — it usually ends when you leave." },
   ];
   return (
     <>
       <ul className="grid gap-2 sm:grid-cols-3">
-        {channels.map(({ icon: Icon, title, text }) => (
-          <li key={title} className="flex gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08] sm:flex-col">
-            <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-800"><Icon size={20} aria-hidden /></span>
+        {channels.map(({ spot: Spot, title, text }) => (
+          <li key={title} className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-ink/[0.08] sm:flex-col sm:items-start sm:p-4">
+            <Spot className="w-24 shrink-0 sm:w-28" />
             <span>
               <span className="block text-body-sm font-semibold text-navy-950">{title}</span>
               <span className="block text-caption text-ink-secondary">{text}</span>
@@ -428,7 +440,10 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
 
   return (
     <>
-      <section aria-labelledby="category-title" className="bg-navy-950 text-white">
+      <section aria-labelledby="category-title" className="ge-pagehero relative isolate overflow-hidden text-white">
+        <div className="ge-pagehero-art pointer-events-none absolute right-0 top-0 -z-10 h-[24rem] w-[78%] sm:h-full sm:w-[52%]" aria-hidden>
+          <img src={c.photo.src} alt="" decoding="async" className="h-full w-full object-cover brightness-[0.78] saturate-[0.9]" style={{ objectPosition: c.photo.position }} />
+        </div>
         <Container className="max-w-[56rem] pb-7 pt-3 md:pt-10">
           <button type="button" onClick={() => go(PROTECTION_HASH)} className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-body-sm font-semibold text-white/85 hover:text-white">
             <ArrowLeft size={18} aria-hidden /> Protection explained
@@ -437,18 +452,18 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
             <span className={cn("inline-flex size-14 shrink-0 items-center justify-center rounded-2xl", categoryTones[c.slug])}>
               <Icon size={26} aria-hidden />
             </span>
-            <div className="min-w-0">
-              <h1 id="category-title" className="font-brand text-[2.25rem] font-semibold leading-[1.05] sm:text-[2.75rem]">{c.purpose}</h1>
+            <div className="min-w-0 max-w-[15rem] sm:max-w-none">
+              <h1 id="category-title" className="font-brand text-[2.25rem] font-semibold leading-[1.05] [text-shadow:0_1px_12px_rgb(10_28_51/0.45)] sm:text-[2.75rem]">{c.purpose}</h1>
               <p className="mt-2 inline-flex flex-wrap items-center gap-2 text-body-sm">
                 <span className="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-white/80">Official category</span>
                 <span className="font-semibold">{c.official}</span>
               </p>
             </div>
           </div>
-          <p className="mt-4 max-w-2xl text-body text-white/80">{c.summary}</p>
+          <p className="mt-4 max-w-[34rem] text-body text-white/85 [text-shadow:0_1px_10px_rgb(10_28_51/0.5)]">{c.summary}</p>
           {/* Key idea, right under the hero */}
           {c.notEqual.map((n) => (
-            <p key={n.a} className="mt-5 rounded-2xl bg-white/[0.07] p-4 ring-1 ring-white/10">
+            <p key={n.a} className="mt-5 max-w-[36rem] rounded-2xl bg-navy-950/70 p-4 ring-1 ring-white/10 backdrop-blur-sm">
               <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-brand text-[1.375rem] font-semibold leading-tight">
                 <span>{n.a}</span>
                 <span className="text-crimson-300" aria-hidden>≠</span>
@@ -463,7 +478,7 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
 
       <Container className="mt-6 max-w-[56rem]">
         <div className="grid gap-3 md:grid-cols-2">
-          <ListCard title="May help with" items={c.mayHelp} tone="good" />
+          <ListCard title="May help with" items={c.mayHelp} icons={c.mayHelpIcons} tone="good" />
           <ListCard title="Doesn't automatically cover" items={c.notAutomatic} tone="bad" />
         </div>
 
@@ -488,9 +503,9 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
                   <span className="flex-1"><span className="sr-only">Myth: </span>{m.myth}</span>
                   <ChevronDown size={18} className="shrink-0 text-ink-muted transition-transform group-open:rotate-180" aria-hidden />
                 </summary>
-                <p className="flex gap-2 px-4 pb-4 text-body-sm text-ink-secondary">
+                <p className="mx-3 mb-3 flex gap-2 rounded-xl bg-teal-50 px-3 py-2.5 text-body-sm text-navy-950">
                   <BadgeCheck size={18} className="mt-0.5 shrink-0 text-teal-700" aria-hidden />
-                  <span><span className="sr-only">Fact: </span>{m.reality}</span>
+                  <span><span className="font-semibold text-teal-800">Fact: </span>{m.reality}</span>
                 </p>
               </details>
             </li>
@@ -575,14 +590,34 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
           ) : <span />}
         </nav>
         <p className="mt-6 pb-6 text-caption text-ink-muted">
-          General education — not advice, a quote or a promise of cover. The policy wording decides what is paid. For personal advice, speak to a licensed adviser.
+          General education — not advice, a quote or a promise of cover. The policy wording decides what is paid. For personal advice, speak to a licensed adviser.{" "}
+          Photo: <a href={c.photo.credit.url} target="_blank" rel="noreferrer" className="underline underline-offset-2">{c.photo.credit.photographer} / Pexels<span className="sr-only"> (opens in a new tab)</span></a>.
         </p>
       </Container>
     </>
   );
 }
 
-function ListCard({ title, items, tone }: { title: string; items: string[]; tone: "good" | "bad" }) {
+function ListCard({ title, items, icons, tone }: { title: string; items: string[]; icons?: GeIconName[]; tone: "good" | "bad" }) {
+  if (icons) {
+    return (
+      <section className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]" aria-label={title}>
+        <h2 className="flex items-center gap-2 text-body font-semibold text-teal-800">
+          <Check size={18} aria-hidden /> {title}
+        </h2>
+        <ul className="mt-3 grid gap-2.5">
+          {items.map((it, i) => (
+            <li key={it} className="flex items-center gap-3 text-body-sm text-navy-950">
+              <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+                <GeIcon name={icons[i]} size={20} aria-hidden />
+              </span>
+              <span>{it}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
   return (
     <section className={cn("rounded-2xl p-4", tone === "good" ? "bg-teal-50" : "bg-crimson-50")} aria-label={title}>
       <h2 className={cn("flex items-center gap-2 text-body font-semibold", tone === "good" ? "text-teal-800" : "text-crimson-700")}>

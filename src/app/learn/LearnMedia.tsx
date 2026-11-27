@@ -41,6 +41,7 @@ import { earningRules } from "@/rewards/catalogue";
 import { RewardQuiz } from "./RewardQuiz";
 import { useWatchTime } from "./useWatchTime";
 import { protectionCategories } from "@/data/protection";
+import { GeIcon } from "@/components/illustrations/GeIcons";
 import type { LearningCategoryKey } from "@/types/learning";
 
 const go = (hash: string) => {
@@ -109,6 +110,7 @@ function LessonCover({ id, category }: { id: string; category: string }) {
 export function LearnHome() {
   const progress = useLearnProgress();
   const [category, setCategory] = useState<LearningCategoryKey | "all">("all");
+  const [showAllLessons, setShowAllLessons] = useState(false);
   const longForm = videos.find((v) => v.format === "long-form")!;
   const shorts = videos.filter((v) => v.format === "short");
   const lang = progress.language;
@@ -202,7 +204,10 @@ export function LearnHome() {
           </span>
           <span className="mt-3 flex flex-wrap gap-1.5">
             {protectionCategories.map((c) => (
-              <span key={c.slug} className="rounded-full bg-sunken px-2.5 py-1 text-caption font-semibold text-navy-900">{c.purpose}</span>
+              <span key={c.slug} className="inline-flex items-center gap-1.5 rounded-full bg-sunken py-1 pl-1.5 pr-2.5 text-caption font-semibold text-navy-900">
+                <GeIcon name={c.iconName} size={15} className="text-crimson-600" aria-hidden />
+                {c.purpose}
+              </span>
             ))}
           </span>
         </button>
@@ -303,33 +308,7 @@ export function LearnHome() {
       <Container className="mt-8">
         <section id="learn-lessons" className="scroll-mt-20" aria-labelledby="lessons-title">
           <h2 id="lessons-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">All lessons</h2>
-          <p className="mt-0.5 text-body-sm text-ink-secondary">Build your financial protection knowledge, one topic at a time.</p>
-          <div className="-mx-5 mt-3 flex snap-x scroll-px-5 gap-2 overflow-x-auto px-5 py-1.5 scrollbar-none" role="tablist" aria-label="Lesson topics">
-            {[{ key: "all" as const, label: "All", icon: undefined }, ...topics.map((c) => ({ key: c.key, label: c.label, icon: c.icon }))].map((c) => {
-              const count = lessonCount(c.key);
-              if (!count) return null;
-              const selected = category === c.key;
-              const Icon = c.icon;
-              return (
-                <button
-                  key={c.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={selected}
-                  onClick={() => setCategory(c.key)}
-                  className={cn(
-                    "inline-flex h-11 shrink-0 snap-start items-center gap-1.5 rounded-full px-4 text-body-sm font-semibold transition-[background-color,color,box-shadow] duration-300",
-                    selected ? "bg-navy-900 text-white shadow-e2" : "bg-surface text-navy-900 shadow-e1 ring-1 ring-ink/[0.08] hover:bg-navy-50",
-                  )}
-                >
-                  {Icon && <Icon size={16} aria-hidden />}
-                  {c.label}
-                  <span className={cn("text-caption", selected ? "text-white/70" : "text-ink-muted")}>{count}</span>
-                </button>
-              );
-            })}
-          </div>
-
+          <p className="mt-0.5 text-body-sm text-ink-secondary">Pick a topic, or browse them all.</p>
           {/* Topic cards: a visual way into the same filter. Counts come from the lesson list. */}
           <ul className="mt-3 grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
             {topics.map((c) => {
@@ -380,8 +359,16 @@ export function LearnHome() {
             })}
           </ul>
 
-          <ul key={category} className="ge-reveal mt-5 grid gap-2.5">
-            {lessons.map((lesson) => {
+          {category !== "all" && (
+            <p className="mt-4 flex flex-wrap items-center gap-2 text-body-sm text-ink-secondary" aria-live="polite">
+              Showing <strong className="font-semibold text-navy-950">{topics.find((t) => t.key === category)?.label}</strong>
+              <button type="button" onClick={() => setCategory("all")} className="inline-flex min-h-11 items-center font-semibold text-crimson-600">
+                Show all topics
+              </button>
+            </p>
+          )}
+          <ul key={category} className="ge-reveal mt-4 grid gap-2.5">
+            {(category === "all" && !showAllLessons ? lessons.slice(0, 3) : lessons).map((lesson) => {
               const done = progress.completed.includes(lesson.id);
               const saved = progress.bookmarked.includes(lesson.id);
               return (
@@ -410,6 +397,15 @@ export function LearnHome() {
               );
             })}
           </ul>
+          {category === "all" && !showAllLessons && lessons.length > 3 && (
+            <button
+              type="button"
+              onClick={() => setShowAllLessons(true)}
+              className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface text-body-sm font-semibold text-navy-900 ring-1 ring-ink/[0.1] hover:ring-ink/25"
+            >
+              Show all {lessons.length} lessons
+            </button>
+          )}
         </section>
       </Container>
     </>

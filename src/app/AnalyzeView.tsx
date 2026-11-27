@@ -10,6 +10,7 @@ import {
 } from "@/state/profile";
 import { Band, Chapter, Container } from "@/components/layout/Editorial";
 import { cn } from "@/lib/cn";
+import { ProfileSpot } from "@/components/illustrations/Spots";
 
 const rm = (value: number) => `RM ${value.toLocaleString("en-MY")}`;
 
@@ -327,9 +328,12 @@ export function AnalyzeView() {
         )}
         {notAssessed.length > 0 && (
           <div className="mt-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-            <p className="text-body-sm font-semibold text-navy-950">
-              {assessed.length ? "Not assessed yet" : "Answer your profile to see a finding for each area"}
-            </p>
+            <div className="flex items-center gap-3">
+              {!assessed.length && <ProfileSpot className="w-24 shrink-0" />}
+              <p className="text-body-sm font-semibold text-navy-950">
+                {assessed.length ? "Not assessed yet" : "Answer your profile to see a finding for each area"}
+              </p>
+            </div>
             <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {notAssessed.map(({ area }) => {
                 const meta = areaMeta[area];
