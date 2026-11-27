@@ -64,3 +64,37 @@ test("disclosures toggle on a category page", async ({ signedIn: page }) => {
   await sources.locator("summary").first().click();
   await expect(sources).toHaveAttribute("open", "");
 });
+
+test("term explainer: tabs switch diagrams, arrow keys move between terms", async ({ signedIn: page, problems }) => {
+  await go(page, "app/learn/protection/medical");
+  const tabs = page.getByRole("tablist", { name: "Insurance terms" }).getByRole("tab");
+  await expect(tabs).toHaveCount(6);
+  await expect(page.locator("#term-panel")).toContainText("RM500");
+  await tabs.first().focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#term-panel")).toContainText("RM950"); // 10% of RM9,500
+  await page.getByRole("tab", { name: "Annual limit" }).click();
+  await expect(page.locator("#term-panel")).toContainText("RM15,000");
+  expectClean(problems);
+});
+
+test("product explorer: filter, pick two, compare shows verified facts and gaps", async ({ signedIn: page, problems }) => {
+  await go(page, "app/learn/protection/products");
+  await expect(page.getByRole("article")).toHaveCount(8);
+  await page.getByRole("button", { name: /^Accident Protection/ }).click();
+  await expect(page.getByRole("article")).toHaveCount(1);
+  await page.getByRole("button", { name: /^All/ }).click();
+  const adds = page.getByRole("button", { name: "Add to compare" });
+  await adds.nth(0).click();
+  await expect(page.getByText("Pick one more product above to compare.")).toBeVisible();
+  await page.getByRole("button", { name: "Add to compare" }).nth(0).click();
+  const table = page.getByRole("table", { name: "Product comparison" });
+  await expect(table).toBeVisible();
+  await expect(table.getByRole("columnheader")).toHaveCount(3);
+  await expect(table).toContainText("Not in verified sources");
+  // A third is allowed, a fourth isn't.
+  await page.getByRole("button", { name: "Add to compare" }).nth(0).click();
+  await expect(page.getByRole("button", { name: /Compare up to 3/ }).first()).toBeDisabled();
+  expectClean(problems);
+});

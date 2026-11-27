@@ -10,6 +10,7 @@ import { findInfographic, findVideo } from "@/data/learn-media";
 import { learnActions, useLearnProgress } from "@/state/learnProgress";
 import { InfographicDetailView, LearnHome, VideoLessonView } from "./learn/LearnMedia";
 import { ProtectionExplained } from "./protection/ProtectionHub";
+import { ProductExplorer } from "./protection/ProductExplorer";
 import { findProtectionCategory, type ProtectionSlug } from "@/data/protection";
 import { RewardQuiz } from "./learn/RewardQuiz";
 import { cn } from "@/lib/cn";
@@ -20,7 +21,8 @@ type LearnRoute =
   | { view: "infographic"; id: string }
   | { view: "category"; category: LearningCategoryKey }
   | { view: "lesson"; lessonId: string }
-  | { view: "protection"; slug?: ProtectionSlug };
+  | { view: "protection"; slug?: ProtectionSlug }
+  | { view: "products" };
 
 function readLearnRoute(): LearnRoute {
   const hash = window.location.hash.replace(/^#/, "");
@@ -32,6 +34,7 @@ function readLearnRoute(): LearnRoute {
     }
     if (segments[2] === "protection") {
       if (!segments[3]) return { view: "protection" };
+      if (segments[3] === "products") return { view: "products" };
       const found = findProtectionCategory(segments[3]);
       if (found) return { view: "protection", slug: found.slug };
       return { view: "protection" };
@@ -269,6 +272,7 @@ export function LearnDashboard() {
   if (route.view === "video") return <VideoLessonView id={route.id} />;
   if (route.view === "infographic") return <InfographicDetailView id={route.id} />;
   if (route.view === "protection") return <ProtectionExplained key={route.slug ?? "hub"} slug={route.slug} />;
+  if (route.view === "products") return <ProductExplorer />;
 
   /* ---------- Lesson: a reading layout ---------- */
   if (route.view === "lesson") {

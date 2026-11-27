@@ -49,6 +49,10 @@ export interface ProtectionCategory {
   iconName: GeIconName;
   /** One icon per mayHelp item (same order). */
   mayHelpIcons: GeIconName[];
+  /** Short scannable title for each mayHelp item (same order). */
+  mayHelpTitles: string[];
+  /** Short scannable title for each notAutomatic item (same order). */
+  notAutomaticTitles: string[];
   photo: HeroPhoto;
   notAutomatic: string[];
   misunderstandings: Array<{ myth: string; reality: string }>;
@@ -90,19 +94,21 @@ export const protectionCategories: ProtectionCategory[] = [
         "Aina, 24, is admitted to a private hospital for appendicitis. Because her hospital is on her insurer's panel, it can bill the insurer directly through a Guarantee Letter. She may still pay a deductible or co-payment, and anything above her plan's limits or outside its cover.",
     },
     mayHelp: [
-      "Hospital room and board, up to a daily limit",
-      "Surgery, medicine and hospital supplies for an eligible admission",
-      "Some treatment before and after a hospital stay, and certain outpatient treatment, depending on the plan",
-      "Direct billing at panel hospitals through a Guarantee Letter (GL), so you may not need to pay the full bill upfront",
+      "Your hospital room, up to a daily limit.",
+      "Treatment and supplies for an eligible admission.",
+      "Some pre- and post-hospital treatment, and certain outpatient care, depending on the plan.",
+      "At panel hospitals, a Guarantee Letter (GL) means you may not pay the full bill upfront.",
     ],
     mayHelpIcons: ["bed","scalpel","stethoscope","letter"],
+    mayHelpTitles: ["Room and board","Surgery and medicine","Before and after care","Direct billing"],
     photo: { src: "/images/pexels/protection-medical-hospital-rest.webp", position: "62% 40%", credit: { photographer: "Andrea Piacquadio", url: "https://www.pexels.com/photo/photo-of-woman-lying-in-hospital-bed-3769151/" } },
+    notAutomaticTitles: ["Every cost","Pre-existing conditions","Waiting period","Lost income","Your share"],
     notAutomatic: [
-      "Every medical cost — annual limits, sub-limits, room-and-board limits and exclusions still apply",
-      "Conditions you had before buying (pre-existing conditions), especially if not disclosed",
-      "Illness in the waiting period right after cover starts",
-      "Your lost income while you recover",
-      "Any deductible or co-payment share you agreed to pay",
+      "Annual limits, sub-limits, room limits and exclusions still apply.",
+      "Conditions you had before buying — especially if not disclosed.",
+      "Illness in the period right after cover starts.",
+      "Your salary while you recover.",
+      "Any deductible or co-payment you agreed to pay.",
     ],
     misunderstandings: [
       { myth: "“I have insurance, so my hospital bill will be zero.”", reality: "Insurance coverage isn't the same as zero cost. Deductibles, co-payment, limits and exclusions can leave part of the bill for you." },
@@ -135,17 +141,19 @@ export const protectionCategories: ProtectionCategory[] = [
         "Wei Ming, 29, is diagnosed with a covered cancer and stops working for treatment. His medical card pays eligible hospital bills; a critical illness payout, if approved, gives him a lump sum for rent, loan repayments and recovery costs. Whether it lasts depends on its size and his costs.",
     },
     mayHelp: [
-      "A lump sum on diagnosis of a listed illness, such as certain cancers, heart attack or stroke, when the definition is met",
-      "Money you can use for living costs, debts or recovery while you can't work",
-      "Some plans also pay for early-stage diagnoses or allow more than one claim",
+      "Paid for a listed illness — such as certain cancers, heart attack or stroke — when the definition is met.",
+      "Living costs, debts or recovery while you can't work.",
+      "Some plans pay for early-stage diagnoses or allow more than one claim.",
     ],
     mayHelpIcons: ["cash","home","steps"],
+    mayHelpTitles: ["Lump sum on diagnosis","Spend it your way","Early-stage or repeat claims"],
     photo: { src: "/images/pexels/protection-critical-illness-recovery.webp", position: "30% 35%", credit: { photographer: "Michelle Leman", url: "https://www.pexels.com/photo/happy-asian-woman-suffering-from-cancer-near-window-6798572/" } },
+    notAutomaticTitles: ["A monthly salary","Every illness","Waiting period","Hospital bills"],
     notAutomatic: [
-      "A monthly salary — the lump sum is fixed and may run out",
-      "Every illness — only listed conditions that meet the policy's definition and severity",
-      "Diagnoses during the waiting period after cover starts",
-      "Hospital bills directly — that's what medical insurance does",
+      "The lump sum is fixed and may run out.",
+      "Only listed conditions that meet the definition and severity.",
+      "Diagnoses during the period right after cover starts.",
+      "Paying the hospital directly is what medical insurance does.",
     ],
     misunderstandings: [
       { myth: "“Critical illness cover replaces my income.”", reality: "It pays a one-off amount. How long it lasts depends on the amount and your costs — try the recovery runway scenario." },
@@ -173,17 +181,19 @@ export const protectionCategories: ProtectionCategory[] = [
         "Daniel, 30, sends RM400 a month to his parents and has a car loan. If he died, a life payout to his nominee could help replace that support and settle his affairs. A 22-year-old with no dependants and no debts may need much less life cover.",
     },
     mayHelp: [
-      "Support for people who rely on your income, such as parents, a partner or children",
-      "Final expenses and settling outstanding commitments",
-      "Term life: affordable, pure protection for a fixed period",
-      "Whole life or investment-linked plans: longer cover, with savings or investment features whose values may not be guaranteed",
+      "Support for parents, a partner or children who rely on your income.",
+      "Funeral costs and settling outstanding commitments.",
+      "Affordable, pure protection for a fixed period.",
+      "Longer cover with savings or investment values that may not be guaranteed.",
     ],
     mayHelpIcons: ["family","receipt","calendar","chart"],
+    mayHelpTitles: ["Your dependants","Final expenses","Term life","Whole life or investment-linked"],
     photo: { src: "/images/pexels/protection-family-living-room.webp", position: "50% 45%", credit: { photographer: "Annushka Ahuja", url: "https://www.pexels.com/photo/family-on-a-living-room-8055807/" } },
+    notAutomaticTitles: ["Debt cancellation","Payouts while alive","Guaranteed investment values"],
     notAutomatic: [
-      "Cancelling your debts — the payout goes to your nominee or estate, not straight to your lenders",
-      "Paying out while you're alive, unless the plan has a TPD or critical illness benefit",
-      "Guaranteed investment values on investment-linked plans",
+      "The payout goes to your nominee or estate, not straight to your lenders.",
+      "Only if the plan adds a TPD or critical illness benefit.",
+      "Investment-linked values may not be guaranteed.",
     ],
     misunderstandings: [
       { myth: "“Life insurance pays off my loans.”", reality: "Not automatically. Loan-linked cover (such as mortgage reducing term cover) is a separate type of policy." },
@@ -214,16 +224,18 @@ export const protectionCategories: ProtectionCategory[] = [
         "Priya, 27, is seriously injured and can no longer do any work. If her condition meets her policy's TPD definition, a payout could support her for the years she can't earn. A shorter, temporary injury would not usually qualify.",
     },
     mayHelp: [
-      "A benefit — usually a lump sum, sometimes paid in instalments — when you can't earn again",
-      "Disability caused by illness or by accident, if it meets the definition",
+      "Usually a lump sum, sometimes paid in instalments.",
+      "Either cause counts, if it meets the policy's definition.",
     ],
     mayHelpIcons: ["cash","shieldCheck"],
+    mayHelpTitles: ["If you can't work again","Illness or accident"],
     photo: { src: "/images/pexels/protection-income-planning.webp", position: "55% 30%", credit: { photographer: "ANTONI SHKRABA production", url: "https://www.pexels.com/photo/a-businessman-with-documents-on-the-table-8374283/" } },
+    notAutomaticTitles: ["Temporary or partial disability","A monthly salary","Cover at every age","Immediate claims"],
     notAutomatic: [
-      "Temporary or partial disability — it must meet the policy's definition of total and permanent",
-      "A monthly salary, unless the policy says so",
-      "Cover at every age — TPD cover often ends at an age stated in the policy",
-      "Claims before the disability has lasted any minimum period the definition requires",
+      "It must meet the policy's definition of total and permanent.",
+      "Unless the policy says so.",
+      "TPD cover often ends at an age stated in the policy.",
+      "Some definitions require the disability to last a minimum period first.",
     ],
     misunderstandings: [
       { myth: "“Any injury that stops me working counts.”", reality: "Only a disability that meets the policy's total and permanent definition qualifies." },
@@ -250,17 +262,19 @@ export const protectionCategories: ProtectionCategory[] = [
         "Hafiz, 21, rides to work and fractures his wrist in a fall. A personal accident policy may reimburse accident medical costs up to its limit, and pay a set percentage of the sum insured if an injury causes permanent disablement.",
     },
     mayHelp: [
-      "Accidental death",
-      "Permanent disablement, paid as a percentage of the sum insured depending on how severe it is",
-      "Accident medical expenses, up to a limit",
-      "Sometimes a daily hospital income after an accident",
+      "A payout if an accident causes death.",
+      "A percentage of the sum insured, depending on how severe it is.",
+      "Treatment after an accident, up to a limit.",
+      "Sometimes a daily amount while in hospital after an accident.",
     ],
     mayHelpIcons: ["shieldPlus","percent","bandage","calendarCoin"],
+    mayHelpTitles: ["Accidental death","Permanent disablement","Accident medical bills","Hospital income"],
     photo: { src: "/images/pexels/protection-accident-rider.webp", position: "50% 40%", credit: { photographer: "Erik Mclean", url: "https://www.pexels.com/photo/man-on-motorcycle-in-city-10125985/" } },
+    notAutomaticTitles: ["Illness","Every activity","Illness hospital stays"],
     notAutomatic: [
-      "Illness — unless the policy adds a specific extension",
-      "Every activity — exclusions often apply, for example certain hazardous activities",
-      "Medical cover for non-accident hospital stays",
+      "Unless the policy adds a specific extension.",
+      "Exclusions often apply, for example certain hazardous activities.",
+      "Non-accident stays need medical insurance.",
     ],
     misunderstandings: [
       { myth: "“PA covers me if I'm hospitalised for an illness.”", reality: "Personal accident covers accidents. Illness generally needs medical insurance." },

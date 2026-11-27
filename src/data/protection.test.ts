@@ -97,7 +97,7 @@ test("no prices, quotes, rankings or purchase language in product data", () => {
 });
 
 test("no checkout or purchase flow exists in the protection feature", () => {
-  for (const f of ["../app/protection/ProtectionHub.tsx", "../app/protection/ProtectionScenarios.tsx"]) {
+  for (const f of ["../app/protection/ProtectionHub.tsx", "../app/protection/ProtectionScenarios.tsx", "../app/protection/ProductExplorer.tsx", "../app/protection/TermExplainer.tsx"]) {
     const src = readFileSync(new URL(f, import.meta.url), "utf8");
     assert.ok(!/checkout|add to cart|purchase now|apply now|get a quote/i.test(src), f);
   }
@@ -114,4 +114,22 @@ test("visual assets: one icon per 'may help' item, and each category has a credi
     assert.ok(c.photo.credit.photographer, c.slug);
   }
   assert.equal(new Set(protectionCategories.map((c) => c.photo.src)).size, 5, "no photo reused across categories");
+});
+
+test("cover cards: every item has a short title (same order and count)", () => {
+  for (const c of protectionCategories) {
+    assert.equal(c.mayHelpTitles.length, c.mayHelp.length, c.slug);
+    assert.equal(c.notAutomaticTitles.length, c.notAutomatic.length, c.slug);
+    for (const t of [...c.mayHelpTitles, ...c.notAutomaticTitles]) assert.ok(t.length > 0 && t.length <= 32, `${c.slug}: "${t}" is short`);
+  }
+});
+
+test("product explorer: channels are read from official wording; fact labels split into name + source", async () => {
+  const { applicationChannel, splitFactLabel } = await import("../app/protection/channel.ts");
+  const byId = Object.fromEntries(researchedProducts.map((p) => [p.id, applicationChannel(p)]));
+  assert.equal(byId["GETB-IGMC"], "direct");
+  assert.equal(byId["GELM-SPY"], "adviser");
+  assert.equal(byId["GEGM-IND-MED-PORTFOLIO"], "closed");
+  assert.deepEqual(splitFactLabel("Annual limit (PDS and official page)"), ["Annual limit", "PDS and official page"]);
+  assert.deepEqual(splitFactLabel("Cover"), ["Cover", ""]);
 });

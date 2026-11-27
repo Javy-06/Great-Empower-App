@@ -12,6 +12,7 @@ export const routes = [
   { key: "cat-life", hash: "app/learn/protection/life", group: "Protection" },
   { key: "cat-tpd", hash: "app/learn/protection/tpd", group: "Protection" },
   { key: "cat-pa", hash: "app/learn/protection/personal-accident", group: "Protection" },
+  { key: "products", hash: "app/learn/protection/products", group: "Protection" },
   { key: "simulate", hash: "app/simulate", group: "Simulate" },
   { key: "sim-needs", hash: "app/simulate/needs", group: "Simulate" },
   { key: "sim-family", hash: "app/simulate/needs/tool-family", group: "Simulate" },

@@ -28,6 +28,7 @@ import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import { findInfographic } from "@/data/learn-media";
+import { TermExplainer } from "./TermExplainer";
 import { AccidentIcon, CriticalIllnessIcon, FamilyIcon, GeIcon, IncomeIcon, MedicalIcon, type GeIconName, type IconLike } from "@/components/illustrations/GeIcons";
 import {
   AccidentSpot,
@@ -169,6 +170,14 @@ function HubView() {
       {/* If something goes wrong + research note */}
       <Container className="mt-10 max-w-[60rem]">
         <div className="grid gap-2 sm:grid-cols-2">
+          <button type="button" onClick={() => go(`${PROTECTION_HASH}/products`)} className="group flex w-full items-center gap-4 rounded-2xl bg-navy-950 p-4 text-left text-white shadow-e2 sm:col-span-2">
+            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-white/10"><Scale size={22} aria-hidden /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-body font-semibold">Explore and compare products</span>
+              <span className="block text-caption text-white/80">Verified facts side by side — no rankings or prices.</span>
+            </span>
+            <ArrowRight size={18} className="shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </button>
           <LinkRow icon={Scale} title="A dispute with your insurer?" text="After its final decision, you can go to FMOS." source={protectionSources.fmos} />
           <LinkRow icon={Landmark} title="If an insurer fails" text="PIDM protects eligible benefits, up to set limits." source={protectionSources.pidm} />
         </div>
@@ -477,8 +486,8 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
 
       <Container className="mt-6 max-w-[56rem]">
         <div className="grid gap-3 md:grid-cols-2">
-          <ListCard title="May help with" items={c.mayHelp} icons={c.mayHelpIcons} tone="good" />
-          <ListCard title="Doesn't automatically cover" items={c.notAutomatic} tone="bad" />
+          <ListCard title="May help with" items={c.mayHelp} titles={c.mayHelpTitles} icons={c.mayHelpIcons} tone="good" />
+          <ListCard title="Doesn't automatically cover" items={c.notAutomatic} titles={c.notAutomaticTitles} tone="bad" />
         </div>
 
         <div className="mt-4 flex gap-3 rounded-2xl bg-gold-50 p-4 ring-1 ring-gold-100">
@@ -489,6 +498,12 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
           </p>
         </div>
       </Container>
+
+      {c.slug === "medical" && (
+        <Container className="max-w-[56rem]">
+          <TermExplainer />
+        </Container>
+      )}
 
       <Container className="mt-10 max-w-[56rem]">
         <p className="text-overline uppercase tracking-[0.18em] text-teal-700">Myth or fact?</p>
@@ -555,11 +570,16 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
             Great Eastern products, in no particular order. Facts checked in official pages and PDSs on {PRODUCT_RESEARCH_DATE}. Not a recommendation or quote; not affiliated with Great Eastern.
           </p>
           {products.length ? (
+            <>
             <ul className="mt-3 grid gap-2">
               {products.map((p) => (
                 <li key={p.id}><ProductRow product={p} /></li>
               ))}
             </ul>
+            <button type="button" onClick={() => go(`${PROTECTION_HASH}/products`)} className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-crimson-600">
+              <Scale size={16} aria-hidden /> Compare products side by side
+            </button>
+            </>
           ) : (
             <p className="mt-3 text-body-sm text-ink-secondary">No product in this category has officially verified facts in our research yet.</p>
           )}
@@ -597,34 +617,25 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
   );
 }
 
-function ListCard({ title, items, icons, tone }: { title: string; items: string[]; icons?: GeIconName[]; tone: "good" | "bad" }) {
-  if (icons) {
-    return (
-      <section className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]" aria-label={title}>
-        <h2 className="flex items-center gap-2 text-body font-semibold text-teal-800">
-          <Check size={18} aria-hidden /> {title}
-        </h2>
-        <ul className="mt-3 grid gap-2.5">
-          {items.map((it, i) => (
-            <li key={it} className="flex items-center gap-3 text-body-sm text-navy-950">
-              <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
-                <GeIcon name={icons[i]} size={20} aria-hidden />
-              </span>
-              <span>{it}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-    );
-  }
+/** Covered / not-covered list: icon tile + short title + one supporting line per item. */
+function ListCard({ title, items, titles, icons, tone }: { title: string; items: string[]; titles: string[]; icons?: GeIconName[]; tone: "good" | "bad" }) {
+  const good = tone === "good";
   return (
-    <section className={cn("rounded-2xl p-4", tone === "good" ? "bg-teal-50" : "bg-crimson-50")} aria-label={title}>
-      <h2 className={cn("flex items-center gap-2 text-body font-semibold", tone === "good" ? "text-teal-800" : "text-crimson-700")}>
-        {tone === "good" ? <Check size={18} aria-hidden /> : <X size={18} aria-hidden />} {title}
+    <section className={cn("rounded-2xl p-4", good ? "bg-surface ring-1 ring-ink/[0.08]" : "bg-crimson-50/70 ring-1 ring-crimson-100")} aria-label={title}>
+      <h2 className={cn("flex items-center gap-2 text-body font-semibold", good ? "text-teal-800" : "text-crimson-700")}>
+        {good ? <Check size={18} aria-hidden /> : <X size={18} aria-hidden />} {title}
       </h2>
-      <ul className={cn("mt-2 grid list-disc gap-1.5 pl-5", tone === "good" ? "marker:text-teal-600" : "marker:text-crimson-500")}>
-        {items.map((it) => (
-          <li key={it} className="pl-0.5 text-body-sm text-navy-950">{it}</li>
+      <ul className="mt-3 grid gap-3">
+        {items.map((it, i) => (
+          <li key={it} className="flex gap-3">
+            <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-xl", good ? "bg-teal-50 text-teal-700" : "bg-white text-crimson-600")}>
+              {good && icons ? <GeIcon name={icons[i]} size={20} aria-hidden /> : <X size={18} strokeWidth={2.25} aria-hidden />}
+            </span>
+            <span className="min-w-0 pt-0.5">
+              <span className="block text-body-sm font-semibold text-navy-950">{titles[i]}</span>
+              <span className="block text-caption text-ink-secondary">{it}</span>
+            </span>
+          </li>
         ))}
       </ul>
     </section>
