@@ -7,6 +7,7 @@ import { protectionCategories } from "@/data/protection";
 import { categoryIcons, categoryTones } from "./protection/ProtectionHub";
 import { mediAsasStory, NEWS_HASH_PREFIX } from "@/data/news";
 import { FeaturedHero } from "./home/FeaturedHero";
+import { NextSteps } from "./home/NextSteps";
 import { openGame } from "./game/gameRoute";
 
 export type DashboardDestination =
@@ -46,10 +47,13 @@ export function HomeDashboard() {
       />
 
       <div className="bg-canvas pb-6 pt-5 sm:pt-8">
-        <Container className="grid gap-7 sm:gap-9 lg:grid-cols-2 lg:items-start lg:gap-x-12">
+        <Container>
+          <NextSteps />
+        </Container>
+        <Container className="mt-7 grid gap-7 sm:mt-9 sm:gap-9 md:grid-cols-2 md:items-start md:gap-x-8 lg:gap-x-12">
           <div className="grid gap-7 sm:gap-9">
-            <LatestUpdate />
             <ProtectionStart />
+            <LatestUpdate />
           </div>
           <GameEntrance />
         </Container>

@@ -25,7 +25,7 @@ type LearnRoute =
   | { view: "products" };
 
 function readLearnRoute(): LearnRoute {
-  const hash = window.location.hash.replace(/^#/, "");
+  const hash = window.location.hash.replace(/^#/, "").split("?")[0]; // "?format=…" is read by the Learn view itself
   const segments = hash.split("/");
   if (segments[0] === "app" && segments[1] === "learn") {
     if (segments[2] === "category" && segments[3]) {

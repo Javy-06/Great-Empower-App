@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -48,6 +48,13 @@ const go = (hash: string) => {
   window.location.hash = hash;
   window.scrollTo({ top: 0 });
 };
+type FormatKey = "videos" | "infographics" | "lessons";
+const FORMATS: { key: FormatKey; label: string; icon: typeof Play }[] = [
+  { key: "videos", label: "Videos", icon: Play },
+  { key: "infographics", label: "Infographics", icon: ImageIcon },
+  { key: "lessons", label: "Lessons", icon: Layers },
+];
+
 const scrollToId = (id: string) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -110,6 +117,20 @@ function LessonCover({ id, category }: { id: string; category: string }) {
 export function LearnHome() {
   const progress = useLearnProgress();
   const [category, setCategory] = useState<LearningCategoryKey | "all">("all");
+  const [format, setFormat] = useState<FormatKey>(() => {
+    const q = window.location.hash.split("?")[1];
+    const f = new URLSearchParams(q ?? "").get("format");
+    return f === "infographics" || f === "lessons" ? f : "videos";
+  });
+  const formatTabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const onFormatKey = (e: ReactKeyboardEvent) => {
+    const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    const i = (FORMATS.findIndex((x) => x.key === format) + d + FORMATS.length) % FORMATS.length;
+    setFormat(FORMATS[i].key);
+    formatTabs.current[i]?.focus();
+  };
   const [showAllLessons, setShowAllLessons] = useState(false);
   const longForm = videos.find((v) => v.format === "long-form")!;
   const shorts = videos.filter((v) => v.format === "short");
@@ -120,6 +141,7 @@ export function LearnHome() {
   const lessonsDone = demoLessons.filter((l) => progress.completed.includes(l.id)).length;
   const lessonsPercent = Math.round((lessonsDone / demoLessons.length) * 100);
   const lessons = category === "all" ? demoLessons : demoLessons.filter((l) => l.category === category);
+  const counts: Record<FormatKey, number> = { videos: videos.length, infographics: infographics.length, lessons: demoLessons.length };
 
   return (
     <>
@@ -133,32 +155,6 @@ export function LearnHome() {
         onBack={() => go("app/home")}
         titleId="learn-title"
       />
-
-      {/* Format shortcuts */}
-      <Container className="-mt-4 relative">
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { label: "Videos", hint: "Watch & learn", icon: Play, tone: "bg-crimson-50 text-crimson-600", target: "learn-videos" },
-            { label: "Infographics", hint: "At a glance", icon: ImageIcon, tone: "bg-navy-50 text-navy-700", target: "learn-infographics" },
-            { label: "Lessons", hint: "Read & reflect", icon: Layers, tone: "bg-teal-50 text-teal-700", target: "learn-lessons" },
-          ].map(({ label, hint, icon: Icon, tone, target }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => scrollToId(target)}
-              className="flex min-h-[4.5rem] flex-col items-start gap-1.5 rounded-2xl bg-surface p-3 text-left shadow-e1 ring-1 ring-ink/[0.06] sm:flex-row sm:items-center"
-            >
-              <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-xl", tone)}>
-                <Icon size={18} aria-hidden />
-              </span>
-              <span>
-                <span className="block text-body-sm font-semibold text-navy-950">{label}</span>
-                <span className="block text-[11px] text-ink-muted">{hint}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </Container>
 
       {/* Continue learning */}
       {next && (
@@ -213,9 +209,40 @@ export function LearnHome() {
         </button>
       </Container>
 
+      {/* One format at a time: each view carries one idea, and mobile scroll halves. */}
+      <Container className="mt-8">
+        <div role="tablist" aria-label="Learning formats" onKeyDown={onFormatKey} className="grid grid-cols-3 gap-1 rounded-full bg-sunken p-1">
+          {FORMATS.map((f, i) => {
+            const on = format === f.key;
+            return (
+              <button
+                key={f.key}
+                ref={(el) => { formatTabs.current[i] = el; }}
+                type="button"
+                role="tab"
+                id={`fmt-${f.key}`}
+                aria-selected={on}
+                aria-controls={`learn-${f.key}`}
+                tabIndex={on ? 0 : -1}
+                onClick={() => setFormat(f.key)}
+                className={cn(
+                  "inline-flex h-12 items-center justify-center gap-1.5 rounded-full text-body-sm font-semibold transition-colors",
+                  on ? "bg-navy-900 text-white shadow-e2" : "text-navy-900 hover:bg-white",
+                )}
+              >
+                <f.icon size={16} aria-hidden />
+                {f.label}
+                <span className={cn("hidden text-caption sm:inline", on ? "text-white/70" : "text-ink-muted")}>{counts[f.key]}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Container>
+
       {/* Featured long-form lesson */}
-      <Container className="mt-8" >
-        <section id="learn-videos" className="scroll-mt-20" aria-labelledby="videos-title">
+      {format === "videos" && (
+      <Container className="mt-5" >
+        <section id="learn-videos" role="tabpanel" aria-labelledby="fmt-videos" className="scroll-mt-20">
           <h2 id="videos-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">Video lessons</h2>
           <LanguageSelector className="mt-2" />
           {lang !== "en" && (
@@ -279,9 +306,12 @@ export function LearnHome() {
         </section>
       </Container>
 
+      )}
+
       {/* Infographics */}
-      <Container className="mt-8">
-        <section id="learn-infographics" className="scroll-mt-20" aria-labelledby="ig-title">
+      {format === "infographics" && (
+      <Container className="mt-5">
+        <section id="learn-infographics" role="tabpanel" aria-labelledby="fmt-infographics" className="scroll-mt-20">
           <h2 id="ig-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">Infographics</h2>
           <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {infographics.map((g) => (
@@ -307,9 +337,12 @@ export function LearnHome() {
         </section>
       </Container>
 
+      )}
+
       {/* All lessons */}
-      <Container className="mt-8">
-        <section id="learn-lessons" className="scroll-mt-20" aria-labelledby="lessons-title">
+      {format === "lessons" && (
+      <Container className="mt-5">
+        <section id="learn-lessons" role="tabpanel" aria-labelledby="fmt-lessons" className="scroll-mt-20">
           <h2 id="lessons-title" className="font-brand text-[1.875rem] font-semibold text-navy-950">All lessons</h2>
           <p className="mt-0.5 text-body-sm text-ink-secondary">Pick a topic, or browse them all.</p>
           {/* Topic cards: a visual way into the same filter. Counts come from the lesson list. */}
@@ -411,6 +444,7 @@ export function LearnHome() {
           )}
         </section>
       </Container>
+      )}
     </>
   );
 }

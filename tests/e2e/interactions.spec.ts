@@ -48,8 +48,17 @@ test("simulate: tool tabs switch with arrow keys and deep link", async ({ signed
   expectClean(problems);
 });
 
-test("learn: 'Show all lessons' expands the list", async ({ signedIn: page, problems }) => {
+test("learn: format tabs show one format at a time; 'Show all lessons' expands the list", async ({ signedIn: page, problems }) => {
   await go(page, "app/learn");
+  const tabs = page.getByRole("tablist", { name: "Learning formats" }).getByRole("tab");
+  await expect(tabs).toHaveCount(3);
+  await expect(page.locator("#learn-videos")).toBeVisible();
+  await expect(page.locator("#learn-lessons")).toHaveCount(0);
+  await tabs.first().focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#learn-infographics")).toBeVisible();
+  await expect(page.locator("#learn-videos")).toHaveCount(0);
+  await page.getByRole("tab", { name: /Lessons/ }).click();
   const list = page.locator("#learn-lessons ul.grid").last();
   await expect(list.locator("> li")).toHaveCount(3);
   await page.getByRole("button", { name: /Show all \d+ lessons/ }).click();
@@ -96,5 +105,16 @@ test("product explorer: filter, pick two, compare shows verified facts and gaps"
   // A third is allowed, a fourth isn't.
   await page.getByRole("button", { name: "Add to compare" }).nth(0).click();
   await expect(page.getByRole("button", { name: /Compare up to 3/ }).first()).toBeDisabled();
+  expectClean(problems);
+});
+
+test("home: next-step path highlights the first unfinished step and links onward", async ({ signedIn: page, problems }) => {
+  await go(page, "app/home");
+  const path = page.locator("section[aria-labelledby=next-title]");
+  await expect(path.getByRole("button", { name: /Learn the basics|Check your protection|Explore real products/ })).toHaveCount(3);
+  const current = path.locator("[aria-current=step]");
+  await expect(current).toHaveCount(1);
+  await path.getByRole("button", { name: /Explore real products/ }).click();
+  await expect(page).toHaveURL(/#app\/learn\/protection\/products$/);
   expectClean(problems);
 });

@@ -292,3 +292,20 @@ All figures are labelled illustrative and reconcile.
   - an orphaned last "kind of cover" tile;
   - inconsistent desktop widths (the `Container` bug above).
 - **Not done in this phase:** Home and Learn restructuring, stepped simulator forms, Rewards visual redesign. These are the next priorities.
+
+## Addendum: Home and Learn redesign
+
+| Page | Problem | Change | Result |
+|---|---|---|---|
+| **Home** | No clear main action or progress; a "dashboard of cards"; empty space beside the five-risks card on desktop | **"Your next step" path** (`home/NextSteps.tsx`): Learn (lessons done, next lesson) → Check (profile answers, out of 8) → Compare (verified products). The first unfinished step is the single highlighted action; points link to Rewards. Layout: path full width, then five risks + latest update, with LifeTrack beside them on tablet and desktop. | One main action that reflects your progress. Balanced columns at 768 and 1280 px. Reads the stores only; no rewards or profile logic changed. |
+| **Learn** | 7 stacked sections, 4.6 phone screens; scroll-only shortcut tiles | **Format tabs** (Videos / Infographics / Lessons; arrow keys; `#app/learn?format=lessons` deep link). One format shows at a time, under the "Continue learning" and "Protection explained" focus cards. | **4.6 → 2.3 screens** at 390 px (244 → 142 visible words) |
+
+**Tests added:**
+- Learn: the format tabs show one panel, and arrow keys switch them.
+- Home: the next-step path has exactly one current step and links to products.
+
+**Screenshots inspected:**
+- Home at 390, 768 and 1280 px (re-shot at 768 and 1280 after the column fix).
+- Learn at 390 px.
+
+**Known overlap:** the hero carousel's "Continue learning" repeats step 1 of the path. They're kept together for now because the carousel has other slides; consider giving slide 1 a different CTA.
