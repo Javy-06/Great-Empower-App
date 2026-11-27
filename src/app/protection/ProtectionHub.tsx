@@ -1,24 +1,36 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Accessibility,
   ArrowLeft,
   ArrowRight,
   Bandage,
   BadgeCheck,
+  Briefcase,
+  CalendarClock,
   Check,
+  ChevronDown,
   CircleAlert,
   ExternalLink,
+  FileSearch,
   FileText,
+  Globe,
+  Hospital,
   HeartPulse,
   Info,
   Landmark,
+  Minus,
   PiggyBank,
+  Receipt,
   Ribbon,
   Scale,
   ShieldCheck,
+  ShieldX,
   TrendingUp,
+  UserRound,
   Users,
+  Wallet,
   X,
+  Zap,
 } from "lucide-react";
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
@@ -26,7 +38,6 @@ import { cn } from "@/lib/cn";
 import { findInfographic } from "@/data/learn-media";
 import {
   PRODUCT_RESEARCH_DATE,
-  UNVERIFIED_PRODUCT_NAME_COUNT,
   findProtectionCategory,
   productsFor,
   protectionCategories,
@@ -45,14 +56,14 @@ const go = (hash: string) => {
 
 export const PROTECTION_HASH = "app/learn/protection";
 
-const icons: Record<ProtectionSlug, typeof HeartPulse> = {
+export const categoryIcons: Record<ProtectionSlug, typeof HeartPulse> = {
   medical: HeartPulse,
   "critical-illness": Ribbon,
   life: Users,
   tpd: Accessibility,
   "personal-accident": Bandage,
 };
-const tones: Record<ProtectionSlug, string> = {
+export const categoryTones: Record<ProtectionSlug, string> = {
   medical: "bg-crimson-50 text-crimson-600",
   "critical-illness": "bg-gold-50 text-gold-700",
   life: "bg-navy-50 text-navy-700",
@@ -73,8 +84,8 @@ function HubView() {
     <>
       <PageHero
         eyebrow="Protection explained"
-        title="Know what each cover does — and doesn't."
-        text="Five kinds of insurance in plain language, with Malaysian context and what to check before you buy."
+        title="A bad day shouldn't wreck your finances."
+        text="Five kinds of cover, explained in pictures."
         image="/images/pexels/family-protection-conversation.webp"
         imagePosition="55% 30%"
         backLabel="Learn"
@@ -82,191 +93,333 @@ function HubView() {
         titleId="protection-title"
       />
 
-      <Container className="relative -mt-6 max-w-[56rem]">
-        <section aria-labelledby="two-names-title" className="rounded-2xl bg-surface p-4 shadow-e2 ring-1 ring-ink/[0.06] sm:p-6">
-          <h2 id="two-names-title" className="font-brand text-[1.75rem] font-semibold leading-tight text-navy-950">Two names for every cover</h2>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <NameKey label="Official category" text="What insurers and the policy call it, e.g. “Critical Illness”." tone="bg-navy-900 text-white" />
-            <NameKey label="Protection purpose" text="The money problem it helps with, e.g. “Critical Illness Recovery”." tone="bg-crimson-50 text-crimson-700" />
-          </div>
-          <ul className="mt-4 grid gap-2.5">
-            {protectionCategories.map((c) => (
-              <li key={c.slug}>
-                <CategoryLink category={c} />
+      {/* 1 — The big picture */}
+      <Container className="relative -mt-6 max-w-[60rem]">
+        <section aria-labelledby="big-picture" className="rounded-2xl bg-surface p-4 shadow-e2 ring-1 ring-ink/[0.06] sm:p-6">
+          <h2 id="big-picture" className="sr-only">Why protection matters</h2>
+          <ol className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-4">
+            {[
+              { icon: UserRound, label: "You", text: "Studying, working, saving", tone: "bg-navy-900 text-white" },
+              { icon: Zap, label: "Something happens", text: "Illness, accident, losing income", tone: "bg-gold-500 text-navy-950" },
+              { icon: Wallet, label: "Costs hit", text: "Bills grow, savings drain", tone: "bg-crimson-600 text-white" },
+              { icon: ShieldCheck, label: "Protection helps", text: "Pays part of the cost, as agreed", tone: "bg-teal-600 text-white" },
+            ].map(({ icon: Icon, label, text, tone }, i) => (
+              <li key={label} className="relative flex flex-col items-start">
+                <span className={cn("inline-flex size-12 items-center justify-center rounded-2xl", tone)}>
+                  <Icon size={22} aria-hidden />
+                </span>
+                {i < 3 && <ArrowRight size={16} className="absolute left-14 top-4 hidden text-ink-muted sm:block" aria-hidden />}
+                <span className="mt-2 text-body-sm font-semibold text-navy-950">{label}</span>
+                <span className="text-caption text-ink-muted">{text}</span>
               </li>
             ))}
-          </ul>
+          </ol>
         </section>
       </Container>
 
-      <Container className="mt-10 max-w-[56rem]">
-        <SectionTitle id="zero-title" overline="The key idea" title="Insurance coverage ≠ zero out-of-pocket cost" />
-        <p className="mt-2 text-body-sm text-ink-secondary">
-          Even with cover, part of a bill can stay with you. Here is how one hospital bill can split. The diagram is illustrative, not to scale.
+      {/* 2 + 3 — What can happen → which cover helps */}
+      <Section id="what-happens" overline="What can happen" title="Five risks, five kinds of cover">
+        <ul className="grid gap-2">
+          {protectionCategories.map((c) => (
+            <li key={c.slug}>
+              <RiskRow category={c} />
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 flex items-start gap-2 text-caption text-ink-muted">
+          <Info size={14} className="mt-0.5 shrink-0" aria-hidden />
+          <span>
+            Each cover has two names: the <strong className="font-semibold text-navy-900">purpose</strong> (what it helps with) and the{" "}
+            <strong className="font-semibold text-navy-900">official category</strong> you'll see on a policy.
+          </span>
         </p>
-        <BillSplit />
-        <button type="button" onClick={() => go("app/simulate/needs/tool-bill")} className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-crimson-600">
-          Try it with your own numbers <ArrowRight size={16} aria-hidden />
-        </button>
-      </Container>
+      </Section>
 
-      <Container className="mt-10 max-w-[56rem]">
-        <SectionTitle id="compare-title" overline="Different tools" title="Insurance, savings and investing do different jobs" />
-        <ul className="mt-4 grid gap-3 sm:grid-cols-3">
-          {[
-            { icon: ShieldCheck, title: "Insurance", text: "You pay a premium so a specific risk is shared. Pure protection pays only if a covered event happens; if it doesn't, you usually get nothing back.", tone: "bg-navy-900 text-white" },
-            { icon: PiggyBank, title: "Savings", text: "Your own money, available when you need it, with little risk. It is what pays a deductible, co-payment or the first months without income.", tone: "bg-teal-600 text-white" },
-            { icon: TrendingUp, title: "Investing", text: "Aims to grow over time but can lose value. Investment-linked insurance mixes protection with investing, so its values aren't guaranteed.", tone: "bg-gold-500 text-navy-950" },
-          ].map(({ icon: Icon, title, text, tone }) => (
-            <li key={title} className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-              <span className={cn("inline-flex size-10 items-center justify-center rounded-xl", tone)}><Icon size={20} aria-hidden /></span>
-              <h3 className="mt-3 text-body font-semibold text-navy-950">{title}</h3>
-              <p className="mt-1 text-body-sm text-ink-secondary">{text}</p>
-            </li>
-          ))}
-        </ul>
-      </Container>
+      {/* 4 — Savings ≠ insurance ≠ investing */}
+      <Section id="money-tools" overline="Different tools" title="Savings, insurance and investing do different jobs">
+        <MoneyToolsCompare />
+      </Section>
 
-      <Container className="mt-10 max-w-[56rem]">
-        <SectionTitle id="before-title" overline="Before you buy" title="Six things to check" />
-        <ol className="mt-4 grid gap-2.5 sm:grid-cols-2">
-          {[
-            { t: "Read the Product Disclosure Sheet (PDS)", d: "It summarises the benefits, limits, exclusions and costs. The policy wording is what counts." },
-            { t: "Find the limits and what you pay", d: "Annual and lifetime limits, room-and-board limits, deductible and co-payment." },
-            { t: "Check waiting periods and exclusions", d: "Some conditions aren't covered at all, and illness right after cover starts may not be." },
-            { t: "Answer health questions honestly", d: "Not disclosing a pre-existing condition is one of the biggest reasons hospital guarantee letters are declined.", source: protectionSources.star },
-            { t: "Ask whether the premium can change", d: "Medical premiums can be revised at renewal. Plan for it, not just today's price." },
-            { t: "Know your free-look period", d: "You can usually cancel a new life or medical policy within a free-look period (usually 15 days) for a refund, less some costs. Check your policy.", source: protectionSources.glossary },
-          ].map((item, i) => (
-            <li key={item.t} className="flex gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-crimson-600 text-caption font-bold text-white tabular-nums">{i + 1}</span>
-              <span>
-                <span className="block text-body-sm font-semibold text-navy-950">{item.t}</span>
-                <span className="mt-0.5 block text-body-sm text-ink-secondary">{item.d}</span>
-                {item.source && <SourceLink source={item.source} className="mt-1" />}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </Container>
+      {/* 5 — How a medical bill is shared */}
+      <Section id="bill" overline="Medical insurance, step by step" title="Having cover doesn't mean a zero bill">
+        <BillBreakdown />
+      </Section>
 
-      <Container className="mt-10 max-w-[56rem]">
-        <SectionTitle id="buying-title" overline="How buying works in Malaysia" title="Online or through an agent" />
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-            <h3 className="text-body font-semibold text-navy-950">Buying directly (online)</h3>
-            <p className="mt-1 text-body-sm text-ink-secondary">
-              BNM introduced commission-free standalone pure protection products sold through direct channels — term life from July 2017, then critical illness and medical plans from July 2018.
-            </p>
-            <SourceLink source={protectionSources.bnmDirect} className="mt-1.5" />
-          </div>
-          <div className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-            <h3 className="text-body font-semibold text-navy-950">Through an agent or adviser</h3>
-            <p className="mt-1 text-body-sm text-ink-secondary">
-              Some products — riders, investment-linked plans and some medical plans — are sold through agents. Your health history, the amount of cover and other details can also mean full underwriting.
-            </p>
-          </div>
+      {/* 6 — Before you buy */}
+      <Section id="before-buy" overline="Before you buy" title="Eight questions to ask">
+        <BuyChecklist />
+      </Section>
+
+      {/* 7 — Where to get protection */}
+      <Section id="channels" overline="Where to get it" title="Three ways people get cover">
+        <Channels />
+      </Section>
+
+      {/* If something goes wrong + research note */}
+      <Container className="mt-10 max-w-[60rem]">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <LinkRow icon={Scale} title="A dispute with your insurer?" text="After its final decision, you can go to FMOS." source={protectionSources.fmos} />
+          <LinkRow icon={Landmark} title="If an insurer fails" text="PIDM protects eligible benefits, up to set limits." source={protectionSources.pidm} />
         </div>
-        <ul className="mt-3 grid gap-2 rounded-2xl bg-navy-50 p-4 text-body-sm text-navy-900">
-          <li className="flex gap-2"><Info size={16} className="mt-0.5 shrink-0" aria-hidden />Whether a product can be bought online depends on the product. Eligibility rules — age, citizenship or residency, health and occupation — apply either way.</li>
-          <li className="flex gap-2"><Scale size={16} className="mt-0.5 shrink-0" aria-hidden />Conventional insurance and takaful work differently. Takaful is based on shared contributions and is open to non-Muslims.</li>
-          <li className="flex gap-2"><Landmark size={16} className="mt-0.5 shrink-0" aria-hidden />GREAT EMPOWER doesn't sell insurance, give quotes or recommend products, and isn't affiliated with any insurer.</li>
-        </ul>
+        <p className="mt-4 text-caption text-ink-muted">
+          Each category lists Great Eastern products we could verify in official documents ({researchedProducts.filter((p) => p.evidence === "VERIFIED_OFFICIAL").length}, checked {PRODUCT_RESEARCH_DATE}). Independent education — not affiliated with Great Eastern, and not a recommendation or quote.
+        </p>
       </Container>
-
-      <Container className="mt-10 max-w-[56rem]">
-        <SectionTitle id="rights-title" overline="If something goes wrong" title="Your safety nets" />
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          <li className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-            <h3 className="text-body font-semibold text-navy-950">A dispute with your insurer</h3>
-            <p className="mt-1 text-body-sm text-ink-secondary">Complain to the insurer first. If you're still unhappy with its final decision, you can take an eligible dispute to the Financial Markets Ombudsman Service (FMOS).</p>
-            <SourceLink source={protectionSources.fmos} className="mt-1.5" />
-          </li>
-          <li className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-            <h3 className="text-body font-semibold text-navy-950">If an insurer fails</h3>
-            <p className="mt-1 text-body-sm text-ink-secondary">PIDM protects eligible insurance and takaful benefits of its member companies, up to set limits.</p>
-            <SourceLink source={protectionSources.pidm} className="mt-1.5" />
-          </li>
-        </ul>
-      </Container>
-
-      <Container className="mt-10 max-w-[56rem] pb-4">
-        <section aria-labelledby="research-title" className="rounded-2xl bg-navy-950 p-5 text-white">
-          <p className="text-overline uppercase tracking-[0.18em] text-teal-200">Products in our research</p>
-          <h2 id="research-title" className="mt-1 font-brand text-[1.625rem] font-semibold leading-tight">Facts we could check, and nothing more</h2>
-          <p className="mt-2 text-body-sm text-white/75">
-            Each category page lists Great Eastern products only where official documents confirm what we show:{" "}
-            {researchedProducts.filter((p) => p.evidence === "VERIFIED_OFFICIAL").length} products, checked {PRODUCT_RESEARCH_DATE}. Another {UNVERIFIED_PRODUCT_NAME_COUNT} product names appear in research but couldn't be verified, so they aren't shown.
-          </p>
-          <p className="mt-2 text-caption text-white/60">Independent education. Not affiliated with, or endorsed by, Great Eastern. Not a recommendation or a quote.</p>
-        </section>
-      </Container>
-      <Disclaimer />
+      <div className="pb-6" />
     </>
   );
 }
 
-function NameKey({ label, text, tone }: { label: string; text: string; tone: string }) {
+function Section({ id, overline, title, children }: { id: string; overline: string; title: string; children: ReactNode }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-xl bg-sunken/60 p-3">
-      <span className={cn("shrink-0 rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em]", tone)}>{label}</span>
-      <span className="text-caption text-ink-secondary">{text}</span>
-    </div>
+    <section aria-labelledby={id} className="mt-12">
+      <Container className="max-w-[60rem]">
+        <p className="text-overline uppercase tracking-[0.18em] text-teal-700">{overline}</p>
+        <h2 id={id} className="mt-1 font-brand text-[1.75rem] font-semibold leading-tight text-navy-950 sm:text-[2.125rem]">{title}</h2>
+        <div className="mt-4">{children}</div>
+      </Container>
+    </section>
   );
 }
 
-function CategoryLink({ category: c }: { category: ProtectionCategory }) {
-  const Icon = icons[c.slug];
+function RiskRow({ category: c }: { category: ProtectionCategory }) {
+  const Icon = categoryIcons[c.slug];
   return (
     <button
       type="button"
       onClick={() => go(`${PROTECTION_HASH}/${c.slug}`)}
-      className="group flex min-h-[4.75rem] w-full items-center gap-3 rounded-2xl bg-surface p-3 text-left ring-1 ring-ink/[0.08] transition-shadow hover:shadow-e2"
+      aria-label={`${c.event}: ${c.problem}. ${c.purpose} (${c.official}). Explore`}
+      className="group grid w-full grid-cols-[3rem_1fr_auto] items-center gap-3 rounded-2xl bg-surface p-3 text-left ring-1 ring-ink/[0.08] transition-shadow hover:shadow-e2 sm:grid-cols-[3rem_1fr_1.1fr_auto] sm:gap-4"
     >
-      <span className={cn("inline-flex size-12 shrink-0 items-center justify-center rounded-xl", tones[c.slug])}>
+      <span className={cn("inline-flex size-12 items-center justify-center rounded-xl", categoryTones[c.slug])}>
         <Icon size={22} aria-hidden />
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-ink-muted">{c.official}</span>
-        <span className="block text-body font-semibold text-navy-950">{c.purpose}</span>
-        <span className="block text-caption text-ink-secondary">{c.short}</span>
+      <span className="min-w-0">
+        <span className="block text-body-sm font-semibold text-navy-950">{c.event}</span>
+        <span className="flex items-center gap-1 text-caption text-crimson-700">
+          <ArrowRight size={12} aria-hidden /> {c.problem}
+        </span>
+        {/* Mobile: the cover sits under the risk */}
+        <span className="mt-1.5 inline-flex flex-wrap items-center gap-1.5 sm:hidden">
+          <ShieldCheck size={13} className="text-teal-700" aria-hidden />
+          <span className="text-caption font-semibold text-teal-800">{c.purpose}</span>
+        </span>
+      </span>
+      <span className="hidden min-w-0 sm:block">
+        <span className="flex items-center gap-1.5 text-body-sm font-semibold text-teal-800">
+          <ShieldCheck size={15} aria-hidden /> {c.purpose}
+        </span>
+        <span className="block text-caption text-ink-muted">{c.official}</span>
       </span>
       <ArrowRight size={18} className="shrink-0 text-navy-700 transition-transform group-hover:translate-x-0.5" aria-hidden />
     </button>
   );
 }
 
-/** Illustrative split of one hospital bill (proportions are for explanation only). */
-function BillSplit() {
-  const parts = [
-    { label: "Deductible", who: "You", w: 12, cls: "bg-crimson-600 text-white" },
-    { label: "Co-payment share", who: "You", w: 14, cls: "bg-crimson-200 text-crimson-900" },
-    { label: "Plan pays", who: "Insurer", w: 58, cls: "bg-navy-900 text-white" },
-    { label: "Above limits or excluded", who: "You", w: 16, cls: "bg-[repeating-linear-gradient(135deg,var(--color-crimson-100)_0_6px,var(--color-crimson-50)_6px_12px)] text-crimson-800" },
+type Mark = "yes" | "no" | "some";
+function MoneyToolsCompare() {
+  const tools = [
+    { icon: PiggyBank, name: "Savings", line: "Money you already have", tone: "bg-teal-600 text-white" },
+    { icon: ShieldCheck, name: "Insurance", line: "Protection against specific risks", tone: "bg-navy-900 text-white" },
+    { icon: TrendingUp, name: "Investing", line: "May grow — or fall", tone: "bg-gold-500 text-navy-950" },
   ];
+  const rows: Array<{ q: string; v: [Mark, Mark, Mark] }> = [
+    { q: "Use it any time", v: ["yes", "no", "some"] },
+    { q: "Pays a big sum for a covered event", v: ["no", "yes", "no"] },
+    { q: "Can grow over time", v: ["some", "no", "yes"] },
+    { q: "Can lose value", v: ["no", "no", "yes"] },
+  ];
+  const markLabel: Record<Mark, string> = { yes: "Yes", no: "No", some: "Partly" };
+  // One grid template for the header and every row, so marks always sit under their tool.
+  // Mobile: the question spans the full width above three equal mark columns.
+  const grid = "grid grid-cols-3 sm:grid-cols-[34%_1fr_1fr_1fr]";
   return (
-    <figure className="mt-4 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]" aria-label="Illustration: a hospital bill split into a deductible, a co-payment share and costs above limits paid by you, and the rest paid by the plan.">
-      <div className="flex h-12 w-full overflow-hidden rounded-xl" aria-hidden>
-        {parts.map((p) => (
-          <div key={p.label} className={cn("h-full", p.cls)} style={{ width: `${p.w}%` }} />
+    <div role="table" aria-label="How savings, insurance and investing compare" className="overflow-hidden rounded-2xl bg-surface ring-1 ring-ink/[0.08]">
+      <div role="row" className={cn(grid, "border-b border-ink/10")}>
+        <span role="columnheader" className="hidden sm:block"><span className="sr-only">Question</span></span>
+        {tools.map(({ icon: Icon, name, line, tone }) => (
+          <div key={name} role="columnheader" className="flex flex-col items-center px-2 py-4 text-center">
+            <span className={cn("inline-flex size-11 items-center justify-center rounded-2xl", tone)}><Icon size={20} aria-hidden /></span>
+            <span className="mt-2 text-body-sm font-bold text-navy-950">{name}</span>
+            <span className="text-[11px] leading-snug text-ink-muted sm:text-caption">{line}</span>
+          </div>
         ))}
       </div>
-      <figcaption className="mt-3 grid gap-2 sm:grid-cols-4">
-        {parts.map((p) => (
-          <span key={p.label} className="flex items-center gap-2 text-caption">
-            <span className={cn("size-3 shrink-0 rounded-sm", p.cls)} aria-hidden />
-            <span><span className="font-semibold text-navy-950">{p.label}</span> <span className="text-ink-muted">· {p.who}</span></span>
-          </span>
+      {rows.map((r) => (
+        <div key={r.q} role="row" className={cn(grid, "items-center border-b border-ink/[0.06] last:border-0")}>
+          <span role="rowheader" className="col-span-3 px-3 pt-2.5 text-caption font-semibold text-navy-950 sm:col-span-1 sm:py-2.5">{r.q}</span>
+          {r.v.map((m, i) => (
+            <span key={i} role="cell" className="flex justify-center py-2">
+              <span className="sr-only">{markLabel[m]}</span>
+              {m === "yes" ? <Check size={18} className="text-teal-700" aria-hidden /> : m === "no" ? <X size={18} className="text-ink-muted" aria-hidden /> : <Minus size={18} className="text-gold-700" aria-hidden />}
+            </span>
+          ))}
+        </div>
+      ))}
+      <p className="border-t border-ink/10 bg-sunken/60 px-3 py-2.5 text-caption text-ink-secondary">
+        Investment-linked insurance mixes protection and investing, so its values aren't guaranteed.
+      </p>
+    </div>
+  );
+}
+
+/** Illustrative example bill (not a real plan) showing why cover ≠ a zero bill. */
+const BILL = { total: 12_000, notCovered: 600, deductible: 500, copayPct: 10 };
+function BillBreakdown() {
+  const eligible = BILL.total - BILL.notCovered - BILL.deductible;
+  const copay = (eligible * BILL.copayPct) / 100;
+  const insurer = eligible - copay;
+  const you = BILL.notCovered + BILL.deductible + copay;
+  const rm = (n: number) => `RM${n.toLocaleString("en-MY")}`;
+  const lines: Array<{ label: string; hint: string; amount: number; who: "you" | "insurer" }> = [
+    { label: "Not covered", hint: "Items the policy excludes", amount: BILL.notCovered, who: "you" },
+    { label: "Deductible", hint: "You pay this first", amount: BILL.deductible, who: "you" },
+    { label: `Co-payment (${BILL.copayPct}%)`, hint: "Your share of the rest", amount: copay, who: "you" },
+    { label: "Insurer pays", hint: "Within the plan's limits", amount: insurer, who: "insurer" },
+  ];
+  return (
+    <figure className="overflow-hidden rounded-2xl bg-surface ring-1 ring-ink/[0.08]">
+      <div className="flex items-center justify-between gap-3 bg-navy-950 px-4 py-3 text-white">
+        <span className="flex items-center gap-2 text-body-sm font-semibold"><Hospital size={18} aria-hidden /> Hospital bill</span>
+        <span className="font-brand text-[1.75rem] font-bold tabular-nums">{rm(BILL.total)}</span>
+      </div>
+      <ol className="divide-y divide-ink/[0.06]">
+        {lines.map((l) => (
+          <li key={l.label} className="flex items-center gap-3 px-4 py-2.5">
+            <span className={cn("size-3 shrink-0 rounded-sm", l.who === "you" ? "bg-crimson-600" : "bg-navy-900")} aria-hidden />
+            <span className="min-w-0 flex-1">
+              <span className="block text-body-sm font-semibold text-navy-950">{l.label}</span>
+              <span className="block text-caption text-ink-muted">{l.hint}</span>
+            </span>
+            <span className={cn("text-body-sm font-bold tabular-nums", l.who === "you" ? "text-crimson-700" : "text-navy-900")}>{rm(l.amount)}</span>
+          </li>
         ))}
-      </figcaption>
+      </ol>
+      <div className="px-4 pb-4 pt-2">
+        <div className="flex h-4 w-full overflow-hidden rounded-full" aria-hidden>
+          <div className="bg-crimson-600" style={{ width: `${(you / BILL.total) * 100}%` }} />
+          <div className="flex-1 bg-navy-900" />
+        </div>
+        <p className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
+          <span className="text-body-sm font-semibold text-navy-950">You pay</span>
+          <span className="font-brand text-[2rem] font-bold leading-none tabular-nums text-crimson-600">{rm(you)}</span>
+        </p>
+        <figcaption className="mt-2 text-caption text-ink-muted">
+          Illustrative example, not a real plan. Plans differ: some have no co-payment, and limits can leave more for you to pay.
+        </figcaption>
+        <button type="button" onClick={() => go("app/simulate/needs/tool-bill")} className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-body-sm font-semibold text-crimson-600">
+          Try it with your own bill <ArrowRight size={16} aria-hidden />
+        </button>
+      </div>
     </figure>
+  );
+}
+
+const CHECKS: Array<{ icon: typeof Receipt; q: string; a: string }> = [
+  { icon: FileText, q: "What's covered?", a: "Check the benefits in the Product Disclosure Sheet (PDS). The policy wording decides." },
+  { icon: ShieldX, q: "What's excluded?", a: "Pre-existing conditions and listed exclusions aren't paid." },
+  { icon: Receipt, q: "Annual limit?", a: "The most the plan pays in one year." },
+  { icon: Wallet, q: "Deductible?", a: "An amount you pay first, before the plan pays." },
+  { icon: Scale, q: "Co-payment?", a: "A share of each bill you pay yourself, e.g. 10%." },
+  { icon: CalendarClock, q: "Waiting period?", a: "Illness soon after cover starts may not be covered." },
+  { icon: TrendingUp, q: "Can premiums rise?", a: "Yes — medical premiums can be revised at renewal." },
+  { icon: FileSearch, q: "How do I claim?", a: "Panel hospitals can bill the insurer with a guarantee letter; otherwise pay first and claim." },
+];
+function BuyChecklist() {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <>
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {CHECKS.map(({ icon: Icon, q }, i) => (
+          <li key={q}>
+            <button
+              type="button"
+              aria-expanded={open === i}
+              aria-controls="check-answer"
+              onClick={() => setOpen(open === i ? null : i)}
+              className={cn(
+                "flex min-h-14 w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-body-sm font-semibold transition-colors",
+                open === i ? "bg-navy-900 text-white" : "bg-surface text-navy-950 ring-1 ring-ink/[0.08] hover:ring-ink/20",
+              )}
+            >
+              <Icon size={18} className={cn("shrink-0", open === i ? "text-teal-200" : "text-teal-700")} aria-hidden />
+              {q}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div id="check-answer" aria-live="polite" className="min-h-[3.25rem]">
+        {open !== null && (
+          <p className="ge-reveal mt-2 rounded-xl bg-teal-50 px-4 py-3 text-body-sm text-navy-950">
+            <span className="font-semibold">{CHECKS[open].q}</span> {CHECKS[open].a}
+          </p>
+        )}
+        {open === null && <p className="mt-2 px-1 text-caption text-ink-muted">Tap a question for a one-line answer.</p>}
+      </div>
+      <div className="mt-2 flex gap-3 rounded-xl bg-gold-50 px-4 py-3 ring-1 ring-gold-100">
+        <CircleAlert size={18} className="mt-0.5 shrink-0 text-gold-700" aria-hidden />
+        <div className="text-body-sm text-navy-950">
+          <p><span className="font-semibold">Answer health questions honestly.</span> Not disclosing a condition is one of the biggest reasons hospital guarantee letters are declined.</p>
+          <SourceLink source={protectionSources.star} className="mt-1" />
+        </div>
+      </div>
+      <p className="mt-2 text-caption text-ink-muted">
+        Changed your mind? Most new life and medical policies have a free-look period (usually 15 days).{" "}
+        <SourceLink source={protectionSources.glossary} />
+      </p>
+    </>
+  );
+}
+
+function Channels() {
+  const channels = [
+    { icon: Globe, title: "Online, direct", text: "Some simple plans — term life, critical illness or medical — are sold on insurers' own websites." },
+    { icon: UserRound, title: "Agent or adviser", text: "Guidance for complex plans. Some products are only sold this way." },
+    { icon: Briefcase, title: "Your employer", text: "Group cover from your job — it usually ends when you leave." },
+  ];
+  return (
+    <>
+      <ul className="grid gap-2 sm:grid-cols-3">
+        {channels.map(({ icon: Icon, title, text }) => (
+          <li key={title} className="flex gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08] sm:flex-col">
+            <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-800"><Icon size={20} aria-hidden /></span>
+            <span>
+              <span className="block text-body-sm font-semibold text-navy-950">{title}</span>
+              <span className="block text-caption text-ink-secondary">{text}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <Disclosure title="Good to know">
+        <ul className="grid gap-2 text-body-sm text-ink-secondary">
+          <li>BNM introduced commission-free standalone protection sold directly — term life from July 2017, critical illness and medical from July 2018. <SourceLink source={protectionSources.bnmDirect} /></li>
+          <li>Online or not, eligibility rules apply: age, residency, health and occupation. Some applicants need full underwriting.</li>
+          <li>Takaful works on shared contributions and is open to non-Muslims.</li>
+          <li>GREAT EMPOWER doesn't sell insurance, give quotes or recommend products.</li>
+        </ul>
+      </Disclosure>
+    </>
+  );
+}
+
+function LinkRow({ icon: Icon, title, text, source }: { icon: typeof Scale; title: string; text: string; source: Source }) {
+  return (
+    <a href={source.url} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-ink/[0.08] hover:ring-ink/20">
+      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-sunken text-navy-800"><Icon size={18} aria-hidden /></span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-body-sm font-semibold text-navy-950">{title}</span>
+        <span className="block text-caption text-ink-secondary">{text}</span>
+      </span>
+      <ExternalLink size={15} className="shrink-0 text-ink-muted" aria-hidden />
+      <span className="sr-only">(opens {source.label} in a new tab)</span>
+    </a>
   );
 }
 
 /* =========================================================================== category */
 
 function CategoryView({ category: c }: { category: ProtectionCategory }) {
-  const Icon = icons[c.slug];
+  const Icon = categoryIcons[c.slug];
   const index = protectionCategories.findIndex((x) => x.slug === c.slug);
   const prev = protectionCategories[index - 1];
   const next = protectionCategories[index + 1];
@@ -276,17 +429,16 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
   return (
     <>
       <section aria-labelledby="category-title" className="bg-navy-950 text-white">
-        <Container className="max-w-[56rem] pb-8 pt-3 md:pt-10">
+        <Container className="max-w-[56rem] pb-7 pt-3 md:pt-10">
           <button type="button" onClick={() => go(PROTECTION_HASH)} className="-ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-body-sm font-semibold text-white/85 hover:text-white">
             <ArrowLeft size={18} aria-hidden /> Protection explained
           </button>
           <div className="mt-3 flex items-start gap-4">
-            <span className={cn("inline-flex size-14 shrink-0 items-center justify-center rounded-2xl", tones[c.slug])}>
+            <span className={cn("inline-flex size-14 shrink-0 items-center justify-center rounded-2xl", categoryTones[c.slug])}>
               <Icon size={26} aria-hidden />
             </span>
             <div className="min-w-0">
-              <p className="text-overline uppercase tracking-[0.18em] text-teal-200">Protection purpose</p>
-              <h1 id="category-title" className="mt-1 font-brand text-[2.25rem] font-semibold leading-[1.05] sm:text-[2.75rem]">{c.purpose}</h1>
+              <h1 id="category-title" className="font-brand text-[2.25rem] font-semibold leading-[1.05] sm:text-[2.75rem]">{c.purpose}</h1>
               <p className="mt-2 inline-flex flex-wrap items-center gap-2 text-body-sm">
                 <span className="rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-white/80">Official category</span>
                 <span className="font-semibold">{c.official}</span>
@@ -294,65 +446,57 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
             </div>
           </div>
           <p className="mt-4 max-w-2xl text-body text-white/80">{c.summary}</p>
+          {/* Key idea, right under the hero */}
+          {c.notEqual.map((n) => (
+            <p key={n.a} className="mt-5 rounded-2xl bg-white/[0.07] p-4 ring-1 ring-white/10">
+              <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-brand text-[1.375rem] font-semibold leading-tight">
+                <span>{n.a}</span>
+                <span className="text-crimson-300" aria-hidden>≠</span>
+                <span className="sr-only">{" is not the same as "}</span>
+                <span>{n.b}</span>
+              </span>
+              <span className="mt-1 block text-body-sm text-white/70">{n.why}</span>
+            </p>
+          ))}
         </Container>
       </section>
 
       <Container className="mt-6 max-w-[56rem]">
-        <div className="rounded-2xl bg-gold-50 p-4 ring-1 ring-gold-100">
-          <p className="text-caption font-bold uppercase tracking-[0.08em] text-gold-700">{c.example.title}</p>
-          <p className="mt-1 text-body-sm text-navy-950">{c.example.text}</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <ListCard title="May help with" items={c.mayHelp} tone="good" />
+          <ListCard title="Doesn't automatically cover" items={c.notAutomatic} tone="bad" />
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-2">
-          <ListCard title="What it may help with" items={c.mayHelp} tone="good" />
-          <ListCard title="What it doesn't automatically cover" items={c.notAutomatic} tone="bad" />
+        <div className="mt-4 flex gap-3 rounded-2xl bg-gold-50 p-4 ring-1 ring-gold-100">
+          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-700"><UserRound size={18} aria-hidden /></span>
+          <p className="text-body-sm text-navy-950">
+            <span className="block text-caption font-bold uppercase tracking-[0.08em] text-gold-700">Example (illustrative)</span>
+            {c.example.text}
+          </p>
         </div>
-        <p className="mt-2 text-caption text-ink-muted">General descriptions. Every policy's wording, limits and exclusions decide what is actually paid.</p>
-
-        {c.notEqual.map((n) => (
-          <div key={n.a} className="mt-6 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-brand text-[1.5rem] font-semibold leading-tight text-navy-950">
-              <span>{n.a}</span>
-              <span className="text-crimson-600" aria-hidden>≠</span>
-              <span className="sr-only">{" is not the same as "}</span>
-              <span>{n.b}</span>
-            </p>
-            <p className="mt-1 text-body-sm text-ink-secondary">{n.why}</p>
-          </div>
-        ))}
       </Container>
 
       <Container className="mt-10 max-w-[56rem]">
-        <SectionTitle id="myths-title" overline="Common misunderstandings" title="What people often get wrong" />
-        <ul className="mt-4 grid gap-3">
+        <p className="text-overline uppercase tracking-[0.18em] text-teal-700">Myth or fact?</p>
+        <h2 className="mt-1 font-brand text-[1.75rem] font-semibold leading-tight text-navy-950">Tap a myth to see the facts</h2>
+        <ul className="mt-3 grid gap-2">
           {c.misunderstandings.map((m) => (
-            <li key={m.myth} className="grid gap-2 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07] sm:grid-cols-[1fr_1.3fr] sm:gap-5">
-              <p className="flex gap-2 text-body-sm font-semibold text-navy-950">
-                <CircleAlert size={18} className="mt-0.5 shrink-0 text-crimson-600" aria-hidden />
-                <span><span className="sr-only">Myth: </span>{m.myth}</span>
-              </p>
-              <p className="flex gap-2 text-body-sm text-ink-secondary">
-                <BadgeCheck size={18} className="mt-0.5 shrink-0 text-teal-700" aria-hidden />
-                <span><span className="sr-only">Reality: </span>{m.reality}</span>
-              </p>
+            <li key={m.myth}>
+              <details className="group rounded-2xl bg-surface ring-1 ring-ink/[0.08] open:ring-teal-600/40">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3 text-body-sm font-semibold text-navy-950">
+                  <CircleAlert size={18} className="shrink-0 text-crimson-600" aria-hidden />
+                  <span className="flex-1"><span className="sr-only">Myth: </span>{m.myth}</span>
+                  <ChevronDown size={18} className="shrink-0 text-ink-muted transition-transform group-open:rotate-180" aria-hidden />
+                </summary>
+                <p className="flex gap-2 px-4 pb-4 text-body-sm text-ink-secondary">
+                  <BadgeCheck size={18} className="mt-0.5 shrink-0 text-teal-700" aria-hidden />
+                  <span><span className="sr-only">Fact: </span>{m.reality}</span>
+                </p>
+              </details>
             </li>
           ))}
         </ul>
       </Container>
-
-      {c.malaysia && (
-        <Container className="mt-10 max-w-[56rem]">
-          <SectionTitle id="my-title" overline="In Malaysia" title="Worth knowing" />
-          <ul className="mt-4 grid gap-3">
-            {c.malaysia.map((m) => (
-              <li key={m.text} className="rounded-2xl bg-navy-50 p-4">
-                <p className="text-body-sm text-navy-950">{m.text}</p>
-                <SourceLink source={m.source} className="mt-1.5" />
-              </li>
-            ))}
-          </ul>
-        </Container>
-      )}
 
       <Container className="mt-10 grid max-w-[56rem] gap-3 md:grid-cols-2">
         {infographic ? (
@@ -361,7 +505,7 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
             <span className="min-w-0 flex-1">
               <span className="block text-caption font-bold uppercase tracking-[0.08em] text-ink-muted">Visual guide</span>
               <span className="block text-body font-semibold text-navy-950">{infographic.title}</span>
-              <span className="block text-caption text-ink-secondary">Study it, then pass its quiz to earn points.</span>
+              <span className="block text-caption text-ink-secondary">Pass its quiz to earn points.</span>
             </span>
             <ArrowRight size={18} className="shrink-0 text-navy-700" aria-hidden />
           </button>
@@ -371,7 +515,7 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
         {c.scenario && (
           <button type="button" onClick={() => go(c.scenario!.href)} className="group flex items-center gap-3 rounded-2xl bg-crimson-600 p-4 text-left text-white hover:bg-crimson-700">
             <span className="min-w-0 flex-1">
-              <span className="block text-caption font-bold uppercase tracking-[0.08em] text-white/75">Simulate</span>
+              <span className="block text-caption font-bold uppercase tracking-[0.08em] text-white/75">Try it</span>
               <span className="block text-body font-semibold">{c.scenario.label}</span>
               <span className="block text-caption text-white/80">{c.scenario.text}</span>
             </span>
@@ -380,29 +524,39 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
         )}
       </Container>
 
-      <Container className="mt-10 max-w-[56rem]">
-        <SectionTitle id="products-title" overline="Products in our research" title="Great Eastern products — checked facts only" />
-        <p className="mt-2 text-body-sm text-ink-secondary">
-          Listed for education, in no particular order. Facts come from official Great Eastern pages and PDSs checked on {PRODUCT_RESEARCH_DATE}. Anything we couldn't verify is marked as needing confirmation. Not a recommendation or quote, and not affiliated with Great Eastern.
-        </p>
-        {products.length ? (
-          <ul className="mt-4 grid gap-3">
-            {products.map((p) => (
-              <li key={p.id}><ProductCard product={p} /></li>
+      <Container className="mt-10 grid max-w-[56rem] gap-2">
+        {c.malaysia && (
+          <Disclosure title={`In Malaysia (${c.malaysia.length})`} icon={Landmark}>
+            <ul className="grid gap-3">
+              {c.malaysia.map((m) => (
+                <li key={m.text} className="text-body-sm text-navy-950">
+                  {m.text} <SourceLink source={m.source} className="mt-0.5" />
+                </li>
+              ))}
+            </ul>
+          </Disclosure>
+        )}
+        <Disclosure title={`Products in our research (${products.length})`} icon={FileText}>
+          <p className="text-caption text-ink-muted">
+            Great Eastern products, in no particular order. Facts checked in official pages and PDSs on {PRODUCT_RESEARCH_DATE}. Not a recommendation or quote; not affiliated with Great Eastern.
+          </p>
+          {products.length ? (
+            <ul className="mt-3 grid gap-2">
+              {products.map((p) => (
+                <li key={p.id}><ProductRow product={p} /></li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-body-sm text-ink-secondary">No product in this category has officially verified facts in our research yet.</p>
+          )}
+        </Disclosure>
+        <Disclosure title={`Sources (${c.sources.length})`} icon={ExternalLink}>
+          <ul className="grid gap-1.5">
+            {c.sources.map((s) => (
+              <li key={s.url}><SourceLink source={s} /></li>
             ))}
           </ul>
-        ) : (
-          <p className="mt-4 rounded-2xl bg-sunken p-4 text-body-sm text-ink-secondary">No product in this category has officially verified facts in our research yet.</p>
-        )}
-      </Container>
-
-      <Container className="mt-10 max-w-[56rem]">
-        <h2 className="text-subheading text-navy-950">Sources</h2>
-        <ul className="mt-2 grid gap-1.5">
-          {c.sources.map((s) => (
-            <li key={s.url}><SourceLink source={s} /></li>
-          ))}
-        </ul>
+        </Disclosure>
       </Container>
 
       <Container className="mt-8 max-w-[56rem]">
@@ -420,26 +574,23 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
             </button>
           ) : <span />}
         </nav>
+        <p className="mt-6 pb-6 text-caption text-ink-muted">
+          General education — not advice, a quote or a promise of cover. The policy wording decides what is paid. For personal advice, speak to a licensed adviser.
+        </p>
       </Container>
-      <Disclaimer />
     </>
   );
 }
 
 function ListCard({ title, items, tone }: { title: string; items: string[]; tone: "good" | "bad" }) {
   return (
-    <section className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]" aria-label={title}>
-      <h2 className="text-body font-semibold text-navy-950">{title}</h2>
-      <ul className="mt-2 grid gap-2">
+    <section className={cn("rounded-2xl p-4", tone === "good" ? "bg-teal-50" : "bg-crimson-50")} aria-label={title}>
+      <h2 className={cn("flex items-center gap-2 text-body font-semibold", tone === "good" ? "text-teal-800" : "text-crimson-700")}>
+        {tone === "good" ? <Check size={18} aria-hidden /> : <X size={18} aria-hidden />} {title}
+      </h2>
+      <ul className={cn("mt-2 grid list-disc gap-1.5 pl-5", tone === "good" ? "marker:text-teal-600" : "marker:text-crimson-500")}>
         {items.map((it) => (
-          <li key={it} className="flex gap-2 text-body-sm text-ink-secondary">
-            {tone === "good" ? (
-              <Check size={17} className="mt-0.5 shrink-0 text-teal-700" aria-hidden />
-            ) : (
-              <X size={17} className="mt-0.5 shrink-0 text-crimson-600" aria-hidden />
-            )}
-            <span>{it}</span>
-          </li>
+          <li key={it} className="pl-0.5 text-body-sm text-navy-950">{it}</li>
         ))}
       </ul>
     </section>
@@ -474,46 +625,63 @@ function LumpSumVsIncome() {
   );
 }
 
-function ProductCard({ product: p }: { product: ResearchedProduct }) {
+/** One-line product summary; tap to see verified facts and what still needs confirming. */
+function ProductRow({ product: p }: { product: ResearchedProduct }) {
   const notice = p.evidence === "ISSUER_NOTICE";
   return (
-    <article className={cn("rounded-2xl p-4 ring-1", notice ? "bg-gold-50 ring-gold-100" : "bg-surface ring-ink/[0.08]")} aria-labelledby={`p-${p.id}`}>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 id={`p-${p.id}`} className="text-body font-semibold text-navy-950">{p.name}</h3>
-          <p className="text-caption text-ink-muted">{p.issuer}</p>
-        </div>
-        <span className="flex flex-wrap gap-1.5">
-          <Chip>{p.basis}</Chip>
-          {notice ? <Chip tone="gold">Issuer notice</Chip> : <Chip tone="teal"><FileText size={12} aria-hidden /> Checked against official documents</Chip>}
+    <details data-product={p.id} className={cn("group rounded-xl ring-1", notice ? "bg-gold-50 ring-gold-100" : "bg-surface ring-ink/[0.08]")}>
+      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-3 py-2.5">
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-1.5">
+            <span className="text-body-sm font-semibold text-navy-950">{p.name}</span>
+            <Chip>{p.basis === "Takaful" ? "Takaful" : "Insurance"}</Chip>
+            {notice && <Chip tone="gold">Notice</Chip>}
+          </span>
+          <span className="block text-caption text-ink-muted">{p.type}</span>
         </span>
+        <ChevronDown size={18} className="shrink-0 text-ink-muted transition-transform group-open:rotate-180" aria-hidden />
+      </summary>
+      <div className="border-t border-ink/[0.06] px-3 pb-3 pt-2">
+        <p className="text-caption text-ink-muted">{p.issuer}</p>
+        <dl className="mt-2 grid gap-2 text-body-sm">
+          <Row term="Status">{p.status}</Row>
+          <Row term="How to apply">{p.howToApply}</Row>
+        </dl>
+        {p.verifiedFacts.length > 0 && (
+          <div className="mt-3 rounded-lg bg-teal-50 p-3">
+            <p className="flex items-center gap-1.5 text-caption font-bold uppercase tracking-[0.06em] text-teal-800"><FileText size={12} aria-hidden /> Verified facts</p>
+            <dl className="mt-1.5 grid gap-1.5 text-body-sm">
+              {p.verifiedFacts.map((f) => (
+                <Row key={f.label} term={f.label}>{f.value}</Row>
+              ))}
+            </dl>
+          </div>
+        )}
+        <p className="mt-3 text-caption font-bold uppercase tracking-[0.06em] text-gold-700">Needs official confirmation</p>
+        <p className="mt-0.5 text-body-sm text-ink-secondary">{p.needsConfirmation.join(" · ")}</p>
+        {p.note && <p className="mt-2 flex gap-1.5 text-caption text-ink-secondary"><Info size={14} className="mt-0.5 shrink-0" aria-hidden />{p.note}</p>}
+        <ul className="mt-2 grid gap-1">
+          {p.sources.map((s) => (
+            <li key={s.url}><SourceLink source={s} /></li>
+          ))}
+        </ul>
       </div>
-      <dl className="mt-3 grid gap-2 text-body-sm">
-        <Row term="Type">{p.type}</Row>
-        <Row term="Status">{p.status}</Row>
-        <Row term="How to apply">{p.howToApply}</Row>
-      </dl>
-      {p.verifiedFacts.length > 0 && (
-        <div className="mt-3 rounded-xl bg-teal-50 p-3">
-          <p className="text-caption font-bold uppercase tracking-[0.06em] text-teal-800">Verified facts</p>
-          <dl className="mt-1.5 grid gap-1.5 text-body-sm">
-            {p.verifiedFacts.map((f) => (
-              <Row key={f.label} term={f.label}>{f.value}</Row>
-            ))}
-          </dl>
-        </div>
-      )}
-      <div className="mt-3">
-        <p className="text-caption font-bold uppercase tracking-[0.06em] text-gold-700">Needs official confirmation</p>
-        <p className="mt-1 text-body-sm text-ink-secondary">{p.needsConfirmation.join(" · ")}</p>
-      </div>
-      {p.note && <p className="mt-2 flex gap-1.5 text-caption text-ink-secondary"><Info size={14} className="mt-0.5 shrink-0" aria-hidden />{p.note}</p>}
-      <ul className="mt-3 grid gap-1">
-        {p.sources.map((s) => (
-          <li key={s.url}><SourceLink source={s} /></li>
-        ))}
-      </ul>
-    </article>
+    </details>
+  );
+}
+
+/* =========================================================================== shared */
+
+function Disclosure({ title, icon: Icon = Info, children }: { title: string; icon?: typeof Info; children: ReactNode }) {
+  return (
+    <details className="group mt-3 rounded-2xl bg-surface ring-1 ring-ink/[0.08] first:mt-0">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3 text-body-sm font-semibold text-navy-950">
+        <Icon size={18} className="shrink-0 text-navy-700" aria-hidden />
+        <span className="flex-1">{title}</span>
+        <ChevronDown size={18} className="shrink-0 text-ink-muted transition-transform group-open:rotate-180" aria-hidden />
+      </summary>
+      <div className="px-4 pb-4">{children}</div>
+    </details>
   );
 }
 
@@ -526,20 +694,11 @@ function Row({ term, children }: { term: string; children: ReactNode }) {
   );
 }
 
-function Chip({ children, tone }: { children: ReactNode; tone?: "teal" | "gold" }) {
+function Chip({ children, tone }: { children: ReactNode; tone?: "gold" }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold", tone === "teal" ? "bg-teal-50 text-teal-800" : tone === "gold" ? "bg-gold-100 text-gold-700" : "bg-sunken text-navy-900")}>
+    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold", tone === "gold" ? "bg-gold-100 text-gold-700" : "bg-sunken text-navy-900")}>
       {children}
     </span>
-  );
-}
-
-function SectionTitle({ id, overline, title }: { id: string; overline: string; title: string }) {
-  return (
-    <div>
-      <p className="text-overline uppercase tracking-[0.18em] text-teal-700">{overline}</p>
-      <h2 id={id} className="mt-1 font-brand text-[1.75rem] font-semibold leading-tight text-navy-950 sm:text-[2rem]">{title}</h2>
-    </div>
   );
 }
 
@@ -549,16 +708,5 @@ function SourceLink({ source, className }: { source: Source; className?: string 
       <ExternalLink size={12} className="mt-0.5 shrink-0" aria-hidden />
       <span>{source.label}<span className="sr-only"> (opens in a new tab)</span></span>
     </a>
-  );
-}
-
-function Disclaimer() {
-  return (
-    <Container className="mt-8 max-w-[56rem] pb-6">
-      <p className="flex gap-2 rounded-xl bg-sunken p-3 text-caption text-ink-secondary">
-        <Info size={14} className="mt-0.5 shrink-0" aria-hidden />
-        Educational information only — not financial advice, a recommendation, a quote or a promise of cover. Policy terms decide what is paid. For personal advice, speak to a licensed insurance or takaful adviser.
-      </p>
-    </Container>
   );
 }

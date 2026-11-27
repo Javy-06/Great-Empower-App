@@ -28,6 +28,10 @@ export interface ProtectionCategory {
   /** Financial protection purpose (GREAT EMPOWER's plain-language layer). */
   purpose: string;
   short: string;
+  /** The life event, in 2–4 words (visual overview). */
+  event: string;
+  /** The money problem it creates, in 2–5 words. */
+  problem: string;
   summary: string;
   example: { title: string; text: string };
   mayHelp: string[];
@@ -57,6 +61,8 @@ export const protectionSources = S;
 export const protectionCategories: ProtectionCategory[] = [
   {
     slug: "medical",
+    event: "Hospital stay",
+    problem: "Big hospital bills",
     official: "Medical & Hospitalisation",
     purpose: "Medical Expense Protection",
     short: "Helps pay eligible hospital and treatment bills.",
@@ -97,6 +103,8 @@ export const protectionCategories: ProtectionCategory[] = [
   },
   {
     slug: "critical-illness",
+    event: "Serious illness diagnosis",
+    problem: "Treatment costs and time off work",
     official: "Critical Illness",
     purpose: "Critical Illness Recovery",
     short: "A lump sum if you're diagnosed with a covered illness.",
@@ -130,6 +138,8 @@ export const protectionCategories: ProtectionCategory[] = [
   },
   {
     slug: "life",
+    event: "A breadwinner dies",
+    problem: "Family loses their support",
     official: "Life",
     purpose: "Family Financial Protection",
     short: "A lump sum for the people who depend on you.",
@@ -166,6 +176,8 @@ export const protectionCategories: ProtectionCategory[] = [
   },
   {
     slug: "tpd",
+    event: "Can never work again",
+    problem: "Income stops for good",
     official: "Total and Permanent Disability (TPD)",
     purpose: "Income Protection",
     short: "A benefit if you can never work again.",
@@ -197,6 +209,8 @@ export const protectionCategories: ProtectionCategory[] = [
   },
   {
     slug: "personal-accident",
+    event: "An accident",
+    problem: "Injury costs or disability",
     official: "Personal Accident",
     purpose: "Accident Protection",
     short: "Benefits for injury or death caused by an accident.",
