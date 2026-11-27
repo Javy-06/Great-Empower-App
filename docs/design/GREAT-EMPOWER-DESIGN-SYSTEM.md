@@ -24,6 +24,23 @@ Skill suggestions are references, not permission.
 | Personality | A calm, sharp older sibling who works in finance. Premium but warm, never preachy or salesy, never childish. |
 | Direction | "Premium + Youth Hybrid": an editorial serif voice, a clean fintech UI, and real Malaysian life in photography. |
 
+### Visual direction: premium Malaysian fintech
+
+| Quality | What it looks like here | What to avoid |
+|---|---|---|
+| Premium | Deep navy grounds, generous space, Cormorant headlines, few colours used precisely | Gold everywhere, heavy shadows, glossy 3D in core screens |
+| Malaysian | Real Southeast Asian people and settings, RM amounts, local institutions (BNM, PIDM, FMOS), BM/中文/தமிழ் content | Western stock clichés, US terms ("deductible plans", "401k") |
+| Trustworthy | Plain-language facts, cited sources, illustrative labels, consistent numbers | Hype, urgency, unexplained badges, fake precision |
+| Youthful | Warm photography, friendly microcopy, quick wins (points, progress), mobile-first gestures | Cartoon mascots, emoji as UI, childish palettes |
+| Not corporate | Editorial layouts with one strong image or figure per section | Dense tables up front, stock "handshake" imagery, wall-to-wall cards |
+| Visual-first | A picture, diagram or figure leads; text explains it | Paragraph-led sections; decoration with no meaning |
+
+**Restraint rules:**
+- Use at most one gradient treatment per view (hero fade).
+- Shadows are `e1`/`e2` on interactive surfaces only.
+- No decorative blobs.
+- Don't box content that reads fine as a list.
+
 **Feels like:** a well-edited magazine explaining money, with a reliable app underneath.
 **Must not feel like:** a bank brochure, a gamified kids' app, or a generic AI fintech landing page (gradient blobs, identical cards, all-caps eyebrows everywhere).
 
@@ -93,6 +110,14 @@ Rules:
 | Progress | `ui/Progress.tsx` | Show the numbers too ("1/3"). Don't rely on bar length alone. |
 | Empty state | Analyze coverage | Illustration (`Spots.tsx`), one sentence, one action. Never a blank card. |
 | Icon tile | `ui/IconTile.tsx` | Lucide for UI actions; `GeIcon` for protection concepts. |
+| Header (app) | `nav/AppHeader`, `TopNav` | Mobile: fixed navy bar with logo, points, notifications and avatar (≤ 64 px tall). Desktop: sticky light bar with nav centred. Never add page-specific actions to the global header. |
+| Header (page) | `PageHero` | Back link (≥ 44 px) → overline (optional) → H1 → one sentence. The page's own primary action goes *below* the hero, not inside it, except Home. |
+| Error state | `Field` error, inline banners | Inline, next to the cause, `role="alert"` for form errors. Say what happened and the fix ("Enter an amount — 0 if none"). Use the error colour plus an icon, never colour alone. Keep entered values. |
+| Loading state | `.ge-skeleton`, button pending | Skeletons that match the final layout (no shift). Buttons show a spinner, keep their width, and set `aria-busy`. Show a message if a load takes more than about 1 s. Never use a blank screen. |
+| Tooltip / definition | Inline glossary terms, `?` buttons | Use for one-line definitions only. Opens on tap and focus (not hover-only), closes on Esc and on tapping outside. If it needs more than one sentence, use a disclosure or bottom sheet. |
+| Interactive learning | Lesson quiz, myth/fact `<details>`, checklist chips, infographic dialog | One question or idea at a time. The answer appears in place with a visible verdict word ("Fact:", "Correct") plus an icon. The points reward is shown next to the action that earns it. Progress always shows "n of N". |
+| Insurance product information | `ProductRow` in category pages | Show only verified official facts, each with a source link. Use the official name, issuer, and conventional vs takaful. List gaps as "needs confirmation". **No prices, rankings, "best", quotes or buy buttons** until a purchase flow is approved. |
+| Comparison | Savings / insurance / investing grid, bill breakdown, lump sum vs income | At most 3–4 columns on mobile. The row label is a `rowheader`. Marks are ✓/✕/– with sr-only words. Numbers come from code (never images). Add a one-line takeaway under the comparison. Label example figures "Illustrative". |
 
 ## 6. Visual assets
 
@@ -108,13 +133,17 @@ The decision order is: **UI component → icon → code chart → illustration �
 
 ## 7. Responsive rules
 
-| Band | Width | Expectations |
+Design mobile-first and compose each band deliberately. **Don't simply scale the desktop layout down** (or stretch mobile up).
+
+| Test width | Band | Expectations |
 |---|---|---|
-| Small mobile | 360–375 | No horizontal scroll. Two-column tiles only if each is ≥ 150 px. H1 ≤ 3 lines. |
-| Mobile | 390–430 | Primary target. Bottom nav. One primary action reachable without hunting. |
-| Tablet | 768–1023 | Top nav. 2-column grids. Heroes keep the photo but text stays ≤ 60% width. |
-| Desktop | 1024–1439 | Max 1104 px container. Forms ≤ 720 px. Galleries fill the row or centre (no lonely items on the left). |
-| Wide | 1440+ | Same container, centred. Hero photography may bleed. |
+| **375** | Small mobile | No horizontal scroll. Two-column tiles only if each is ≥ 150 px. H1 ≤ 3 lines. Hero text over a photo stays legible. Tab rows wrap (2×2) rather than scroll. |
+| **390** | Mobile (primary) | The primary design target. Fixed bottom nav (content and focus clear it). One primary action visible without hunting. Single column. Long sections collapse behind disclosure. |
+| **768** | Tablet | Top nav. 2-column grids for peer items. Hero photo on the right with text ≤ 60% width. Large media (game banners, posters) capped at about 360 px tall, not full-bleed. |
+| **1280** | Desktop | 1104 px content. Forms and tools ≤ 720 px, or a 2-column form plus live summary. Galleries fill the row or centre (no lonely items left-aligned). Lines ≤ 75 characters. |
+| **1440** | Wide | Same container, centred. Only hero photography may bleed. No new content columns appear just because there is space. |
+
+Each width is checked automatically (`qa:ui`, Playwright projects), and the screenshots are reviewed by eye.
 
 ## 8. Accessibility minimums (WCAG 2.2 AA)
 

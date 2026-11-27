@@ -6,47 +6,53 @@ This is the loop for every UI phase, the tools that support it, and the gate a p
 
 | Need | Tool | Status |
 |---|---|---|
-| Design research (UX rules, a11y, charts, typography) | **UI/UX Pro Max**: `.agents/skills/ui-ux-pro-max/` (local copy of the project skill, git-excluded). Run `python scripts/search.py "<query>" --domain ux\|chart\|typography\|color -n 5` | Working. Don't use `--design-system` or `--persist` (per `AGENTS.md`). |
-| Brand, design-system and UI-styling references | `.agents/skills/{brand,design-system,ui-styling,design,banner-design,slides}` | Available as references |
-| Composition and anti-generic critique | **Frontend Design** (Anthropic, Apache-2.0): `.claude/skills/frontend-design/SKILL.md` | Installed. Its "distinctive palette and typeface" advice is subordinate to the brand. Use it for layout, restraint, copy and self-critique. |
-| Browser automation, screenshots, responsive and a11y checks | `scripts/qa/ui-qa.mjs`: uses installed Chrome over DevTools protocol, with no npm dependencies | Working (`npm run qa:ui`) |
-| Element and focus close-ups | the same CDP approach (`Page.captureScreenshot` with `clip`, deviceScaleFactor 2) | Ad hoc |
-| Unit and logic tests | `npm test` (Node test runner) | Working |
+| Workflow + quality gate (responsive, accessibility, browser and visual QA) | **`great-empower-ui-qa`** project skill: `.claude/skills/great-empower-ui-qa/SKILL.md` | Installed and listed as a skill |
+| Design research (UX rules, a11y, charts, typography) | **UI/UX Pro Max**: `.agents/skills/ui-ux-pro-max/` (local copy of the project skill, git-excluded). Run `PYTHONDONTWRITEBYTECODE=1 python scripts/search.py "<query>" --domain ux|chart|typography|color -n 5` | Working. Never use `--design-system` or `--persist`. |
+| Brand, design-system and UI-styling references | `.agents/skills/{brand,design-system,ui-styling,design,banner-design,slides}` | Reference only. Four unsafe or forbidden scripts are removed from the local copy (see `report/design-qa-baseline/Skills_Security_Review.md`). |
+| Composition and anti-generic critique | **Frontend Design** (Anthropic, Apache-2.0): `.claude/skills/frontend-design/` | Installed. Subordinate to the brand palette and typography. |
+| Browser automation, tests | **Playwright** `@playwright/test` (dev dependency), using the installed Chrome (`channel: "chrome"`) | `pnpm qa:e2e`, `qa:smoke`, `qa:report` |
+| Accessibility audit | **axe-core** via `@axe-core/playwright` (dev dependency), plus the runner checks | `pnpm qa:a11y` |
+| Visual regression | Playwright `toHaveScreenshot`, with baselines in `tests/e2e/__screenshots__/` | `pnpm qa:visual` / `qa:visual:update` |
+| Responsive gate + full-page screenshots for review | `scripts/qa/ui-qa.mjs` (CDP, 21 routes × 375/390/768/1280/1440) | `pnpm qa:ui` |
+| Element and focus close-ups | CDP `Page.captureScreenshot` with `clip` at deviceScaleFactor 2 | Ad hoc |
+| Unit and logic tests | Node test runner | `pnpm test` |
 
-**Not used:** Playwright, Puppeteer and axe-core. None are installed, and Chrome plus CDP already covers the need. Adding them would mean a new dependency, which needs approval. The built-in checks are a subset of axe: they don't replace a screen-reader pass.
+Both the runner and Playwright build and serve through `scripts/qa/device-only.mjs`. **Not covered:** real devices, screen readers and 200% zoom. These need manual passes.
 
 ## The loop
 
 ```
-Audit ─► Design ─► Implement ─► Test ─► Screenshot ─► Inspect ─► Fix ─► Re-test ─► Re-shoot ─► Final QA
-  ▲                                                       │
-  └──────────────── at least one real iteration ──────────┘
+Audit ─► Plan ─► Design ─► Implement ─► Test ─► Screenshot ─► Inspect ─► Refine ─► Re-test ─► Final QA
+                                                    ▲                       │
+                                                    └── repeat until the gate passes (≥ 1 real iteration)
 ```
 
 1. **Audit.**
-   - Run `npm run qa:ui` on the current state.
-   - Read `.qa/report.md` and look at `.qa/shots/390/*` and `.qa/shots/1280/*`.
-   - Write down the specific problem to solve, per page.
-2. **Design.**
-   - Consult UI/UX Pro Max for the relevant domain only.
-   - Check the brand rules in `GREAT-EMPOWER-DESIGN-SYSTEM.md`.
-   - For significant changes, sketch (ASCII or a quick HTML render) and get approval.
-3. **Implement.**
-   - Use existing tokens and components.
+   - Read the page, its components and tokens.
+   - Run `pnpm qa:ui -- --only=<keys>`, then read `.qa/report.md` and open `.qa/shots/390/*` and `.qa/shots/1280/*`.
+2. **Plan.**
+   - List problems P0–P3, each with evidence (screenshot path, metric or axe rule).
+   - Significant design changes need approval first.
+3. **Design.**
+   - Consult UI/UX Pro Max for the relevant domain, and Frontend Design for composition and copy critique.
+   - Map everything to `GREAT-EMPOWER-DESIGN-SYSTEM.md`.
+4. **Implement.**
+   - Use existing tokens and components only.
    - No new palette, font or component library.
-4. **Test.**
-   - Run `npx tsc -b`, `npm test` and `npm run build`.
-5. **Screenshot.**
-   - Run `npm run qa:ui`. It does a device-only build, then checks 21 routes × 375, 390, 768, 1280 and 1440 px.
-6. **Inspect.**
-   - Open the screenshots and score each changed page (rubric below).
-   - Use 2× element close-ups for icons, illustrations and focus states.
+5. **Test.**
+   - Run `npx tsc -b`, `pnpm test`, `pnpm build`, `pnpm qa:smoke`, `pnpm qa:a11y` and `pnpm qa:ui`.
+6. **Screenshot.**
+   - `pnpm qa:ui` writes full pages at five widths, and Playwright attaches screenshots in `pnpm qa:report`.
+   - Use 2× close-ups for icons, illustrations and focus states.
+7. **Inspect.**
+   - Open the images and score each changed page (rubric below).
    - **A passing gate is not a visual review.**
-7. **Fix → re-test → re-shoot** until the gate passes and no page scores below 3.
-8. **Final QA.**
-   - Re-run everything.
-   - Record the scores, before and after, in the phase report.
-   - Only claim what was actually run and looked at.
+8. **Refine.** Fix what the inspection found.
+9. **Re-test.** Rerun step 5, re-shoot and inspect again.
+10. **Final QA.**
+    - Run `pnpm qa:visual`. After an intended change, review the diff, then `pnpm qa:visual:update`.
+    - All gates must be green and no page may score below 3.
+    - Record the scores before and after, and claim only what was actually run and looked at.
 
 Safety:
 - QA always runs **device-only**. The runner blanks `VITE_SUPABASE_*` and aborts if the bundle still references Supabase.
@@ -55,10 +61,10 @@ Safety:
 ## Runner reference
 
 ```
-npm run qa:ui                                   # full run
-npm run qa:ui -- --no-build                     # reuse .qa/dist
-npm run qa:ui -- --only=home,learn --widths=390,1280
-npm run qa:ui -- --no-shots                     # checks only
+pnpm qa:ui                                      # full run
+pnpm qa:ui -- --no-build                     # reuse .qa/dist
+pnpm qa:ui -- --only=home,learn --widths=390,1280
+pnpm qa:ui -- --no-shots                     # checks only
 ```
 
 The route list lives in `scripts/qa/routes.mjs`. Update it when the architecture changes.
@@ -94,7 +100,7 @@ A page scoring **≤ 2** on any criterion blocks release. **3** needs a logged f
 - **Functionality:** no broken critical flows, route failures or interaction failures (gate and feature checks pass).
 - **Responsive:** no overflow or clipping at 375, 390, 768, 1280 and 1440 px. Mobile, tablet and desktop are each inspected.
 - **Visual:** clear hierarchy, token typography and spacing, appropriate assets, no excess text, no unnecessary cards, one icon style per role.
-- **Technical:** `tsc`, `npm test` and `npm run build` pass. No console errors or broken images.
+- **Technical:** `tsc`, `pnpm test`, `pnpm build`, `pnpm qa:smoke` and `pnpm qa:a11y` pass (no serious or critical axe issues). No console errors or broken images. Visual diffs are reviewed.
 - **Screenshot QA:** screenshots are captured *and* inspected, issues are documented, and significant ones are fixed and re-shot.
 - **Accessibility:** keyboard reachable, visible focus, semantic structure, labels, targets ≥ 24 px (44 for primary), contrast failures fixed or logged.
 - **Honesty:** the report says what was tested, at which widths, and what was not (e.g. real devices, screen readers).
