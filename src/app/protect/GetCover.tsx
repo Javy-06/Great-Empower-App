@@ -38,6 +38,8 @@ import { readinessChecklist } from "@/data/guides";
 import { checklistStore } from "@/state/checklist";
 import { adviserCallBack, areaToSlug, CHANNELS_CHECKED_ON } from "@/data/applyChannels";
 import { protectAreas } from "./ProtectCheck";
+import { ADVISER_PHOTO } from "./ProtectSections";
+import { Logo } from "@/components/brand/Logo";
 
 /**
  * Protect → Get cover (`#app/protect/get-cover/…`): choose a kind of cover → understand it → get
@@ -315,7 +317,7 @@ function HowStep({ area }: { area: ProtectionArea }) {
       <h2 className="font-brand text-[1.625rem] font-semibold text-navy-950">Ready to apply?</h2>
       <p className="text-body-sm text-ink-secondary">Apply here in GREAT EMPOWER, step by step. If you&apos;d like someone to talk it through first, an adviser can help.</p>
       <section aria-label="Apply in GREAT EMPOWER" className="mt-3 rounded-2xl bg-navy-950 p-5 text-white shadow-e2">
-        <span className="inline-flex size-12 items-center justify-center rounded-xl bg-white/10"><ClipboardList size={22} aria-hidden /></span>
+        <Logo tone="white" size="sm" />
         <h3 className="mt-3 font-brand text-[1.625rem] font-semibold leading-tight">Apply in GREAT EMPOWER</h3>
         <p className="mt-1 text-body-sm text-white/80">Fill in your application here. It takes about five minutes.</p>
         <ol className="mt-4 grid grid-cols-4 gap-1 text-center" aria-label="The four steps">
@@ -338,7 +340,7 @@ function HowStep({ area }: { area: ProtectionArea }) {
         </button>
       </section>
       <section aria-label="Talk to an adviser" className="mt-3 flex flex-col gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.1] sm:flex-row sm:items-center">
-        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-800"><UserRound size={20} aria-hidden /></span>
+        <img src={ADVISER_PHOTO.src} alt={ADVISER_PHOTO.alt} width={64} height={64} loading="lazy" decoding="async" className="size-16 shrink-0 rounded-xl object-cover object-[71%_22%]" />
         <span className="min-w-0 flex-1">
           <span className="block text-body font-semibold text-navy-950">Want help first? Talk to an adviser</span>
           <span className="block text-body-sm text-ink-secondary">Guidance, not an application: what to ask, what to bring, and how to reach a licensed adviser.</span>

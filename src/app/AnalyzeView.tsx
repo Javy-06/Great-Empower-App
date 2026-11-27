@@ -11,7 +11,7 @@ import {
 import { Band, Chapter, Container } from "@/components/layout/Editorial";
 import { cn } from "@/lib/cn";
 import { ProfileSpot } from "@/components/illustrations/Spots";
-import { ExploreCover, ProtectJourney } from "./protect/ProtectSections";
+import { ExploreCover, GetCoverSection, ProtectJourney } from "./protect/ProtectSections";
 import { ProtectCheck } from "./protect/ProtectCheck";
 import { GetCover, GET_COVER } from "./protect/GetCover";
 import { ApplyFlow, readApply } from "./protect/ApplyFlow";
@@ -299,8 +299,13 @@ function ProtectOverview() {
         titleId="analyze-title"
       />
 
+      {/* Get cover is the first section on Protect. */}
       <Container className="relative -mt-5">
-        <section className="rounded-2xl bg-surface p-4 shadow-e2 ring-1 ring-ink/[0.06] sm:p-5" aria-labelledby="completeness-title">
+        <GetCoverSection />
+      </Container>
+
+      <Container className="mt-4">
+        <section className="rounded-2xl bg-surface p-4 shadow-e1 ring-1 ring-ink/[0.06] sm:p-5" aria-labelledby="completeness-title">
           <div className="flex items-center gap-4">
             <div
               className="relative size-20 shrink-0 rounded-full"

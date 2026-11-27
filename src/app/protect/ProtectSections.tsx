@@ -1,4 +1,5 @@
-import { ArrowRight, ClipboardCheck, Globe, Scale, ShieldCheck, UserRound, Search } from "lucide-react";
+import { ArrowRight, ClipboardCheck, Scale, ShieldCheck, UserRound, Search } from "lucide-react";
+import { LogoMark } from "@/components/brand/Logo";
 import { Container } from "@/components/layout/Editorial";
 import { protectionCategories } from "@/data/protection";
 import { categoryIcons, categoryTones } from "@/app/protection/ProtectionHub";
@@ -52,10 +53,49 @@ export function ProtectJourney() {
   );
 }
 
-const channels = [
-  { icon: Globe, title: "Apply in GREAT EMPOWER", text: "Fill in your application here, step by step, and review it before you finish." },
-  { icon: UserRound, title: "Talk to an adviser", text: "Want help first? A licensed agent or adviser can explain your options." },
-];
+/** Photo: Mikhail Nilov / Pexels (see docs/visual-assets.md). A real photo, not one of the fictional demo advisors. */
+export const ADVISER_PHOTO = { src: "/images/pexels/adviser-consultant-office.webp", alt: "A smiling consultant in a black blazer in a modern office." };
+
+/**
+ * Get cover: the FIRST section on Protect. Two ways in (apply in the app, or an adviser's help),
+ * then one primary action into the Get cover flow.
+ */
+export function GetCoverSection() {
+  return (
+    <section aria-labelledby="protect-apply-title" id="protect-apply" className="scroll-mt-24 rounded-2xl bg-surface p-4 shadow-e2 ring-1 ring-ink/[0.06] sm:p-5">
+      <h2 id="protect-apply-title" className="font-brand text-[1.75rem] font-semibold leading-tight text-navy-950">Get cover</h2>
+      <p className="mt-0.5 text-body-sm text-ink-secondary">Understand a kind of cover, get ready, then apply in the app.</p>
+      <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
+        <li className="flex items-center gap-3 rounded-2xl bg-sunken/60 p-3 ring-1 ring-ink/[0.06]">
+          <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-ink/[0.08]">
+            <LogoMark size={40} />
+          </span>
+          <span>
+            <span className="block text-body-sm font-semibold text-navy-950">Apply in GREAT EMPOWER</span>
+            <span className="block text-caption text-ink-secondary">Fill in your application here, step by step, and review it before you finish.</span>
+          </span>
+        </li>
+        <li className="flex items-center gap-3 rounded-2xl bg-sunken/60 p-3 ring-1 ring-ink/[0.06]">
+          <img src={ADVISER_PHOTO.src} alt={ADVISER_PHOTO.alt} width={56} height={56} loading="lazy" decoding="async" className="size-14 shrink-0 rounded-xl object-cover object-[71%_22%]" />
+          <span>
+            <span className="block text-body-sm font-semibold text-navy-950">Talk to an adviser</span>
+            <span className="block text-caption text-ink-secondary">Want help first? A licensed agent or adviser can explain your options.</span>
+          </span>
+        </li>
+      </ul>
+      <button
+        type="button"
+        onClick={() => go("app/protect/get-cover", true)}
+        className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body-sm font-bold text-white hover:bg-crimson-700 sm:w-auto sm:px-6"
+      >
+        Explore cover options <ArrowRight size={16} aria-hidden />
+      </button>
+      <p className="mt-2 text-caption text-ink-muted">
+        GREAT EMPOWER is independent and doesn&apos;t sell insurance. Applications completed here stay on your device and aren&apos;t sent to an insurer yet, so they don&apos;t give you cover.
+      </p>
+    </section>
+  );
+}
 
 /** Understand → Compare → Apply: the five kinds of cover, the product explorer and how people get cover. */
 export function ExploreCover() {
@@ -104,31 +144,6 @@ export function ExploreCover() {
         </button>
       </Container>
 
-      <Container className="mt-9 scroll-mt-24" id="protect-apply">
-        <h2 className="font-brand text-[1.875rem] font-semibold leading-tight text-navy-950">Get cover</h2>
-        <p className="mt-0.5 text-body-sm text-ink-secondary">When you&apos;re ready: understand a kind of cover, get ready, then apply in the app.</p>
-        <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
-          {channels.map((c) => (
-            <li key={c.title} className="flex gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]">
-              <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-800"><c.icon size={19} aria-hidden /></span>
-              <span>
-                <span className="block text-body-sm font-semibold text-navy-950">{c.title}</span>
-                <span className="block text-caption text-ink-secondary">{c.text}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <button
-          type="button"
-          onClick={() => go("app/protect/get-cover", true)}
-          className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body-sm font-bold text-white hover:bg-crimson-700 sm:w-auto sm:px-6"
-        >
-          Explore cover options <ArrowRight size={16} aria-hidden />
-        </button>
-        <p className="mt-2 text-caption text-ink-muted">
-          GREAT EMPOWER is independent and doesn&apos;t sell insurance. Applications completed here stay on your device and aren&apos;t sent to an insurer yet, so they don&apos;t give you cover.
-        </p>
-      </Container>
     </>
   );
 }

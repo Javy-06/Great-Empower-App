@@ -12,6 +12,7 @@
 | `protection-family-living-room.webp` | Family Financial Protection hero | Family at home in the living room | Annushka Ahuja | https://www.pexels.com/photo/family-on-a-living-room-8055807/ |
 | `protection-income-planning.webp` | Income Protection (TPD) hero; Analyze hero | Man reviewing finances at home | ANTONI SHKRABA production | https://www.pexels.com/photo/a-businessman-with-documents-on-the-table-8374283/ |
 | `protection-accident-rider.webp` | Accident Protection hero | Helmeted rider in the city | Erik Mclean | https://www.pexels.com/photo/man-on-motorcycle-in-city-10125985/ |
+| `adviser-consultant-office.webp` | Protect → Get cover ("Talk to an adviser" card) and Get cover → Apply step | Smiling consultant in a black blazer in an office (900×600 WebP, from the Pexels CDN) | Mikhail Nilov | https://www.pexels.com/photo/woman-in-black-blazer-smiling-8101987/ |
 
 The credits are also stored in `src/data/protection.ts` (`photo.credit`). A test checks that each file exists and is credited, and that no photo is reused across categories.
 
