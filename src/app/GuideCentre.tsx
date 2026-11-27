@@ -114,7 +114,7 @@ function GuideHome() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder='Search guides (e.g. "claim", "deductible")'
+            placeholder="Search guides"
             className="h-full w-full bg-transparent text-body text-ink outline-none placeholder:text-ink-muted"
           />
         </label>
@@ -180,13 +180,26 @@ function GuideHome() {
                     </span>
                     <span className="font-brand text-[1.375rem] font-semibold leading-tight text-navy-950">{g.title}</span>
                     <span className="text-body-sm text-ink-secondary">{g.summary}</span>
+                    {/* Tablet+: preview the first steps so the card shows what the guide covers. */}
+                    <span className="mt-2 hidden gap-1.5 sm:grid" aria-hidden>
+                      {g.points.slice(0, 3).map((pt, n) => (
+                        <span key={n} className="flex items-center gap-2 text-caption text-navy-950">
+                          <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-navy-50 text-[11px] font-bold text-navy-800">{n + 1}</span>
+                          <span className="line-clamp-1">{pt}</span>
+                        </span>
+                      ))}
+                    </span>
+                    <span className="mt-2 hidden items-center gap-3 sm:flex">
+                      <span className="inline-flex items-center gap-1.5 text-body-sm font-semibold text-crimson-600">Read the guide <ArrowRight size={15} aria-hidden /></span>
+                      <span className="text-caption text-ink-muted">{g.points.length} {g.format === "step-by-step" ? "steps" : "points"} · {g.minutes} min</span>
+                    </span>
                   </span>
                 </button>
               ))}
             </div>
             <div className="mt-1 flex justify-center" role="group" aria-label="Featured guide">
               {featured.map((g, i) => (
-                <button key={g.id} type="button" onClick={() => setSlide(i)} aria-label={`Show ${g.title}`} aria-current={i === slide ? "true" : undefined} className="inline-flex h-11 w-7 items-center justify-center">
+                <button key={g.id} type="button" onClick={() => setSlide(i)} aria-label={`Show ${g.title}`} aria-current={i === slide ? "true" : undefined} className="inline-flex size-11 items-center justify-center">
                   <span className={cn("block h-2 rounded-full transition-all", i === slide ? "w-5 bg-navy-900" : "w-2 bg-navy-900/20")} />
                 </button>
               ))}

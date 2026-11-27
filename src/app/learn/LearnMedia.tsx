@@ -228,7 +228,7 @@ export function LearnHome() {
           <button
             type="button"
             onClick={() => go(`app/learn/video/${longForm.id}`)}
-            className="group mt-3 block w-full overflow-hidden rounded-[1.25rem] bg-surface text-left shadow-e1 ring-1 ring-ink/[0.06]"
+            className="group mt-3 block w-full overflow-hidden rounded-[1.25rem] bg-surface text-left shadow-e1 ring-1 ring-ink/[0.06] md:grid md:grid-cols-[1.35fr_1fr] md:items-center"
           >
             <span className="relative block aspect-video">
               <img src={longShown.poster} alt="" className="ge-skeleton h-full w-full object-cover" />
@@ -241,18 +241,19 @@ export function LearnHome() {
                 <Play size={24} className="ml-1" aria-hidden />
               </span>
             </span>
-            <span className="block p-4">
-              <span lang={languageLabels[longShown.lang].htmlLang} className="block font-brand text-[1.5rem] font-semibold leading-tight text-navy-950">{longShown.title}</span>
+            <span className="block p-4 md:p-6">
+              <span lang={languageLabels[longShown.lang].htmlLang} className="block font-brand text-[1.5rem] font-semibold leading-tight text-navy-950 md:text-[1.875rem]">{longShown.title}</span>
               <span className="mt-1 block text-body-sm text-ink-secondary">{longForm.description}</span>
             </span>
           </button>
 
           <h3 className="mt-6 text-subheading text-navy-950">Quick explainers</h3>
-          <ul className="-mx-5 mt-3 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 scrollbar-none">
+          {/* Mobile: a swipeable row of portrait posters. Tablet+: a 3-up row of compact cards (poster + title), so no empty half-row. */}
+          <ul className="-mx-5 mt-3 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-2 scrollbar-none md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
             {shorts.map((v) => (
-              <li key={v.id} className="w-[9.5rem] shrink-0 snap-start sm:w-[11rem]">
-                <button type="button" onClick={() => go(`app/learn/video/${v.id}`)} className="group block w-full text-left">
-                  <span className="relative block aspect-[9/16] overflow-hidden rounded-2xl bg-navy-900">
+              <li key={v.id} className="w-[9.5rem] shrink-0 snap-start sm:w-[11rem] md:w-auto">
+                <button type="button" onClick={() => go(`app/learn/video/${v.id}`)} className="group block w-full text-left md:flex md:items-center md:gap-4 md:rounded-2xl md:bg-surface md:p-2.5 md:ring-1 md:ring-ink/[0.07]">
+                  <span className="relative block aspect-[9/16] overflow-hidden rounded-2xl bg-navy-900 md:w-24 md:shrink-0 md:rounded-xl">
                     <img src={v.poster} alt="" loading="lazy" className="ge-skeleton h-full w-full object-cover" />
                     <span className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-transparent" aria-hidden />
                     <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 text-caption font-semibold text-white">
@@ -267,8 +268,10 @@ export function LearnHome() {
                       </span>
                     )}
                   </span>
-                  <span className="mt-2 line-clamp-2 block text-body-sm font-semibold text-navy-950">{v.title}</span>
-                  <span className="text-caption text-ink-muted">{mediaTopicLabels[v.topic]}</span>
+                  <span className="block min-w-0">
+                    <span className="mt-2 line-clamp-2 block text-body-sm font-semibold text-navy-950 md:mt-0">{v.title}</span>
+                    <span className="text-caption text-ink-muted">{mediaTopicLabels[v.topic]}</span>
+                  </span>
                 </button>
               </li>
             ))}

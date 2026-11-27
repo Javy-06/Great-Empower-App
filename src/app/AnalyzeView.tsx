@@ -261,7 +261,7 @@ export function AnalyzeView() {
         eyebrow="Your protection analysis"
         title="Understand your protection today."
         text="A personal view of your coverage and gaps, based on what you tell us."
-        image="/images/pexels/young-professional-savings-planning.webp"
+        image="/images/pexels/protection-income-planning.webp"
         imagePosition="60% 25%"
         backLabel="Analyze"
         onBack={() => goHash("app/home")}

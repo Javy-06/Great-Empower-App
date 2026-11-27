@@ -31,6 +31,7 @@ export interface Guide {
 const img = {
   protection: "/images/pexels/family-protection-conversation.webp",
   health: "/images/pexels/everyday-health-wellbeing.webp",
+  hospital: "/images/pexels/protection-medical-hospital-rest.webp",
   saving: "/images/pexels/young-professional-savings-planning.webp",
   study: "/images/pexels/young-asian-students-learning-together.webp",
   friends: "/images/pexels/young-friends-cafe-community.webp",
@@ -44,7 +45,7 @@ export const guides: Guide[] = [
     title: "How to make a medical claim",
     minutes: 5,
     summary: "A general walkthrough from hospital visit to claim decision.",
-    image: img.health,
+    image: img.hospital,
     featured: true,
     points: [
       "Check your policy or certificate first: what is covered, your limits, any panel hospitals and the time limit for claims.",
@@ -66,7 +67,7 @@ export const guides: Guide[] = [
     title: "Deductible, co-payment and annual limit explained",
     minutes: 4,
     summary: "Three terms that decide how much of a medical bill you pay yourself.",
-    image: img.health,
+    image: img.hospital,
     featured: true,
     points: [
       "Deductible: a fixed amount you pay first before the plan starts paying.",
@@ -154,7 +155,7 @@ export const guides: Guide[] = [
     title: "How hospital costs affect planning",
     minutes: 4,
     summary: "Understand how eligible healthcare costs, policy terms and personal savings can fit together.",
-    image: img.health,
+    image: img.hospital,
     points: [
       "Medical and health cover is generally designed for eligible healthcare costs, subject to the policy or certificate.",
       "Exclusions, limits, waiting periods, deductibles and co-payments can affect benefits and out-of-pocket costs.",

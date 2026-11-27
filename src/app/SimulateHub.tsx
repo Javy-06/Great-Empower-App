@@ -101,7 +101,7 @@ export function SimulateHub() {
         titleId="simulate-title"
       />
 
-      <Container className="relative -mt-5">
+      <Container className="relative -mt-5 max-w-[44rem]">
         <ol className="flex items-center justify-between gap-1 rounded-full bg-surface p-1.5 shadow-e2 ring-1 ring-ink/[0.06]">
           {steps.map((label, i) => {
             const active = i === step;
@@ -251,9 +251,9 @@ function ProfileStep({ onNext }: { onNext: () => void }) {
                     role="radio"
                     aria-checked={p.coverage[key] === a}
                     onClick={() => setP((cur) => ({ ...cur, coverage: { ...cur.coverage, [key]: a } }))}
-                    className={cn("h-11 rounded-full px-3.5 text-caption font-semibold capitalize", p.coverage[key] === a ? "bg-navy-900 text-white" : "bg-sunken text-navy-900")}
+                    className={cn("h-11 rounded-full px-3.5 text-caption font-semibold", p.coverage[key] === a ? "bg-navy-900 text-white" : "bg-sunken text-navy-900")}
                   >
-                    {a.replace("-", " ")}
+                    {a === "yes" ? "Yes" : a === "no" ? "No" : "Not sure"}
                   </button>
                 ))}
               </span>
