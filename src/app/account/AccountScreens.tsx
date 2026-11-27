@@ -97,7 +97,7 @@ const entryButton =
 const features: Array<{ label: string; icon: LucideIcon; tone: string }> = [
   { label: "Learn", icon: BookOpen, tone: "bg-info-50 text-info-600 ring-info-200/60" },
   { label: "Simulate", icon: SlidersHorizontal, tone: "bg-teal-50 text-teal-700 ring-teal-200/60" },
-  { label: "Analyze", icon: ChartColumnIncreasing, tone: "bg-gold-50 text-gold-700 ring-gold-300/40" },
+  { label: "Protect", icon: ChartColumnIncreasing, tone: "bg-gold-50 text-gold-700 ring-gold-300/40" },
   { label: "Guide", icon: Compass, tone: "bg-navy-50 text-navy-800 ring-navy-200/60" },
   { label: "Rewards", icon: Gift, tone: "bg-crimson-50 text-crimson-600 ring-crimson-200/60" },
 ];

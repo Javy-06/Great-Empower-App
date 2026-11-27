@@ -37,7 +37,9 @@ const destinations: DashboardDestination[] = [
 
 function readDestination(): DashboardDestination {
   const hash = window.location.hash.replace(/^#/, "");
-  const key = (hash.startsWith("app/") ? hash.slice(4).split("/")[0] : "home").split(/[?#]/)[0];
+  const raw = (hash.startsWith("app/") ? hash.slice(4).split("/")[0] : "home").split(/[?#]/)[0];
+  // GREAT EMPOWER 2.0: the Analyze destination is now "Protect" (#app/protect). #app/analyze still works.
+  const key = raw === "protect" ? "analyze" : raw;
   return destinations.includes(key as DashboardDestination)
     ? (key as DashboardDestination)
     : "home";
@@ -68,7 +70,7 @@ function DestinationView({
 }
 
 export function navigateTo(destination: DashboardDestination) {
-  window.location.hash = `app/${destination}`;
+  window.location.hash = `app/${destination === "analyze" ? "protect" : destination}`;
   window.scrollTo({ top: 0 });
 }
 

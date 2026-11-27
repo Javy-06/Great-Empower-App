@@ -29,6 +29,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import { findInfographic } from "@/data/learn-media";
 import { TermExplainer } from "./TermExplainer";
+import { AccidentStory, BillSplitter, CiTimeline, FamilyMap } from "./CategoryStories";
 import { AccidentIcon, CriticalIllnessIcon, FamilyIcon, GeIcon, IncomeIcon, MedicalIcon, type GeIconName, type IconLike } from "@/components/illustrations/GeIcons";
 import {
   AccidentSpot,
@@ -490,20 +491,29 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
           <ListCard title="Doesn't automatically cover" items={c.notAutomatic} titles={c.notAutomaticTitles} tone="bad" />
         </div>
 
-        <div className="mt-4 flex gap-3 rounded-2xl bg-gold-50 p-4 ring-1 ring-gold-100">
-          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-700"><UserRound size={18} aria-hidden /></span>
-          <p className="text-body-sm text-navy-950">
-            <span className="block text-caption font-bold uppercase tracking-[0.08em] text-gold-700">Example (illustrative)</span>
-            {c.example.text}
-          </p>
-        </div>
+        {/* Categories with a visual story below tell their example there; the text example stays for the others. */}
+        {!["medical", "critical-illness", "life", "personal-accident"].includes(c.slug) && (
+          <div className="mt-4 flex gap-3 rounded-2xl bg-gold-50 p-4 ring-1 ring-gold-100">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-700"><UserRound size={18} aria-hidden /></span>
+            <p className="text-body-sm text-navy-950">
+              <span className="block text-caption font-bold uppercase tracking-[0.08em] text-gold-700">Example (illustrative)</span>
+              {c.example.text}
+            </p>
+          </div>
+          )}
       </Container>
 
-      {c.slug === "medical" && (
-        <Container className="max-w-[56rem]">
-          <TermExplainer />
-        </Container>
-      )}
+      <Container className="max-w-[56rem]">
+        {c.slug === "medical" && (
+          <>
+            <BillSplitter />
+            <TermExplainer />
+          </>
+        )}
+        {c.slug === "critical-illness" && <CiTimeline />}
+        {c.slug === "life" && <FamilyMap />}
+        {c.slug === "personal-accident" && <AccidentStory />}
+      </Container>
 
       <Container className="mt-10 max-w-[56rem]">
         <p className="text-overline uppercase tracking-[0.18em] text-teal-700">Myth or fact?</p>

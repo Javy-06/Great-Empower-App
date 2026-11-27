@@ -133,3 +133,22 @@ test("product explorer: channels are read from official wording; fact labels spl
   assert.deepEqual(splitFactLabel("Annual limit (PDS and official page)"), ["Annual limit", "PDS and official page"]);
   assert.deepEqual(splitFactLabel("Cover"), ["Cover", ""]);
 });
+
+test("bill splitter: every split reconciles to the bill and matches the worked RM20,000 example", async () => {
+  const { splitBill } = await import("../app/protection/billSplit.ts");
+  // RM20,000, 5% not eligible (1,000), RM500 deductible, 10% co-pay on 18,500 (1,850) → insurer 16,650, you 3,350.
+  assert.deepEqual(splitBill({ bill: 20_000, notEligibleRate: 0.05, deductible: 500, copayRate: 0.1 }), {
+    bill: 20_000, notEligible: 1_000, deductible: 500, copay: 1_850, insurer: 16_650, you: 3_350,
+  });
+  for (let bill = 2_000; bill <= 60_000; bill += 1_000)
+    for (const deductible of [0, 500, 1_000])
+      for (const copayRate of [0, 0.1, 0.2]) {
+        const s = splitBill({ bill, notEligibleRate: 0.05, deductible, copayRate });
+        assert.equal(s.insurer + s.you, s.bill, `${bill}/${deductible}/${copayRate}`);
+        assert.ok(s.insurer >= 0 && s.copay >= 0);
+      }
+  // A deductible larger than the eligible amount can't make the insurer pay a negative amount.
+  const tiny = splitBill({ bill: 300, notEligibleRate: 0.05, deductible: 1_000, copayRate: 0.2 });
+  assert.equal(tiny.insurer, 0);
+  assert.equal(tiny.you, 300);
+});

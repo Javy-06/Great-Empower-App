@@ -32,7 +32,8 @@ Audit ─► Plan ─► Design ─► Implement ─► Test ─► Screenshot �
    - Run `pnpm qa:ui -- --only=<keys>`, then read `.qa/report.md` and open `.qa/shots/390/*` and `.qa/shots/1280/*`.
 2. **Plan.**
    - List problems P0–P3, each with evidence (screenshot path, metric or axe rule).
-   - Significant design changes need approval first.
+   - **Autonomous** (no approval needed, as authorised by the user, 27 Nov 2026): page layouts and IA within the app; component composition; typography and spacing; text reduction; illustrations, photography, diagrams; navigation and interactions; frontend features and safe prototypes; removing redundant UI; responsive layouts; reusable components; repeated QA iterations.
+   - **Approval required:** production changes; live database access or Supabase migrations; real account changes; collecting sensitive personal or medical data; real insurance applications, purchases or payments; real insurer APIs; credentials or secrets; deployment or pushing to the remote; major irreversible architecture changes outside that scope. Build a safe prototype instead where possible.
 3. **Design.**
    - Consult UI/UX Pro Max for the relevant domain, and Frontend Design for composition and copy critique.
    - Map everything to `GREAT-EMPOWER-DESIGN-SYSTEM.md`.

@@ -14,7 +14,7 @@ Covers responsive design, accessibility, browser QA, Playwright and visual QA fo
 ## Loop: Audit → Plan → Design → Implement → Test → Screenshot → Inspect → Refine → Re-test → Final QA
 
 1. **Audit** — read the page and the components/tokens it uses; run `pnpm qa:ui -- --only=<route keys>` and open `.qa/shots/390/*.jpg` and `.qa/shots/1280/*.jpg`. Write down the concrete problem.
-2. **Plan** — list issues P0–P3 with evidence (screenshot path, metric, axe rule). Significant visual changes need user approval first.
+2. **Plan** — list issues P0–P3 with evidence (screenshot path, metric, axe rule). Routine redesign (layout, IA within the app, visuals, text reduction, frontend features, safe prototypes) is autonomous; ask first only for production, live data/migrations, real accounts, sensitive data, real applications/payments/insurer APIs, secrets, deploy/push, or major irreversible architecture changes.
 3. **Design** — consult UI/UX Pro Max for the specific domain only:
    `cd .agents/skills/ui-ux-pro-max && PYTHONDONTWRITEBYTECODE=1 python scripts/search.py "<query>" --domain ux|chart|typography|color -n 5`
    (never `--design-system`/`--persist`). Use `frontend-design` for composition, restraint and copy critique. Map everything back to existing tokens/components.

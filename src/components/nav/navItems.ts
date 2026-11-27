@@ -1,8 +1,8 @@
 import {
-  ChartPie,
   Compass,
   GraduationCap,
   House,
+  ShieldCheck,
   SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
@@ -24,6 +24,7 @@ export const primaryNav: Array<{
     icon: SlidersHorizontal,
     description: "Calculators & scenarios",
   },
-  { key: "analyze", label: "Analyze", icon: ChartPie, description: "Protection insights" },
+  // Key stays "analyze" internally; the destination is presented (and routed) as Protect.
+  { key: "analyze", label: "Protect", icon: ShieldCheck, description: "Check, explore, compare" },
   { key: "guide", label: "Guide", icon: Compass, description: "Knowledge centre" },
 ];

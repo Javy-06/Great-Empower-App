@@ -11,6 +11,7 @@ import {
 import { Band, Chapter, Container } from "@/components/layout/Editorial";
 import { cn } from "@/lib/cn";
 import { ProfileSpot } from "@/components/illustrations/Spots";
+import { ExploreCover, ProtectJourney } from "./protect/ProtectSections";
 
 const rm = (value: number) => `RM ${value.toLocaleString("en-MY")}`;
 
@@ -258,12 +259,12 @@ export function AnalyzeView() {
   return (
     <>
       <PageHero
-        eyebrow="Your protection analysis"
-        title="Understand your protection today."
-        text="A personal view of your coverage and gaps, based on what you tell us."
+        eyebrow="Protect"
+        title="Your protection, in one place."
+        text="Check what you have, see the gaps, then explore and compare real cover."
         image="/images/pexels/protection-income-planning.webp"
         imagePosition="60% 25%"
-        backLabel="Analyze"
+        backLabel="Protect"
         onBack={() => goHash("app/home")}
         titleId="analyze-title"
       />
@@ -296,8 +297,10 @@ export function AnalyzeView() {
         </section>
       </Container>
 
-      <Container className="mt-7">
-        <h2 className="text-heading text-navy-950">Coverage analysis</h2>
+      <ProtectJourney />
+
+      <Container className="mt-7" id="protect-gaps">
+        <h2 className="text-heading text-navy-950">Your gaps</h2>
         {assessed.length > 0 && (
           <ul className="mt-3 grid gap-2.5">
             {assessed.map(({ area, status, why, next }) => {
@@ -372,6 +375,8 @@ export function AnalyzeView() {
           </div>
         </Container>
       )}
+
+      <ExploreCover />
 
       <Container className="mt-7">
         <details className="group rounded-2xl bg-surface ring-1 ring-ink/[0.07]">

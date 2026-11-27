@@ -259,3 +259,36 @@ Details are in the execution log.
 5. **Term explainer:** extend to the other categories and link it from a glossary.
 6. **Real-device and screen-reader pass;** check text-over-photo contrast.
 7. **Before any push:** blank the branch Preview's Supabase variables.
+
+---
+
+## Addendum: GREAT EMPOWER 2.0 phase (27 Nov 2026, later)
+
+**User authorisation:**
+- The user authorised autonomous redesign, including navigation ("do not preserve old navigation merely because it already exists").
+- The user asked to commit and push to the Preview.
+- The approval rule in `docs/design/UI-QA-PROCESS.md` and the `great-empower-ui-qa` skill now separates autonomous UI work from approval-required actions.
+
+**Correction to §8 of this report:** the first `Container` fix lost a backslash when written through the shell. The pattern `(^|s)max-w-` only matched when `max-w-…` was the *first* class, so only some of the narrowed layouts took effect, not all 31 as reported. It is now `(^|\s)max-w-`, which I verified in the source, and all 32 narrowed containers apply. Pages were re-inspected at 1280 px: Medical, Critical Illness, the guide article and Protect.
+
+### Implemented
+| Area | Change |
+|---|---|
+| **Navigation 2.0** | "Analyze" is now **Protect** (shield icon). `#app/protect` is the route; `#app/analyze` still works as an alias. The internal key and the analysis logic are unchanged. |
+| **Protect hub** | Five-step journey (Check → See gaps → Understand → Compare → Apply); the existing check and gaps; the **five kinds of cover**; a link to the product explorer; how people get cover (information only, no applications) |
+| **Medical** | **Interactive hospital bill:** bill slider RM2k–60k; deductible None/RM500/RM1,000; co-pay None/10%/20%; stacked bar; "You pay" with a percentage. Default RM20,000 → not eligible RM1,000, deductible RM500, co-pay RM1,850, insurer RM16,650, **you RM3,350**. `billSplit.ts` is unit-tested: every combination reconciles to the bill, and the insurer never goes negative. |
+| **Critical illness** | Recovery timeline (diagnosis → treatment → recovery) and a 12-month lump-sum drawdown: RM60,000 − 12 × RM3,000 = RM24,000 left |
+| **Life / family** | Family-responsibility map: RM4,000 income → parents, car loan, rent share, final expenses (RM2,000 a month to others), with the "doesn't cancel debts" message |
+| **Accident** | Four-step scenario: accident → treatment → lasting injury (10% of RM50,000 = RM5,000) → back to work |
+| **Text** | The text "Example" card was removed where a visual story now tells it (Medical, CI, Life, Accident); TPD keeps its own |
+
+All figures are labelled illustrative and reconcile.
+
+### Verification
+- **Responsive gate:** `pnpm qa:ui` passes on 26 routes × 5 widths, with only small-text warnings. New routes: guide article, checklist, sessions and the Analyze alias.
+- **Screenshots inspected:** Protect at 390 and 1280; Medical at 390 and 1280; Life at 390; CI at 1280; guide article at 1280.
+- **Fixed after inspection:**
+  - the Protect journey strip lost its mobile edge padding (scroll-snap);
+  - an orphaned last "kind of cover" tile;
+  - inconsistent desktop widths (the `Container` bug above).
+- **Not done in this phase:** Home and Learn restructuring, stepped simulator forms, Rewards visual redesign. These are the next priorities.

@@ -8,7 +8,7 @@ const screens = [
   { key: "protection", hash: "app/learn/protection" },
   { key: "cat-medical", hash: "app/learn/protection/medical" },
   { key: "simulate", hash: "app/simulate" },
-  { key: "analyze", hash: "app/analyze" },
+  { key: "protect", hash: "app/protect" },
   { key: "rewards", hash: "app/rewards" },
 ];
 

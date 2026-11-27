@@ -439,7 +439,7 @@ function PlanStep({ onBack }: { onBack: () => void }) {
 
       <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
         {[
-          { label: "See your analysis", href: "app/analyze" },
+          { label: "See your protection check", href: "app/protect" },
           { label: "Protection explained", href: "app/learn/protection" },
           { label: "Practical guides", href: "app/guide" },
         ].map((l) => (

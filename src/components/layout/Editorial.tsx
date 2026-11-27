@@ -28,7 +28,7 @@ export function Container({
 }) {
   return (
     // cn() does not merge Tailwind classes, so a caller's max-w-* must replace the default rather than compete with it.
-    <div id={id} className={cn("mx-auto w-full px-5 sm:px-8 lg:px-12", /(^|s)max-w-/.test(className ?? "") ? undefined : "max-w-[1200px]", className)}>
+    <div id={id} className={cn("mx-auto w-full px-5 sm:px-8 lg:px-12", /(^|\s)max-w-/.test(className ?? "") ? undefined : "max-w-[1200px]", className)}>
       {children}
     </div>
   );

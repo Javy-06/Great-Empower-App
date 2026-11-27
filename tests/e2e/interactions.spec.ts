@@ -7,7 +7,7 @@ test.beforeEach(({}, info) => {
 
 test("primary navigation reaches every destination", async ({ signedIn: page, problems }, info) => {
   const nav = info.project.name === "mobile-390" ? page.locator("nav").last() : page.locator("header nav").first();
-  for (const [label, hash] of [["Learn", "#app/learn"], ["Simulate", "#app/simulate"], ["Analyze", "#app/analyze"], ["Guide", "#app/guide"], ["Home", "#app/home"]] as const) {
+  for (const [label, hash] of [["Learn", "#app/learn"], ["Simulate", "#app/simulate"], ["Protect", "#app/protect"], ["Guide", "#app/guide"], ["Home", "#app/home"]] as const) {
     await nav.getByRole("link", { name: label, exact: true }).or(nav.getByRole("button", { name: label, exact: true })).first().click();
     await expect(page).toHaveURL(new RegExp(`${hash.replace("/", "\\/")}$`));
     await expect(page.locator("h1")).toHaveCount(1);
