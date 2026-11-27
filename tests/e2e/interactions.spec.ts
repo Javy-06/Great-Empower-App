@@ -138,3 +138,28 @@ test("family scenario: guided steps gate Next until filled; example reaches the 
   await expect(panel).toContainText("RM 44,000");
   expectClean(problems);
 });
+
+test("rewards: redeeming a voucher deducts once, shows the summary, and blocks a duplicate", async ({ signedIn: page, problems }) => {
+  await go(page, "app/rewards/product/gev-rm10");
+  await expect(page.getByText("You can redeem this now")).toBeVisible();
+  const startText = (await page.getByText(/pts of 1,000 pts/).textContent()) ?? "";
+  const start = Number(startText.split(" pts of")[0].replace(/[^\d]/g, ""));
+  await page.getByRole("button", { name: /Redeem for 1,000 pts/ }).click();
+  const confirm = page.getByRole("button", { name: "Confirm" });
+  await confirm.dblclick(); // a double tap must not redeem twice
+  await expect(page.getByRole("heading", { name: "Redeemed" })).toBeVisible();
+  await expect(page.getByText("Points used")).toBeVisible();
+  await expect(page.locator("dd").filter({ hasText: /^−1,000 pts$/ })).toBeVisible();
+  await expect(page.locator("dd").filter({ hasText: `${(start - 1000).toLocaleString("en-MY")} pts` })).toBeVisible();
+  await go(page, "app/rewards");
+  await go(page, "app/rewards/product/gev-rm10");
+  await expect(page.getByRole("button", { name: "Already in your wallet" })).toBeDisabled();
+  expectClean(problems);
+});
+
+test("rewards: a reward above the balance can't be redeemed and says how many points are missing", async ({ signedIn: page, problems }) => {
+  await go(page, "app/rewards/product/gev-rm50");
+  await expect(page.getByText(/pts to go$/)).toBeVisible();
+  await expect(page.getByRole("button", { name: /Not enough points \(.+ short\)/ })).toBeDisabled();
+  expectClean(problems);
+});

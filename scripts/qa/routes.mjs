@@ -25,6 +25,8 @@ export const routes = [
   { key: "guide-sessions", hash: "app/guide/sessions", group: "Guide" },
   { key: "rewards", hash: "app/rewards", group: "Rewards" },
   { key: "wallet", hash: "app/rewards/wallet", group: "Rewards" },
+  { key: "reward-food", hash: "app/rewards/product/tub-chicken-wholemeal", group: "Rewards" },
+  { key: "reward-voucher", hash: "app/rewards/product/gev-rm10", group: "Rewards" },
   { key: "marketplace", hash: "app/rewards/marketplace", group: "Rewards" },
   { key: "notifications", hash: "app/notifications", group: "Other" },
 ];

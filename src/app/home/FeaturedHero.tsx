@@ -85,8 +85,9 @@ export function FeaturedHero({
           )}
         </>
       ),
-      text: "Small steps today. More confidence tomorrow.",
-      cta: "Continue learning",
+      // What GREAT EMPOWER does, in one line. Progress-based "continue" lives in Home's Your next step.
+      text: "Understand protection, check your cover and compare real options — at your own pace.",
+      cta: "Explore protection",
       onAction: onContinue,
       media: {
         kind: "photo",

@@ -318,3 +318,14 @@ Details are in `docs/reports/GREAT-EMPOWER-FINAL-UI-POLISH-REPORT.md`.
 - **Simulate:** the Family tool becomes a guided three-step flow with Back/Next and a running summary. Engine 3 unchanged, and the test confirms RM 40,000 / RM 44,000.
 - **Consistency:** all text is now at least 12 px (overline token plus 47 overrides). QA warnings went from 130 to 0.
 - **Tests:** 196 unit tests; 202 Playwright; gate 0/0 on 130 checks; visual baselines 12/12 after the intended refresh.
+
+## Addendum: final finishing and security
+Details are in `docs/reports/GREAT-EMPOWER-FINAL-FINISHING-AND-SECURITY-REPORT.md`.
+
+- **Preview device-only guard** in `vite.config.ts`. Verified locally: a Preview build excludes the live Supabase host. The live Preview remains **UNVERIFIED** because this phase isn't pushed.
+- **Rewards:** "Can I redeem it now?" panel and next steps on reward detail; confirmation shows points used and balance now. The duplicate-redemption test passes.
+- **Home:** the hero CTA is now "Explore protection" (Protect); "Your next step" is the single progress action.
+- **Simulators:** Medical and CI assessed as already low-load, so no change. Calculations unchanged.
+- **Learn:** visual audit logged; supplied 3D topic art kept pending an owner decision.
+- **QA:** 196 unit tests; 218 Playwright; 140 responsive checks with 0 failures and 0 warnings; visual 12/12.
+- **Status:** uncommitted, not pushed (not authorised this phase).

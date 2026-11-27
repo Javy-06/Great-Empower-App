@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { AppTopBar } from "@/components/nav/AppHeader";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { TopNav } from "@/components/nav/TopNav";
@@ -7,14 +7,25 @@ import { Container } from "@/components/layout/Editorial";
 import { useRewards } from "@/rewards/store";
 import { useNotifications } from "@/data/notifications";
 import { DashboardDestination, HomeDashboard } from "./HomeDashboard";
-import { LearnDashboard } from "./LearnDashboard";
-import { GuideCentre } from "./GuideCentre";
-import { SimulateHub } from "./SimulateHub";
-import { AnalyzeView } from "./AnalyzeView";
-import { RewardsView } from "./RewardsView";
-import { NotificationsView } from "./NotificationsView";
 import { AppSplash } from "./AppSplash";
-import { GameShell } from "./game/GameShell";
+// Route-level code splitting: Home ships in the main bundle; other destinations load on first visit.
+const LearnDashboard = lazy(() => import("./LearnDashboard").then((m) => ({ default: m.LearnDashboard })));
+const GuideCentre = lazy(() => import("./GuideCentre").then((m) => ({ default: m.GuideCentre })));
+const SimulateHub = lazy(() => import("./SimulateHub").then((m) => ({ default: m.SimulateHub })));
+const AnalyzeView = lazy(() => import("./AnalyzeView").then((m) => ({ default: m.AnalyzeView })));
+const RewardsView = lazy(() => import("./RewardsView").then((m) => ({ default: m.RewardsView })));
+const NotificationsView = lazy(() => import("./NotificationsView").then((m) => ({ default: m.NotificationsView })));
+const GameShell = lazy(() => import("./game/GameShell").then((m) => ({ default: m.GameShell })));
+
+/** Shown while a destination's code loads: reserves the hero area so the layout doesn't jump. */
+function RouteLoading() {
+  return (
+    <div aria-busy="true" aria-live="polite" className="min-h-[70vh]">
+      <span className="sr-only">Loading…</span>
+      <div className="ge-skeleton h-[17rem] w-full" />
+    </div>
+  );
+}
 import { exitGame, GAME_HASH, gameReturnScroll, LEGACY_GAME_HASH } from "./game/gameRoute";
 import { NewsArticle } from "./news/NewsArticle";
 import { findStory, NEWS_HASH_PREFIX } from "@/data/news";
@@ -60,13 +71,16 @@ function DestinationView({
 }) {
   const story = destination === "home" ? readStory(route) : undefined;
   if (story) return <NewsArticle story={story} onBack={() => goBack("app/home")} />;
-  if (destination === "rewards") return <RewardsView route={route} />;
-  if (destination === "learn") return <LearnDashboard />;
-  if (destination === "simulate") return <SimulateHub />;
-  if (destination === "analyze") return <AnalyzeView />;
-  if (destination === "guide") return <GuideCentre />;
-  if (destination === "notifications") return <NotificationsView />;
-  return <HomeDashboard />;
+  const view =
+    destination === "rewards" ? <RewardsView route={route} />
+    : destination === "learn" ? <LearnDashboard />
+    : destination === "simulate" ? <SimulateHub />
+    : destination === "analyze" ? <AnalyzeView />
+    : destination === "guide" ? <GuideCentre />
+    : destination === "notifications" ? <NotificationsView />
+    : null;
+  if (!view) return <HomeDashboard />;
+  return <Suspense fallback={<RouteLoading />}>{view}</Suspense>;
 }
 
 export function navigateTo(destination: DashboardDestination) {
@@ -128,7 +142,11 @@ export function ApplicationApp() {
       <AppSplash />
 
       {/* The game is an app-in-app: its own full-screen shell, outside the standard layout. */}
-      {inGame && <GameShell onExit={exitGame} />}
+      {inGame && (
+        <Suspense fallback={null}>
+          <GameShell onExit={exitGame} />
+        </Suspense>
+      )}
 
       <div hidden={inGame} inert={inGame} className="min-h-screen overflow-x-hidden bg-canvas">
         <a

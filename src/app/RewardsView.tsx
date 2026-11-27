@@ -423,9 +423,17 @@ function ProductDetail({ id }: { id: string }) {
           <CheckCircle2 size={34} aria-hidden />
         </span>
         <h1 className="mt-4 font-brand text-[2rem] font-semibold text-navy-950">Redeemed</h1>
-        <p className="mt-1 text-body text-ink-secondary">
-          {product.name} · {pts(checkout.total)} spent. Your balance is now {pts(state.points)}.
-        </p>
+        <p className="mt-1 text-body text-ink-secondary">{product.name}</p>
+        <dl className="mt-4 grid w-full grid-cols-2 gap-2 text-left">
+          <div className="rounded-xl bg-crimson-50 p-3">
+            <dt className="text-caption text-ink-secondary">Points used</dt>
+            <dd className="font-brand text-[1.5rem] font-semibold tabular-nums text-crimson-700">−{pts(checkout.total)}</dd>
+          </div>
+          <div className="rounded-xl bg-teal-50 p-3">
+            <dt className="text-caption text-ink-secondary">Balance now</dt>
+            <dd className="font-brand text-[1.5rem] font-semibold tabular-nums text-teal-800">{pts(state.points)}</dd>
+          </div>
+        </dl>
         {product.voucher && (
           <p className="mt-3 rounded-xl bg-navy-50 px-4 py-3 text-body-sm text-navy-900">
             Saved in your wallet for a future eligible GREAT EMPOWER insurance purchase. Insurance purchasing isn't
@@ -459,6 +467,28 @@ function ProductDetail({ id }: { id: string }) {
         </div>
         <h1 className="mt-2 font-brand text-[2rem] font-semibold leading-tight text-navy-950">{product.name}</h1>
         <p className="mt-1 text-body text-ink-secondary">{product.description}</p>
+
+        {/* Can I redeem it now? (display only — the quote comes from the rewards economy) */}
+        <div className="mt-4 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-body-sm font-semibold text-navy-950">{held ? "Already in your wallet" : q.affordable ? "You can redeem this now" : `${pts(q.total - state.points)} to go`}</span>
+            <span className="text-caption text-ink-muted tabular-nums">{pts(state.points)} of {pts(q.total)}</span>
+          </div>
+          <span className="mt-2 block h-2 overflow-hidden rounded-full bg-sunken" aria-hidden>
+            <span className={cn("block h-full rounded-full", q.affordable ? "bg-teal-600" : "bg-gold-500")} style={{ width: `${Math.min(100, (state.points / Math.max(1, q.total)) * 100)}%` }} />
+          </span>
+          <ol className="mt-4 grid grid-cols-3 gap-2 text-center">
+            {(product.voucher
+              ? ["Redeem with points", "Saved in your Wallet", "For a future insurance purchase"]
+              : ["Redeem with points", "A pass appears in your Wallet", "Show the pass when you collect"]
+            ).map((t, i) => (
+              <li key={t} className="flex flex-col items-center gap-1.5">
+                <span className="inline-flex size-7 items-center justify-center rounded-full bg-navy-900 text-caption font-bold text-white">{i + 1}</span>
+                <span className="text-caption text-ink-secondary">{t}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
         {product.voucher && (
           <div className="mt-4 rounded-2xl bg-navy-50 p-4 text-body-sm text-navy-900">
             <p className="font-semibold">Voucher terms</p>

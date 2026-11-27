@@ -11,6 +11,14 @@ import siteConfiguration from './.figma/make/site.json'
 export default defineConfig(({ mode }) => {
   // .figma/make/deploy-preview passes `--mode development` for cached-preview builds.
   const emitSourcemaps = mode === 'development'
+  // Deployment safety: Vercel Preview builds run device-only (no Supabase), even if Supabase
+  // variables are configured for Preview. A Preview may only use cloud mode when it is explicitly
+  // pointed at a NON-production project and GE_PREVIEW_CLOUD=on is set for that environment.
+  const forceDeviceOnly = process.env.VERCEL_ENV === 'preview' && process.env.GE_PREVIEW_CLOUD !== 'on'
+  // Evidence in the Vercel build log (no values printed) that the guard ran.
+  if (process.env.VERCEL_ENV) {
+    console.log(`[great-empower] VERCEL_ENV=${process.env.VERCEL_ENV} → ${forceDeviceOnly ? 'device-only build (Supabase disabled)' : 'Supabase variables used as configured'}`)
+  }
   const indexingMode = process.env.GREAT_EMPOWER_INDEXING_MODE === 'public' ? 'public' : 'demo'
   const configuredSite = {
     ...siteConfiguration,
@@ -19,6 +27,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: process.env.FIGMA_PUBLIC_URL ? `${process.env.FIGMA_PUBLIC_URL}/` : '/',
+    define: forceDeviceOnly
+      ? { 'import.meta.env.VITE_SUPABASE_URL': '""', 'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': '""' }
+      : {},
     build: {
       sourcemap: emitSourcemaps ? 'inline' : false,
       minify: !emitSourcemaps,

@@ -1,8 +1,6 @@
 import { ArrowRight, CalendarDays, Megaphone } from "lucide-react";
 import { Container } from "@/components/layout/Editorial";
 import { useSession } from "@/account/session";
-import { useLearnProgress } from "@/state/learnProgress";
-import { demoLessons } from "@/data/demo-courses";
 import { protectionCategories } from "@/data/protection";
 import { categoryIcons, categoryTones } from "./protection/ProtectionHub";
 import { mediAsasStory, NEWS_HASH_PREFIX } from "@/data/news";
@@ -29,8 +27,6 @@ const go = (hash: string) => {
 export function HomeDashboard() {
   const session = useSession();
   const profileName = session.kind === "ready" ? session.account.displayName : undefined;
-  const learn = useLearnProgress();
-  const nextLesson = demoLessons.find((lesson) => !learn.completed.includes(lesson.id)) ?? demoLessons[0];
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
@@ -39,7 +35,7 @@ export function HomeDashboard() {
       <FeaturedHero
         greeting={greeting}
         profileName={profileName}
-        onContinue={() => go(`app/learn/lesson/${nextLesson?.id ?? "hospital-bills"}`)}
+        onContinue={() => go("app/protect")}
         onBookSession={() => {
           go("app/guide/sessions");
           window.scrollTo({ top: 0 });
