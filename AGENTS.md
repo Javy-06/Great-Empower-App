@@ -108,3 +108,10 @@ For a minor fix, proceed directly when the intended change is clear and does not
 - **Banner Design:** banner-specific work.
 - **Slides:** presentation-specific work.
 - **Design:** task routing to the relevant design skill; it is not an independent authority to redesign the application.
+
+## Design Standards and UI QA
+
+- Design standard: `docs/design/GREAT-EMPOWER-DESIGN-SYSTEM.md` (documents the existing tokens and components; level 2 in the authority order above).
+- Process and definition of done: `docs/design/UI-QA-PROCESS.md`.
+- Run `npm run qa:ui` for every UI change. It builds device-only (never live Supabase), checks all routes at 375/390/768/1280/1440 px and writes screenshots to `.qa/shots/`. A passing gate is not a visual review: inspect the screenshots and score them with the rubric.
+- Frontend Design skill: `.claude/skills/frontend-design/`. Use it for composition, restraint and copy; it does not override the brand palette or typography.
