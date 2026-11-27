@@ -43,7 +43,7 @@ const go = (hash: string) => {
 const pts = (n: number) => `${n.toLocaleString("en-MY")} pts`;
 
 const SIMULATED_NOTE =
-  "Marketplace brands and items are fictional, with no cash value, and are not real merchants. Great Empower Vouchers are for future insurance purchases, which are not available yet.";
+  "Points, Marketplace brands and items are fictional and have no cash value; the brands are not real merchants. Great Empower Vouchers are for future insurance purchases, which are not available yet.";
 
 const foodAndDrink = activeProducts.filter(isWelcomeEligible);
 const vouchers = activeProducts.filter((p) => p.voucher);
@@ -131,11 +131,12 @@ function RewardsHub() {
         <div className="flex items-end justify-between gap-3">
           <h2 className="text-heading text-navy-950">Redeem food &amp; drinks</h2>
           <button type="button" onClick={() => go("app/rewards/marketplace")} className="inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-navy-900">
-            All items <ArrowRight size={15} aria-hidden />
+            All {foodAndDrink.length} items <ArrowRight size={15} aria-hidden />
           </button>
         </div>
-        <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {foodAndDrink.map((p) => (
+        {/* A taste of the catalogue; the full list is one tap away. */}
+        <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {foodAndDrink.slice(0, 4).map((p) => (
             <li key={p.id}>
               <ProductCard product={p} welcome={welcomeAvailableFor(state, p.id)} />
             </li>

@@ -60,21 +60,26 @@ const steps = ["Profile", "Needs", "Plan"] as const;
 export function SimulateHub() {
   const [initial] = useState(readSimulateRoute);
   const [step, setStep] = useState(initial.step);
+  const [tool, setTool] = useState<ToolId>((initial.tool as ToolId | undefined) ?? "tool-bill");
+  const focusTools = () => window.setTimeout(() => document.getElementById("needs-tools")?.scrollIntoView({ block: "start" }), 60);
   useEffect(() => {
     // A deep link while Simulate is already open (e.g. back/forward): open Needs and go to the tool.
     const onHash = () => {
       const r = readSimulateRoute();
       if (r.step !== 1) return;
       setStep(1);
-      if (r.tool) window.setTimeout(() => document.getElementById(r.tool!)?.scrollIntoView({ block: "start" }), 60);
+      if (r.tool) {
+        setTool(r.tool as ToolId);
+        focusTools();
+      }
     };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
   useEffect(() => {
     if (!initial.tool) return;
-    // Wait for the Needs step to render, then bring the requested tool into view.
-    const t = window.setTimeout(() => document.getElementById(initial.tool!)?.scrollIntoView({ block: "start" }), 60);
+    // Wait for the Needs step to render, then bring the tool switcher into view.
+    const t = focusTools();
     return () => window.clearTimeout(t);
   }, [initial.tool]);
   const toStep = (n: number) => {
@@ -123,7 +128,7 @@ export function SimulateHub() {
       </Container>
 
       {step === 0 && <ProfileStep onNext={() => toStep(1)} />}
-      {step === 1 && <NeedsStep onNext={() => toStep(2)} />}
+      {step === 1 && <NeedsStep tool={tool} onTool={setTool} onNext={() => toStep(2)} />}
       {step === 2 && <PlanStep onBack={() => toStep(0)} />}
     </>
   );
@@ -280,11 +285,13 @@ function Field({ icon: Icon, label, prefix, suffix, children }: { icon: typeof W
   );
 }
 
-const tools = [
-  { id: "tool-bill", title: "Medical bill simulator", hint: "How a hospital bill is shared between you, an employer and a plan", icon: HeartPulse },
-  { id: "tool-fund", title: "Emergency fund", hint: "How many months your savings could cover essentials", icon: Wallet },
-  { id: "tool-family", title: "Family protection", hint: "What your dependants might need, compared with life cover you count", icon: Users },
-  { id: "tool-ci", title: "Critical illness runway", hint: "How far a critical illness lump sum might stretch during recovery", icon: Ribbon },
+type ToolId = (typeof TOOL_IDS)[number];
+
+const tools: Array<{ id: ToolId; title: string; short: string; hint: string; icon: typeof Wallet }> = [
+  { id: "tool-bill", title: "Medical bill", short: "Medical bill", hint: "How a hospital bill is shared between you, an employer and a plan.", icon: HeartPulse },
+  { id: "tool-fund", title: "Emergency fund", short: "Emergency fund", hint: "How many months your savings could cover essentials.", icon: Wallet },
+  { id: "tool-family", title: "Family protection", short: "Family", hint: "What your dependants might need, compared with life cover you count. Life insurance doesn't cancel debts.", icon: Users },
+  { id: "tool-ci", title: "Critical illness runway", short: "Critical illness", hint: "A critical illness payout is a one-off lump sum, not a salary. Compare it with a recovery period.", icon: Ribbon },
 ];
 
 const keyTerms = [
@@ -294,35 +301,78 @@ const keyTerms = [
   { term: "Annual limit", text: "The most a plan pays in one policy year." },
 ];
 
-function NeedsStep({ onNext }: { onNext: () => void }) {
+const learnMore: Partial<Record<ToolId, { href: string; label: string }>> = {
+  "tool-bill": { href: "#app/learn/protection/medical", label: "About medical cover" },
+  "tool-fund": { href: "#app/guide/article/emergency-fund", label: "Read “Building an emergency fund”" },
+  "tool-family": { href: "#app/learn/protection/life", label: "About life cover" },
+  "tool-ci": { href: "#app/learn/protection/critical-illness", label: "About critical illness cover" },
+};
+
+/** One tool at a time: a tab switcher instead of four tools stacked on one long page. */
+function NeedsStep({ tool, onTool, onNext }: { tool: ToolId; onTool: (t: ToolId) => void; onNext: () => void }) {
+  const active = tools.find((t) => t.id === tool)!;
+  const more = learnMore[tool];
+  const onKey = (e: React.KeyboardEvent, i: number) => {
+    const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    const next = tools[(i + d + tools.length) % tools.length];
+    onTool(next.id);
+    document.getElementById(`tab-${next.id}`)?.focus();
+  };
   return (
     <>
-      <Container className="max-w-[44rem] pt-6">
-        <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">Explore your needs</h2>
-        <p className="mt-1 text-body-sm text-ink-secondary">Four tools. Pick one, enter your own numbers, and see the result. New to these covers? <a href="#app/learn/protection" className="font-semibold text-navy-800 underline underline-offset-2">Read Protection explained</a>.</p>
-        <ol className="mt-3 grid gap-2.5 sm:grid-cols-2">
-          {tools.map((t, i) => (
-            <li key={t.id}>
+      <Container className="max-w-[60rem] scroll-mt-20 pt-6" id="needs-tools">
+        <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">Pick a tool</h2>
+        <div role="tablist" aria-label="Simulation tools" className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {tools.map((t, i) => {
+            const on = t.id === tool;
+            return (
               <button
+                key={t.id}
+                id={`tab-${t.id}`}
+                role="tab"
                 type="button"
-                onClick={() => document.getElementById(t.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="flex min-h-16 w-full items-center gap-3 rounded-2xl bg-surface p-3.5 text-left shadow-e1 ring-1 ring-ink/[0.06]"
+                aria-selected={on}
+                aria-controls={t.id}
+                tabIndex={on ? 0 : -1}
+                onClick={() => onTool(t.id)}
+                onKeyDown={(e) => onKey(e, i)}
+                className={cn(
+                  "flex min-h-14 items-center gap-2.5 rounded-2xl px-3 py-2 text-left text-body-sm font-semibold transition-colors",
+                  on ? "bg-navy-900 text-white shadow-e2" : "bg-surface text-navy-950 ring-1 ring-ink/[0.08] hover:ring-ink/20",
+                )}
               >
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-white">
-                  <t.icon size={20} aria-hidden />
+                <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-xl", on ? "bg-white/15 text-white" : "bg-navy-50 text-navy-800")}>
+                  <t.icon size={18} aria-hidden />
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-caption font-bold text-crimson-600">Tool {i + 1}</span>
-                  <span className="block text-body font-semibold text-navy-950">{t.title}</span>
-                  <span className="block text-caption text-ink-muted">{t.hint}</span>
-                </span>
+                {t.short}
               </button>
-            </li>
-          ))}
-        </ol>
-        <details className="group mt-3 rounded-2xl bg-navy-50 px-4">
+            );
+          })}
+        </div>
+        <p className="mt-3 text-body-sm text-ink-secondary">
+          {active.hint}{" "}
+          {more && <a href={more.href} className="font-semibold text-navy-800 underline underline-offset-2">{more.label}</a>}
+        </p>
+      </Container>
+
+      {tools.map((t) => (
+        <Container key={t.id} className="max-w-[1040px] scroll-mt-20 pt-4" id={t.id}>
+          <div role="tabpanel" aria-labelledby={`tab-${t.id}`} hidden={t.id !== tool}>
+            <h2 className="sr-only">{t.title}</h2>
+            {t.id === "tool-bill" && <MedicalClaimSimulator />}
+            {t.id === "tool-fund" && <div className="max-w-[40rem]"><EmergencyFundCalculator /></div>}
+            {t.id === "tool-family" && <FamilyProtectionScenario />}
+            {t.id === "tool-ci" && <CiRunwayScenario />}
+          </div>
+        </Container>
+      ))}
+
+      <Container className="max-w-[60rem] pt-6">
+        <details className="group rounded-2xl bg-navy-50 px-4">
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between text-body-sm font-semibold text-navy-900">
-            Key terms used in the simulator
+            Key terms used in the simulators
             <ArrowRight size={16} className="rotate-90 transition-transform group-open:-rotate-90" aria-hidden />
           </summary>
           <dl className="grid gap-2 pb-4">
@@ -341,63 +391,7 @@ function NeedsStep({ onNext }: { onNext: () => void }) {
             </p>
           </dl>
         </details>
-      </Container>
-
-      <Container className="max-w-[1040px] scroll-mt-20 pt-7" id="tool-bill">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">1 · Medical bill simulator</h2>
-          <span className="rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-bold text-white">Interactive</span>
-        </div>
-        <p className="mt-1 text-body-sm text-ink-secondary">
-          See how deductibles, co-payments and limits share the cost of a hospital bill. Every figure is illustrative.
-        </p>
-        <div className="mt-4">
-          <MedicalClaimSimulator />
-        </div>
-      </Container>
-
-      <Container className="mt-10 grid scroll-mt-20 gap-6 lg:grid-cols-[5fr_7fr] lg:items-start" id="tool-fund">
-        <div>
-          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">2 · Emergency fund</h2>
-          <p className="mt-1 text-body font-semibold text-navy-900">How long would your savings last?</p>
-          <p className="mt-1 text-body-sm text-ink-secondary">Months of essentials your savings could cover. A rule of thumb, not a target.</p>
-          <a href="#app/guide/article/emergency-fund" className="mt-2 inline-flex min-h-11 items-center text-body-sm font-semibold text-navy-800 underline underline-offset-4">
-            Read “Building an emergency fund”
-          </a>
-        </div>
-        <EmergencyFundCalculator />
-      </Container>
-
-      <Container className="max-w-[1040px] scroll-mt-20 pt-10" id="tool-family">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">3 · Family protection</h2>
-          <span className="rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-bold text-white">Interactive</span>
-        </div>
-        <p className="mt-1 text-body-sm text-ink-secondary">
-          If you died, what might the people who depend on you need — and how much of it would cover you count? Life insurance doesn't cancel debts; this shows the need, not a product.{" "}
-          <a href="#app/learn/protection/life" className="font-semibold text-navy-800 underline underline-offset-2">About life cover</a>
-        </p>
-        <div className="mt-4">
-          <FamilyProtectionScenario />
-        </div>
-      </Container>
-
-      <Container className="max-w-[1040px] scroll-mt-20 pt-10" id="tool-ci">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">4 · Critical illness runway</h2>
-          <span className="rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-bold text-white">Interactive</span>
-        </div>
-        <p className="mt-1 text-body-sm text-ink-secondary">
-          A critical illness payout is a one-off lump sum, not a salary. Compare it with the income a recovery period could cost.{" "}
-          <a href="#app/learn/protection/critical-illness" className="font-semibold text-navy-800 underline underline-offset-2">About critical illness cover</a>
-        </p>
-        <div className="mt-4">
-          <CiRunwayScenario />
-        </div>
-      </Container>
-
-      <Container className="max-w-[44rem] pt-6">
-        <button type="button" onClick={onNext} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-bold text-white hover:bg-crimson-700">
+        <button type="button" onClick={onNext} className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-bold text-white hover:bg-crimson-700">
           See my protection plan <ArrowRight size={18} aria-hidden />
         </button>
       </Container>

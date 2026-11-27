@@ -250,6 +250,8 @@ export function AnalyzeView() {
   const completeness = profileCompleteness(p);
   const results = (Object.keys(areaMeta) as ProtectionArea[]).map((area) => ({ area, ...assess(area, p) }));
   const gaps = results.filter((r) => r.status === "gap");
+  const assessed = results.filter((r) => r.status !== "not-assessed");
+  const notAssessed = results.filter((r) => r.status === "not-assessed");
   const hasData = completeness.done > 0;
 
   return (
@@ -295,32 +297,55 @@ export function AnalyzeView() {
 
       <Container className="mt-7">
         <h2 className="text-heading text-navy-950">Coverage analysis</h2>
-        <ul className="mt-3 grid gap-2.5">
-          {results.map(({ area, status, why, next }) => {
-            const meta = areaMeta[area];
-            const Icon = meta.icon;
-            return (
-              <li key={area} className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-                <div className="flex items-center gap-3">
-                  <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-xl", meta.tone)}>
-                    <Icon size={20} aria-hidden />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-body font-semibold text-navy-950">{areaLabels[area]}</span>
-                    <span className="block text-caption text-ink-muted">{meta.what}</span>
-                  </span>
-                  <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-caption font-bold", statusStyle[status].cls)}>
-                    {statusStyle[status].label}
-                  </span>
-                </div>
-                <p className="mt-2.5 text-body-sm text-ink-secondary">{why}</p>
-                <button type="button" onClick={() => goHash(next.href)} className="mt-1 inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-crimson-600">
-                  {next.label} <ArrowRight size={15} aria-hidden />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {assessed.length > 0 && (
+          <ul className="mt-3 grid gap-2.5">
+            {assessed.map(({ area, status, why, next }) => {
+              const meta = areaMeta[area];
+              const Icon = meta.icon;
+              return (
+                <li key={area} className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
+                  <div className="flex items-center gap-3">
+                    <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-xl", meta.tone)}>
+                      <Icon size={20} aria-hidden />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-body font-semibold text-navy-950">{areaLabels[area]}</span>
+                      <span className="block text-caption text-ink-muted">{meta.what}</span>
+                    </span>
+                    <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-caption font-bold", statusStyle[status].cls)}>
+                      {statusStyle[status].label}
+                    </span>
+                  </div>
+                  <p className="mt-2.5 text-body-sm text-ink-secondary">{why}</p>
+                  <button type="button" onClick={() => goHash(next.href)} className="mt-1 inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-crimson-600">
+                    {next.label} <ArrowRight size={15} aria-hidden />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {notAssessed.length > 0 && (
+          <div className="mt-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
+            <p className="text-body-sm font-semibold text-navy-950">
+              {assessed.length ? "Not assessed yet" : "Answer your profile to see a finding for each area"}
+            </p>
+            <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {notAssessed.map(({ area }) => {
+                const meta = areaMeta[area];
+                const Icon = meta.icon;
+                return (
+                  <li key={area} className="flex items-center gap-2.5 rounded-xl bg-sunken/70 p-2.5">
+                    <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-lg", meta.tone)}>
+                      <Icon size={17} aria-hidden />
+                    </span>
+                    <span className="min-w-0 text-caption font-semibold leading-tight text-navy-950">{areaLabels[area]}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </Container>
 
       {hasData && (
