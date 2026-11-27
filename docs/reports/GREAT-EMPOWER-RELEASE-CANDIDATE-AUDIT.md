@@ -190,7 +190,7 @@ The biggest open item is the **deployment isolation of the Preview**. It is addr
 ## Issues found
 | ID | Sev | Description | Evidence | Impact | Fix | Status |
 |---|---|---|---|---|---|---|
-| A1 | P0 (process) | Preview isolation not independently provable: the Vercel variables are encrypted in the API, and the deployed files can't be read without a login | API `decrypted:false`; file tree 404 | A live-connected Preview could write real data | Code guard (earlier) + build-log evidence (this audit); the owner can blank the variables | **Mitigated; see Post-push verification** |
+| A1 | P0 (process) | Preview isolation not independently provable: the Vercel variables are encrypted in the API, and the deployed files can't be read without a login | API `decrypted:false`; file tree 404 | A live-connected Preview could write real data | Code guard + build-log evidence: **latest Preview verified device-only by build log**. Older Previews remain live-built. | **Mitigated; owner to delete old Previews and blank the variables** |
 | A2 | P2 | Main bundle 723 KB | Vite warning | Slower first load on mobile data | Route-level lazy loading | **Fixed** (−36% gz) |
 | A3 | P2 | "Check" step switches to the Simulate tab | Protect → step 1 | Possible confusion | Host the profile in Protect | **Owner decision** |
 | A4 | P2 | "Protect" vs "Protection explained" naming overlap | Nav + Learn card | Possible confusion | Rename or merge | **Owner decision** |
@@ -249,4 +249,16 @@ The biggest open item is the **deployment isolation of the Preview**. It is addr
 5. Re-verify product facts.
 
 ## Post-push verification
-_(Completed after the push; see below.)_
+- **Pushed:** `c983d7e..72d5a01`. The Vercel Preview is **READY**: `https://great-empower-14pw321zt-javy8.vercel.app`.
+- **Vercel build log** for that deployment (read through the API; no values printed) contains:
+  `[great-empower] VERCEL_ENV=preview → device-only build (Supabase disabled)`
+- So the guard executed inside Vercel's real Preview build, and both `VITE_SUPABASE_*` values were defined as empty for that bundle. That is the same build path verified locally, where the Preview-mode bundle had 0 Supabase hosts or keys.
+
+**PREVIEW SAFETY (latest Preview, 72d5a01): VERIFIED BY BUILD LOG.** The deployed bundle itself was not inspected; that would need an SSO login or a bypass token, which isn't allowed.
+
+**Still open (owner action):**
+- **Older Preview deployments** for this branch, built before `72d5a01` (for example `…erfxqsedw…`, `…e87qlkcql…`, `…il0y2cwm6…`), were built with the live Supabase settings and **remain reachable** by anyone signed in to the Vercel team.
+- **Recommended:** delete those older Preview deployments in Vercel, **and** blank or delete the two Preview Supabase variables, so no future build can embed them even if the guard is removed.
+- **Before sharing the Preview with testers:** sign in, use the Demo Account, and confirm in DevTools → Network that there are no `*.supabase.co` requests.
+
+**Process note:** the pre-commit secret scan printed 2 matches, and the commit ran in the same command. Both were checked straight afterwards: they are the word `service_role` in report prose (the list of patterns the scan looks for), not secrets. In future the scan should gate the commit.
