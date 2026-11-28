@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AlertCircle, ArrowLeft, ArrowRight, Check, CircleCheck, ClipboardCheck, HeartPulse, Info, Minus, Pencil, ShieldAlert, ShieldCheck, Trash2, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Check, CircleCheck, ClipboardCheck, HeartPulse, Info, Minus, Pencil, ShieldAlert, ShieldCheck, Trash2, UserRound, Users } from "lucide-react";
+import { isMinor, readAge } from "@/data/adviserRequest";
+import { startAdviserRequest } from "./AdviserRequest";
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { TextField } from "@/components/ui/Field";
@@ -69,10 +71,17 @@ export function ApplyFlow({ area, step }: { area: ProtectionArea; step: Step }) 
 
   // A new step starts with no error messages.
   useEffect(() => setErrors({}), [step]);
-  // Deleted elsewhere (e.g. from the done screen): start over cleanly.
+  // Deleted elsewhere (e.g. from the done screen): start over cleanly. Only when a saved application
+  // DISAPPEARS: checking "no stored copy but local edits" also fired on the very first edit, before
+  // the store had caught up, and wiped it.
+  const hadStored = useRef(Boolean(stored));
   useEffect(() => {
-    if (!stored && app.updatedAt) setApp(emptyApplication(area));
-  }, [stored, app.updatedAt, area]);
+    if (stored) hadStored.current = true;
+    else if (hadStored.current) {
+      hadStored.current = false;
+      setApp(emptyApplication(area));
+    }
+  }, [stored, area]);
 
   /** Every edit is saved as a draft. Editing a completed application makes it a draft again. */
   const update = (patch: (a: InsuranceApplication) => InsuranceApplication) => {
@@ -125,6 +134,17 @@ export function ApplyFlow({ area, step }: { area: ProtectionArea; step: Step }) 
           <Section title="Your details" lead="As they appear on your MyKad. Saved only on this device, in this account.">
             <TextField className="transition-none" id="fullName" label="Full name" autoComplete="name" value={app.details.fullName} error={errors.fullName} onChange={(e) => update((a) => ({ ...a, details: { ...a.details, fullName: e.target.value } }))} />
             <TextField className="transition-none" id="dateOfBirth" label="Date of birth" type="date" autoComplete="bday" value={app.details.dateOfBirth} error={errors.dateOfBirth} onChange={(e) => update((a) => ({ ...a, details: { ...a.details, dateOfBirth: e.target.value } }))} />
+            {isMinor(readAge(app.details.dateOfBirth)?.band) && (
+              <div role="status" className="rounded-2xl bg-navy-950 p-4 text-white">
+                <p className="flex items-center gap-2 text-body font-semibold"><Users size={18} className="text-gold-300" aria-hidden /> Under 18? A parent or guardian may need to help.</p>
+                <p className="mt-1 text-body-sm text-white/80">
+                  This in-app application is for adults applying on their own. Eligibility and who owns the policy depend on the insurer and plan, so start a guardian-assisted adviser request instead.
+                </p>
+                <button type="button" onClick={() => startAdviserRequest(area)} className="mt-3 inline-flex h-11 items-center gap-2 rounded-full bg-white px-4 text-body-sm font-bold text-navy-950">
+                  Request an adviser with a guardian <ArrowRight size={16} aria-hidden />
+                </button>
+              </div>
+            )}
             <Choice
               id="residency"
               legend="Residency"
@@ -271,7 +291,7 @@ function Progress({ area, index, valid }: { area: ProtectionArea; index: number;
   );
 }
 
-function ErrorSummary({ errors, ref }: { errors: FieldErrors; ref: React.Ref<HTMLDivElement> }) {
+export function ErrorSummary({ errors, ref }: { errors: FieldErrors; ref: React.Ref<HTMLDivElement> }) {
   const list = Object.entries(errors);
   if (!list.length) return null;
   return (
@@ -301,7 +321,7 @@ function Section({ title, lead, children }: { title: string; lead: string; child
 }
 
 /** A required single choice: a labelled radio group of pill buttons (arrow keys move between them). */
-function Choice({ id, legend, hint, value, error, options, onChange }: { id: string; legend: string; hint?: string; value: string; error?: string; options: Array<{ v: string; l: string }>; onChange: (v: string) => void }) {
+export function Choice({ id, legend, hint, value, error, options, onChange }: { id: string; legend: string; hint?: string; value: string; error?: string; options: Array<{ v: string; l: string }>; onChange: (v: string) => void }) {
   const msgId = `${id}-msg`;
   const onKey = (e: React.KeyboardEvent, i: number) => {
     const d = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
@@ -357,7 +377,7 @@ function Choice({ id, legend, hint, value, error, options, onChange }: { id: str
   );
 }
 
-function StepButtons({ onBack, onNext, backLabel = "Back", nextLabel = "Continue" }: { onBack: () => void; onNext: () => void; backLabel?: string; nextLabel?: string }) {
+export function StepButtons({ onBack, onNext, backLabel = "Back", nextLabel = "Continue" }: { onBack: () => void; onNext: () => void; backLabel?: string; nextLabel?: string }) {
   return (
     <div className="mt-1 flex flex-wrap-reverse items-center gap-3">
       <button type="button" onClick={onBack} className="inline-flex h-12 items-center gap-2 rounded-full px-4 text-body-sm font-semibold text-navy-900 ring-1 ring-ink/15">
@@ -440,7 +460,7 @@ function ReviewBlock({ title, edit, rows }: { title: string; edit: string; rows:
   );
 }
 
-function Tick({ id, checked, error, onChange, children }: { id: string; checked: boolean; error?: string; onChange: (v: boolean) => void; children: ReactNode }) {
+export function Tick({ id, checked, error, onChange, children }: { id: string; checked: boolean; error?: string; onChange: (v: boolean) => void; children: ReactNode }) {
   return (
     <div>
       <label htmlFor={id} className="flex min-h-11 cursor-pointer items-start gap-3 text-body-sm text-navy-950">
@@ -516,8 +536,8 @@ function Done({ app }: { app: InsuranceApplication }) {
           <h2 id="next-title-apply" className="font-brand text-[1.5rem] font-semibold leading-tight">What you can do next</h2>
           <p className="mt-1 text-body-sm text-white/75">An adviser can take you through applying with an insurer. Your answers here make a ready-made summary for that conversation.</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <button type="button" onClick={() => go(`app/protect/get-cover/${area}/adviser`)} className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-white px-4 text-left text-body-sm font-semibold text-navy-950">
-              <span className="inline-flex items-center gap-2"><UserRound size={17} aria-hidden /> Get Adviser Guidance</span> <ArrowRight size={16} aria-hidden />
+            <button type="button" onClick={() => startAdviserRequest(area)} className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-white px-4 text-left text-body-sm font-semibold text-navy-950">
+              <span className="inline-flex items-center gap-2"><UserRound size={17} aria-hidden /> Request an adviser</span> <ArrowRight size={16} aria-hidden />
             </button>
             <button type="button" onClick={() => go(stepHash(area, "review"))} className="flex min-h-12 items-center justify-between gap-2 rounded-xl px-4 text-left text-body-sm font-semibold text-white ring-1 ring-white/30">
               <span className="inline-flex items-center gap-2"><Pencil size={17} aria-hidden /> View or edit answers</span> <ArrowRight size={16} aria-hidden />

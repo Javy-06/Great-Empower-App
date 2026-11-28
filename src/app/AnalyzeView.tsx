@@ -16,6 +16,8 @@ import { ProtectCheck } from "./protect/ProtectCheck";
 import { GetCover, GET_COVER } from "./protect/GetCover";
 import { ApplyFlow, readApply } from "./protect/ApplyFlow";
 import { ProductExplorer } from "./protection/ProductExplorer";
+import { AdviserRequest } from "./protect/AdviserRequest";
+import { GapDetail } from "./protect/GapDetail";
 
 const rm = (value: number) => `RM ${value.toLocaleString("en-MY")}`;
 
@@ -186,17 +188,17 @@ function SampleAnalysis() {
 /* Personal protection dashboard                                                               */
 /* ========================================================================================== */
 
-type AreaStatus = "covered" | "review" | "gap" | "not-assessed";
+export type AreaStatus = "covered" | "review" | "gap" | "not-assessed";
 
 /** Each status has a colour AND a shape, so it never depends on colour alone. */
-const statusStyle: Record<AreaStatus, { label: string; cls: string; bar: string; icon: typeof Check }> = {
+export const statusStyle: Record<AreaStatus, { label: string; cls: string; bar: string; icon: typeof Check }> = {
   covered: { label: "Covered", cls: "bg-success-50 text-success-700", bar: "bg-success-600 text-white", icon: Check },
   review: { label: "Review", cls: "bg-gold-50 text-gold-700", bar: "bg-gold-500 text-navy-950", icon: TriangleAlert },
   gap: { label: "Gap", cls: "bg-crimson-50 text-crimson-700", bar: "bg-crimson-600 text-white", icon: X },
   "not-assessed": { label: "Not assessed", cls: "bg-sunken text-ink-muted", bar: "bg-sunken text-ink-muted", icon: CircleHelp },
 };
 
-const areaMeta: Record<ProtectionArea, { icon: typeof HeartPulse; tone: string; what: string }> = {
+export const areaMeta: Record<ProtectionArea, { icon: typeof HeartPulse; tone: string; what: string }> = {
   medical: { icon: HeartPulse, tone: "bg-crimson-50 text-crimson-600", what: "Hospitalisation, surgery & medical costs" },
   critical: { icon: ShieldPlus, tone: "bg-navy-50 text-navy-700", what: "Financial support for major illnesses" },
   life: { icon: Users, tone: "bg-gold-50 text-gold-700", what: "Income support for people who depend on you" },
@@ -210,7 +212,7 @@ const areaMeta: Record<ProtectionArea, { icon: typeof HeartPulse; tone: string; 
  *  - said "no" (not a priority) or unsure -> Review
  *  - no answer                            -> Not assessed
  */
-function assess(
+export function assess(
   area: ProtectionArea,
   p: ProtectionProfile,
 ): { status: AreaStatus; why: string; next: { label: string; href: string } } {
@@ -247,6 +249,8 @@ function assess(
   };
 }
 
+export const gapHash = (area: ProtectionArea) => `app/protect/gap/${area}`;
+
 const goHash = (hash: string) => {
   window.location.hash = hash;
   window.scrollTo({ top: 0 });
@@ -268,6 +272,11 @@ export function AnalyzeView() {
   if (route[0] === "check") return <ProtectCheck />;
   if (route[0] === "products") return <ProductExplorer context="protect" />;
   if (route[0] === "get-cover") return <GetCover segments={route.slice(1)} />;
+  if (route[0] === "adviser") return <AdviserRequest segment={route[1]} />;
+  if (route[0] === "gap") {
+    const area = (Object.keys(areaMeta) as ProtectionArea[]).find((a) => a === route[1]);
+    if (area) return <GapDetail key={area} area={area} />;
+  }
   if (route[0] === "apply") {
     const { area, step } = readApply(route.slice(1));
     // Keyed by area so each kind of cover has its own form state.
@@ -339,12 +348,17 @@ function ProtectOverview() {
         {assessed.length > 0 && <GapSummary results={results} />}
         {assessed.length > 0 && (
           <ul className="mt-3 grid gap-2.5">
-            {assessed.map(({ area, status, why, next }) => {
+            {assessed.map(({ area, status, why }) => {
               const meta = areaMeta[area];
               const Icon = meta.icon;
               return (
-                <li key={area} className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]">
-                  <div className="flex items-center gap-3">
+                <li key={area}>
+                  <button
+                    type="button"
+                    onClick={() => goHash(gapHash(area))}
+                    className="group block w-full rounded-2xl bg-surface p-4 text-left ring-1 ring-ink/[0.07] transition-shadow hover:shadow-e2 hover:ring-ink/15"
+                  >
+                  <span className="flex items-center gap-3">
                     <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-xl", meta.tone)}>
                       <Icon size={20} aria-hidden />
                     </span>
@@ -356,10 +370,11 @@ function ProtectOverview() {
                       {(() => { const I = statusStyle[status].icon; return <I size={13} strokeWidth={2.5} aria-hidden />; })()}
                       {statusStyle[status].label}
                     </span>
-                  </div>
-                  <p className="mt-2.5 text-body-sm text-ink-secondary">{why}</p>
-                  <button type="button" onClick={() => goHash(next.href)} className="mt-1 inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-crimson-600">
-                    {next.label} <ArrowRight size={15} aria-hidden />
+                  </span>
+                  <span className="mt-2.5 block text-body-sm text-ink-secondary">{why}</span>
+                  <span className="mt-2 inline-flex min-h-6 items-center gap-1 text-body-sm font-semibold text-crimson-600">
+                    See details and next steps <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
+                  </span>
                   </button>
                 </li>
               );
@@ -379,11 +394,21 @@ function ProtectOverview() {
                 const meta = areaMeta[area];
                 const Icon = meta.icon;
                 return (
-                  <li key={area} className="flex items-center gap-2.5 rounded-xl bg-sunken/70 p-2.5">
-                    <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-lg", meta.tone)}>
-                      <Icon size={17} aria-hidden />
-                    </span>
-                    <span className="min-w-0 text-caption font-semibold leading-tight text-navy-950">{areaLabels[area]}</span>
+                  <li key={area}>
+                    <button
+                      type="button"
+                      onClick={() => goHash(gapHash(area))}
+                      className="flex min-h-14 w-full items-center gap-2.5 rounded-xl bg-sunken/70 p-2.5 text-left transition-colors hover:bg-navy-50"
+                    >
+                      <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-lg", meta.tone)}>
+                        <Icon size={17} aria-hidden />
+                      </span>
+                      <span className="min-w-0 flex-1 text-caption font-semibold leading-tight text-navy-950">
+                        {areaLabels[area]}
+                        <span className="sr-only">: not assessed yet</span>
+                      </span>
+                      <ArrowRight size={14} className="shrink-0 text-ink-muted" aria-hidden />
+                    </button>
                   </li>
                 );
               })}
@@ -442,10 +467,16 @@ function GapSummary({ results }: { results: Array<{ area: ProtectionArea; status
           const st = statusStyle[status];
           const Icon = st.icon;
           return (
-            <li key={area} className={cn("flex min-h-[4.25rem] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center", st.bar)}>
-              <Icon size={18} strokeWidth={2.5} aria-hidden />
-              <span className="text-[12px] font-semibold leading-tight">{areaLabels[area]}</span>
-              <span className="sr-only">: {st.label}</span>
+            <li key={area}>
+              <button
+                type="button"
+                onClick={() => goHash(gapHash(area))}
+                className={cn("flex min-h-[4.25rem] w-full flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center transition-[filter] hover:brightness-95", st.bar)}
+              >
+                <Icon size={18} strokeWidth={2.5} aria-hidden />
+                <span className="text-[12px] font-semibold leading-tight">{areaLabels[area]}</span>
+                <span className="sr-only">: {st.label}</span>
+              </button>
             </li>
           );
         })}

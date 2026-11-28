@@ -4,6 +4,7 @@ import { Container } from "@/components/layout/Editorial";
 import { protectionCategories } from "@/data/protection";
 import { categoryIcons, categoryTones } from "@/app/protection/ProtectionHub";
 import { cn } from "@/lib/cn";
+import { startAdviserRequest } from "./AdviserRequest";
 
 const go = (hash: string, top = false) => {
   window.location.hash = hash;
@@ -66,21 +67,35 @@ export function GetCoverSection() {
       <h2 id="protect-apply-title" className="font-brand text-[1.75rem] font-semibold leading-tight text-navy-950">Get cover</h2>
       <p className="mt-0.5 text-body-sm text-ink-secondary">Understand a kind of cover, get ready, then apply in the app.</p>
       <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
-        <li className="flex items-center gap-3 rounded-2xl bg-sunken/60 p-3 ring-1 ring-ink/[0.06]">
-          <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-ink/[0.08]">
-            <LogoMark size={40} />
-          </span>
-          <span>
-            <span className="block text-body-sm font-semibold text-navy-950">Apply in GREAT EMPOWER</span>
-            <span className="block text-caption text-ink-secondary">Fill in your application here, step by step, and review it before you finish.</span>
-          </span>
+        <li>
+          <button
+            type="button"
+            onClick={() => go("app/protect/get-cover", true)}
+            className="group flex h-full w-full items-center gap-3 rounded-2xl bg-sunken/60 p-3 text-left ring-1 ring-ink/[0.06] transition-shadow hover:shadow-e1 hover:ring-ink/15"
+          >
+            <span className="inline-flex size-14 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-ink/[0.08]">
+              <LogoMark size={40} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-body-sm font-semibold text-navy-950">Apply in GREAT EMPOWER</span>
+              <span className="block text-caption text-ink-secondary">Fill in your application here, step by step, and review it before you finish.</span>
+            </span>
+            <ArrowRight size={18} className="shrink-0 text-crimson-600 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </button>
         </li>
-        <li className="flex items-center gap-3 rounded-2xl bg-sunken/60 p-3 ring-1 ring-ink/[0.06]">
-          <img src={ADVISER_PHOTO.src} alt={ADVISER_PHOTO.alt} width={56} height={56} loading="lazy" decoding="async" className="size-14 shrink-0 rounded-xl object-cover object-[71%_22%]" />
-          <span>
-            <span className="block text-body-sm font-semibold text-navy-950">Talk to an adviser</span>
-            <span className="block text-caption text-ink-secondary">Want help first? A licensed agent or adviser can explain your options.</span>
-          </span>
+        <li>
+          <button
+            type="button"
+            onClick={() => startAdviserRequest()}
+            className="group flex h-full w-full items-center gap-3 rounded-2xl bg-sunken/60 p-3 text-left ring-1 ring-ink/[0.06] transition-shadow hover:shadow-e1 hover:ring-ink/15"
+          >
+            <img src={ADVISER_PHOTO.src} alt="" width={56} height={56} loading="lazy" decoding="async" className="size-14 shrink-0 rounded-xl object-cover object-[71%_22%]" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-body-sm font-semibold text-navy-950">Talk to an adviser</span>
+              <span className="block text-caption text-ink-secondary">Want help first? Prepare a request for a licensed adviser. Under 18? A parent or guardian can join.</span>
+            </span>
+            <ArrowRight size={18} className="shrink-0 text-crimson-600 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </button>
         </li>
       </ul>
       <button

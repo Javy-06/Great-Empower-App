@@ -6,7 +6,52 @@ import type {
   Engine2PublicRequest,
   Engine2Success,
 } from "../../calculation-engine/engine-2.ts";
-import { buildMedicalClaimResultPresentation } from "./medicalClaimResultPresentation";
+import { buildMedicalClaimResultPresentation, type MedicalClaimBreakdownRow } from "./medicalClaimResultPresentation";
+
+const segmentTone: Record<string, { bar: string; dot: string }> = {
+  "employer-payment": { bar: "bg-gold-500", dot: "bg-gold-500" },
+  "personal-insurer-payment": { bar: "bg-teal-600", dot: "bg-teal-600" },
+  "patient-payable": { bar: "bg-crimson-600", dot: "bg-crimson-600" },
+  "unallocated-amount": { bar: "bg-[repeating-linear-gradient(135deg,var(--color-sunken)_0_6px,var(--color-line-strong)_6px_8px)]", dot: "bg-line-strong" },
+};
+
+/**
+ * "Who pays" at a glance: one bar, one segment per payer row Engine 2 returned. Display only: each
+ * width is that row's share of the gross bill (both Engine 2 values); no total is recomputed, and
+ * waivers (non-payer adjustments) are not drawn as payments.
+ */
+function WhoPaysBar({ rows, gross }: { rows: MedicalClaimBreakdownRow[]; gross: Engine2AmountOutput }) {
+  const total = Number(gross.sen);
+  const parts = rows.filter((r) => r.type !== "adjustment" && Number(r.amount.sen) > 0 && segmentTone[r.id]);
+  if (!total || !parts.length) return null;
+  const label = parts.map((r) => `${r.label} ${r.amount.display_myr}`).join(", ");
+  return (
+    <figure className="rounded-3xl bg-surface p-4 ring-1 ring-ink/[0.08] sm:p-5" aria-label={`Who pays: ${label}`} data-testid="medical-claim-who-pays">
+      <figcaption className="flex flex-wrap items-baseline justify-between gap-2">
+        <span className="text-subheading text-ink">Who pays</span>
+        <span className="text-caption text-ink-muted">Share of the {gross.display_myr} bill</span>
+      </figcaption>
+      <div className="mt-3 flex h-6 overflow-hidden rounded-full bg-sunken" aria-hidden>
+        {parts.map((r) => (
+          <span key={r.id} className={segmentTone[r.id].bar} style={{ width: `${(Number(r.amount.sen) / total) * 100}%` }} />
+        ))}
+      </div>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2" aria-hidden>
+        {parts.map((r) => (
+          <li key={r.id} className="flex items-center justify-between gap-3 rounded-xl bg-sunken/60 px-3 py-2 text-body-sm">
+            <span className="flex min-w-0 items-center gap-2 text-ink-secondary">
+              <span className={`size-3 shrink-0 rounded-full ${segmentTone[r.id].dot}`} />
+              <span className="truncate">{r.label}</span>
+            </span>
+            <span className="shrink-0 font-semibold tabular-nums text-ink">
+              {r.amount.display_myr} <span className="font-normal text-ink-muted">· {Math.round((Number(r.amount.sen) / total) * 100)}%</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </figure>
+  );
+}
 
 function MoneyRow({
   label,
@@ -143,6 +188,8 @@ export function MedicalClaimResults({
           </div>
         </Card>
       </section>
+
+      <WhoPaysBar rows={presentation.paymentRows} gross={presentation.grossBill} />
 
       <section aria-labelledby="payment-breakdown-heading">
         <div className="mb-3">

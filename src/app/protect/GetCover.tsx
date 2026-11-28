@@ -40,6 +40,7 @@ import { adviserCallBack, areaToSlug, CHANNELS_CHECKED_ON } from "@/data/applyCh
 import { protectAreas } from "./ProtectCheck";
 import { ADVISER_PHOTO } from "./ProtectSections";
 import { Logo } from "@/components/brand/Logo";
+import { startAdviserRequest } from "./AdviserRequest";
 
 /**
  * Protect → Get cover (`#app/protect/get-cover/…`): choose a kind of cover → understand it → get
@@ -339,15 +340,20 @@ function HowStep({ area }: { area: ProtectionArea }) {
           {cta} <ArrowRight size={16} aria-hidden />
         </button>
       </section>
-      <section aria-label="Talk to an adviser" className="mt-3 flex flex-col gap-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.1] sm:flex-row sm:items-center">
-        <img src={ADVISER_PHOTO.src} alt={ADVISER_PHOTO.alt} width={64} height={64} loading="lazy" decoding="async" className="size-16 shrink-0 rounded-xl object-cover object-[71%_22%]" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-body font-semibold text-navy-950">Want help first? Talk to an adviser</span>
-          <span className="block text-body-sm text-ink-secondary">Guidance, not an application: what to ask, what to bring, and how to reach a licensed adviser.</span>
-        </span>
-        <button type="button" onClick={() => go(`${GET_COVER}/${area}/adviser`)} className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-body-sm font-semibold text-navy-900 ring-1 ring-navy-900/30 hover:bg-navy-50">
-          Get Adviser Guidance <ArrowRight size={16} aria-hidden />
+      <section aria-labelledby="talk-adviser" className="mt-3 rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.1]">
+        <button type="button" onClick={() => startAdviserRequest(area)} className="group flex w-full items-center gap-3 text-left">
+          <img src={ADVISER_PHOTO.src} alt="" width={64} height={64} loading="lazy" decoding="async" className="size-16 shrink-0 rounded-xl object-cover object-[71%_22%]" />
+          <span className="min-w-0 flex-1">
+            <span id="talk-adviser" className="block text-body font-semibold text-navy-950">Want help first? Talk to an adviser</span>
+            <span className="block text-body-sm text-ink-secondary">Prepare a short request for a licensed adviser. Under 18? A parent or guardian joins in.</span>
+            <span className="mt-1 inline-flex items-center gap-1 text-body-sm font-semibold text-crimson-600">
+              Request an adviser <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </span>
+          </span>
         </button>
+        <a href={`#${GET_COVER}/${area}/adviser`} className="mt-2 inline-flex min-h-11 items-center gap-1.5 border-t border-ink/10 pt-2 text-body-sm font-semibold text-navy-800 underline underline-offset-2 sm:w-full">
+          Or read: what to ask an adviser
+        </a>
       </section>
       <p className="mt-3 text-caption text-ink-muted">Have cover through work? Check your employer&apos;s scheme first; group cover usually ends when you leave the job.</p>
       <StepNav back={stepHash(area, "ready")} />
@@ -452,6 +458,9 @@ function AdviserHandoff({ area }: { area: ProtectionArea }) {
           GREAT EMPOWER doesn&apos;t arrange advisers. Use this page to prepare, then contact one through an official channel.
         </p>
       </div>
+      <button type="button" onClick={() => startAdviserRequest(area)} className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 px-6 text-body-sm font-bold text-white hover:bg-crimson-700 sm:w-auto">
+        Prepare an adviser request <ArrowRight size={16} aria-hidden />
+      </button>
 
       <Block id="why-adviser" title="When an adviser helps most">
         <ul className="grid gap-2 sm:grid-cols-2">

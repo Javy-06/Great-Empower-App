@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, ClipboardCheck, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, ChartColumn, ClipboardCheck, ExternalLink, Info, ShieldAlert, ShieldCheck, Target } from "lucide-react";
+import { ChecklistSpot, DiagnosisSpot, FamilyUmbrellaSpot, HospitalSpot, IncomePauseSpot } from "@/components/illustrations/Spots";
 import { EmergencyFundCalculator } from "@/components/cards/SimulateCards";
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
 import { MedicalClaimSimulator } from "./MedicalClaimSimulator";
-import { GeIcon, type GeIconName } from "@/components/illustrations/GeIcons";
+import { type GeIconName } from "@/components/illustrations/GeIcons";
 import { CiRunwayScenario, FamilyProtectionScenario } from "./protection/ProtectionScenarios";
 import { TermExplainer } from "./protection/TermExplainer";
 
@@ -52,11 +53,11 @@ export function SimulateHub() {
   return (
     <>
       <PageHero
-        eyebrow="Simulate"
-        title="Try a what-if before it happens."
-        text="Hypothetical scenarios with numbers you choose. Nothing here checks your cover, gives a quote or applies for anything."
-        image="/images/pexels/young-asian-students-learning-together.webp"
-        imagePosition="65% 25%"
+        eyebrow="Cover simulation"
+        title="Try a real-life scenario."
+        text="See how cover could work, what you may pay, and what a plan could cover. Hypothetical numbers you choose."
+        image="/images/pexels/protection-medical-hospital-rest.webp"
+        imagePosition="60% 35%"
         backLabel="Simulate"
         onBack={() => go("app/home")}
         titleId="simulate-title"
@@ -68,13 +69,20 @@ export function SimulateHub() {
 
 type ToolId = (typeof TOOL_IDS)[number];
 
-const tools: Array<{ id: ToolId; title: string; short: string; hint: string; need: string; cant: string; icon: GeIconName }> = [
-  { id: "tool-bill", title: "Medical bill", short: "Medical bill", hint: "How a hospital bill is shared between you, an employer and a plan.", need: "A bill amount and the plan settings you want to try: deductible, co-payment and limit.", cant: "Whether a real policy would pay. Only the insurer decides a claim.", icon: "heartPulse" },
-  { id: "tool-fund", title: "Emergency fund", short: "Emergency fund", hint: "How many months your savings could cover essentials.", need: "Your savings and your essential monthly costs.", cant: "How much you personally should save.", icon: "cash" },
-  { id: "tool-family", title: "Family protection", short: "Family", hint: "What your dependants might need, compared with life cover you count. Life insurance doesn't cancel debts.", need: "Monthly support for the people who depend on you, for how long, and cover you already count.", cant: "How much life cover to buy.", icon: "family" },
-  { id: "tool-ci", title: "Critical illness runway", short: "Critical illness", hint: "A critical illness payout is a one-off lump sum, not a salary. Compare it with a recovery period.", need: "A lump-sum amount and your monthly costs while you recover.", cant: "Whether a diagnosis would qualify for a payout.", icon: "ribbon" },
+const tools: Array<{ id: ToolId; title: string; short: string; sub: string; hint: string; need: string; cant: string; icon: GeIconName }> = [
+  { id: "tool-bill", title: "Medical bill", short: "Medical bill", sub: "Hospitalisation and treatment", hint: "How a hospital bill is shared between you, an employer and a plan.", need: "A bill amount and the plan settings you want to try: deductible, co-payment and limit.", cant: "Whether a real policy would pay. Only the insurer decides a claim.", icon: "heartPulse" },
+  { id: "tool-fund", title: "Emergency fund", short: "Emergency fund", sub: "Months your savings could last", hint: "How many months your savings could cover essentials.", need: "Your savings and your essential monthly costs.", cant: "How much you personally should save.", icon: "cash" },
+  { id: "tool-family", title: "Family protection", short: "Family", sub: "What your loved ones might need", hint: "What your dependants might need, compared with life cover you count. Life insurance doesn't cancel debts.", need: "Monthly support for the people who depend on you, for how long, and cover you already count.", cant: "How much life cover to buy.", icon: "family" },
+  { id: "tool-ci", title: "Critical illness runway", short: "Critical illness", sub: "A lump sum vs a year of recovery", hint: "A critical illness payout is a one-off lump sum, not a salary. Compare it with a recovery period.", need: "A lump-sum amount and your monthly costs while you recover.", cant: "Whether a diagnosis would qualify for a payout.", icon: "ribbon" },
 ];
 
+
+const toolArt: Record<ToolId, (p: { className?: string }) => React.ReactNode> = {
+  "tool-bill": HospitalSpot,
+  "tool-fund": IncomePauseSpot,
+  "tool-family": FamilyUmbrellaSpot,
+  "tool-ci": DiagnosisSpot,
+};
 
 const learnMore: Partial<Record<ToolId, { href: string; label: string }>> = {
   "tool-bill": { href: "#app/learn/protection/medical", label: "About medical cover" },
@@ -98,10 +106,14 @@ function NeedsStep({ tool, onTool }: { tool: ToolId; onTool: (t: ToolId) => void
   return (
     <>
       <Container className="max-w-[60rem] scroll-mt-20 pt-6" id="needs-tools">
-        <h2 className="font-brand text-[1.875rem] font-semibold text-navy-950">Pick a scenario</h2>
-        <div role="tablist" aria-label="Simulation tools" className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <h2 className="flex items-center gap-3 font-brand text-[1.875rem] font-semibold text-navy-950">
+          <span className="h-7 w-1.5 rounded-full bg-teal-600" aria-hidden />
+          Pick a scenario
+        </h2>
+        <div role="tablist" aria-label="Simulation scenarios" className="mt-3 grid grid-cols-2 gap-2.5 sm:gap-3">
           {tools.map((t, i) => {
             const on = t.id === tool;
+            const Art = toolArt[t.id];
             return (
               <button
                 key={t.id}
@@ -114,37 +126,57 @@ function NeedsStep({ tool, onTool }: { tool: ToolId; onTool: (t: ToolId) => void
                 onClick={() => onTool(t.id)}
                 onKeyDown={(e) => onKey(e, i)}
                 className={cn(
-                  "flex min-h-14 items-center gap-2.5 rounded-2xl px-3 py-2 text-left text-body-sm font-semibold transition-colors",
-                  on ? "bg-navy-900 text-white shadow-e2" : "bg-surface text-navy-950 ring-1 ring-ink/[0.08] hover:ring-ink/20",
+                  "relative flex min-h-[9.5rem] flex-col items-start gap-2 rounded-[1.25rem] p-3 text-left transition-[box-shadow,background-color] sm:min-h-[8.5rem] sm:flex-row sm:items-center sm:gap-4 sm:p-4",
+                  on ? "bg-navy-900 text-white shadow-e2" : "bg-surface text-navy-950 shadow-e1 ring-1 ring-ink/[0.06] hover:shadow-e2",
                 )}
               >
-                <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-xl", on ? "bg-white/15 text-white" : "bg-navy-50 text-navy-800")}>
-                  <GeIcon name={t.icon} size={18} aria-hidden />
+                <span className={cn("flex size-16 shrink-0 items-center justify-center rounded-2xl sm:size-20", on ? "bg-white/10" : "bg-sunken/70")}>
+                  <Art className="w-14 sm:w-[4.5rem]" />
                 </span>
-                {t.short}
+                <span className="min-w-0 pr-5">
+                  <span className="block text-body font-bold leading-snug sm:text-[1.125rem]">{t.short}</span>
+                  <span className={cn("mt-0.5 block text-caption sm:text-body-sm", on ? "text-white/85" : "text-ink-secondary")}>{t.sub}</span>
+                </span>
+                {on && (
+                  <span className="absolute right-2.5 top-2.5 inline-flex size-6 items-center justify-center rounded-full bg-white text-navy-900" aria-hidden>
+                    <Check size={15} strokeWidth={3} />
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
-        <dl className="mt-3 grid gap-x-6 gap-y-2 rounded-2xl bg-surface p-4 text-body-sm ring-1 ring-ink/[0.07] sm:grid-cols-3">
-          <div>
-            <dt className="text-caption font-semibold uppercase tracking-[0.1em] text-ink-muted">What it shows</dt>
-            <dd className="mt-0.5 text-navy-950">{active.hint}</dd>
-          </div>
-          <div>
-            <dt className="text-caption font-semibold uppercase tracking-[0.1em] text-ink-muted">You&apos;ll need</dt>
-            <dd className="mt-0.5 text-navy-950">{active.need}</dd>
-          </div>
-          <div>
-            <dt className="text-caption font-semibold uppercase tracking-[0.1em] text-ink-muted">It can&apos;t tell you</dt>
-            <dd className="mt-0.5 text-navy-950">{active.cant}</dd>
-          </div>
-        </dl>
+
+        <section aria-label={`About the ${active.title.toLowerCase()} scenario`} className="mt-4 grid gap-4 rounded-[1.25rem] bg-teal-50/70 p-4 ring-1 ring-teal-100 sm:grid-cols-[9rem_1fr] sm:items-center sm:p-5">
+          <ChecklistSpot className="hidden w-32 sm:block" />
+          <dl className="grid gap-3 sm:border-l sm:border-teal-200 sm:pl-5">
+            {[
+              { icon: Target, k: "What it shows", v: active.hint },
+              { icon: ChartColumn, k: "You'll need", v: active.need },
+              { icon: Info, k: "It can't tell you", v: active.cant },
+            ].map(({ icon: Icon, k, v }) => (
+              <div key={k} className="relative min-h-9 pl-12">
+                <dt className="text-caption font-bold uppercase tracking-[0.12em] text-teal-800">
+                  <span className="absolute left-0 top-0 inline-flex size-9 items-center justify-center rounded-full bg-white text-teal-700 ring-1 ring-teal-200"><Icon size={18} aria-hidden /></span>
+                  {k}
+                </dt>
+                <dd className="mt-0.5 text-body-sm text-navy-950">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
         {more && (
-          <p className="mt-2 text-body-sm text-ink-secondary">
-            New to this? <a href={more.href} className="font-semibold text-navy-800 underline underline-offset-2">{more.label}</a>
+          <p className="mt-3 flex items-center gap-2 text-body-sm text-ink-secondary">
+            <ExternalLink size={15} className="shrink-0 text-navy-700" aria-hidden />
+            <span>New to this? <a href={more.href} className="font-semibold text-navy-800 underline underline-offset-2">{more.label}</a></span>
           </p>
         )}
+        <p role="note" className="mt-4 flex gap-2.5 rounded-2xl bg-gold-50 p-3 text-body-sm text-navy-950 ring-1 ring-gold-100">
+          <ShieldAlert size={18} className="mt-0.5 shrink-0 text-gold-700" aria-hidden />
+          <span>
+            <span className="font-semibold">An educational simulation, not a claim.</span> It can&apos;t tell you whether a real insurer would approve a claim. Actual policy terms, exclusions, limits and the insurer&apos;s decision apply.
+          </span>
+        </p>
       </Container>
 
       {tools.map((t) => (

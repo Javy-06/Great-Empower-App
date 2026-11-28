@@ -193,7 +193,7 @@ test("get cover: understand → skip → ready → apply step offers the in-app 
   await expect(page).toHaveURL(/get-cover\/medical\/ready$/);
   await page.getByRole("button", { name: "Continue to apply" }).click();
   await expect(page).toHaveURL(/get-cover\/medical\/how$/);
-  await page.getByRole("button", { name: "Get Adviser Guidance" }).click();
+  await page.getByRole("link", { name: "Or read: what to ask an adviser" }).click();
   await expect(page).toHaveURL(/get-cover\/medical\/adviser$/);
   await expect(page.getByRole("link", { name: /official call-back page/ })).toHaveAttribute("target", "_blank");
   await page.getByRole("button", { name: /Apply in GREAT EMPOWER/ }).click();
@@ -269,7 +269,7 @@ test("lifetrack: the Home card opens the external game site in a new tab", async
 
 test("simulate: opens straight on the tools, with no profile form", async ({ signedIn: page, problems }) => {
   await go(page, "app/simulate");
-  await expect(page.getByRole("tablist", { name: "Simulation tools" })).toBeVisible();
+  await expect(page.getByRole("tablist", { name: "Simulation scenarios" })).toBeVisible();
   await expect(page.getByLabel("Monthly income")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Check your protection" })).toBeVisible();
   expectClean(problems);

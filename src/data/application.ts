@@ -114,7 +114,7 @@ export function validateDetails(d: ApplicationDetails, today = new Date()): Fiel
   const age = ageOn(d.dateOfBirth, today);
   if (!d.dateOfBirth) e.dateOfBirth = "Enter your date of birth.";
   else if (age === null || age < 0 || age > 100) e.dateOfBirth = "Enter a valid date of birth.";
-  else if (age < 18) e.dateOfBirth = "You need to be 18 or older to apply on your own here.";
+  else if (age < 18) e.dateOfBirth = "This in-app application is for people 18 or older applying on their own. Under 18? Use a parent- or guardian-assisted adviser request instead.";
   if (!d.residency) e.residency = "Choose your residency status.";
   if (d.occupation.trim().length < 2) e.occupation = "Enter your occupation, for example “Student” or “Software engineer”.";
   if (!d.mobile.trim()) e.mobile = "Enter your mobile number.";

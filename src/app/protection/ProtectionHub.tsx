@@ -27,10 +27,10 @@ import {
 import { Container } from "@/components/layout/Editorial";
 import { PageHero } from "@/components/layout/PageHero";
 import { cn } from "@/lib/cn";
-import { findInfographic } from "@/data/learn-media";
 import { TermExplainer } from "./TermExplainer";
+import { CoverPanels, ExampleCard, HowItWorks, LearnMore, paysAs } from "./CoverageGuide";
 import { AccidentStory, BillSplitter, CiTimeline, FamilyMap } from "./CategoryStories";
-import { AccidentIcon, CriticalIllnessIcon, FamilyIcon, GeIcon, IncomeIcon, MedicalIcon, type GeIconName, type IconLike } from "@/components/illustrations/GeIcons";
+import { AccidentIcon, CriticalIllnessIcon, FamilyIcon, IncomeIcon, MedicalIcon, type IconLike } from "@/components/illustrations/GeIcons";
 import {
   AccidentSpot,
   AdviserSpot,
@@ -132,9 +132,9 @@ function HubView() {
 
       {/* 2 + 3 — What can happen → which cover helps */}
       <Section id="what-happens" overline="What can happen" title="Five risks, five kinds of cover">
-        <ul className="grid gap-2">
+        <ul className="grid gap-2.5 sm:grid-cols-2">
           {protectionCategories.map((c) => (
-            <li key={c.slug}>
+            <li key={c.slug} className="sm:last:col-span-2">
               <RiskRow category={c} />
             </li>
           ))}
@@ -205,31 +205,30 @@ function Section({ id, overline, title, children }: { id: string; overline: stri
 
 function RiskRow({ category: c }: { category: ProtectionCategory }) {
   const Spot = categorySpots[c.slug];
+  const Icon = categoryIcons[c.slug];
   return (
     <button
       type="button"
       onClick={() => go(`${PROTECTION_HASH}/${c.slug}`)}
-      className="group grid w-full grid-cols-[4.5rem_1fr_auto] items-center gap-3 rounded-2xl bg-surface p-2.5 pr-3 text-left ring-1 ring-ink/[0.08] transition-shadow hover:shadow-e2 sm:grid-cols-[5rem_1fr_1.1fr_auto] sm:gap-4"
+      className="group flex h-full w-full items-stretch gap-3 overflow-hidden rounded-[1.25rem] bg-surface p-3 text-left ring-1 ring-ink/[0.08] transition-shadow hover:shadow-e2"
     >
-      <Spot className="w-[4.5rem] sm:w-20" />
-      <span className="min-w-0">
-        <span className="block text-body-sm font-semibold text-navy-950">{c.event}</span>
-        <span className="flex items-center gap-1 text-caption text-crimson-700">
-          <ArrowRight size={12} aria-hidden /> {c.problem}
-        </span>
-        {/* Mobile: the cover sits under the risk */}
-        <span className="mt-1.5 inline-flex flex-wrap items-center gap-1.5 sm:hidden">
-          <ShieldCheck size={13} className="text-teal-700" aria-hidden />
-          <span className="text-caption font-semibold text-teal-800">{c.purpose}</span>
-        </span>
+      <span className="flex w-[5.5rem] shrink-0 items-center justify-center rounded-2xl bg-sunken/70 sm:w-28">
+        <Spot className="w-[4.75rem] sm:w-24" />
       </span>
-      <span className="hidden min-w-0 sm:block">
-        <span className="flex items-center gap-1.5 text-body-sm font-semibold text-teal-800">
-          <ShieldCheck size={15} aria-hidden /> {c.purpose}
+      <span className="flex min-w-0 flex-1 flex-col justify-center py-1">
+        <span className="flex items-center gap-1.5 text-caption font-semibold text-crimson-700">
+          <span className="sr-only">Risk: </span>{c.event}
         </span>
-        <span className="block text-caption text-ink-muted">{c.official}</span>
+        <span className="mt-0.5 flex items-center gap-2 text-body font-semibold leading-snug text-navy-950">
+          <span className={cn("inline-flex size-7 shrink-0 items-center justify-center rounded-lg", categoryTones[c.slug])}><Icon size={16} aria-hidden /></span>
+          {c.purpose}
+        </span>
+        <span className="mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-caption font-semibold text-teal-800">
+          <ShieldCheck size={13} aria-hidden /> {paysAs[c.slug]}
+        </span>
+        <span className="mt-1 block text-caption text-ink-muted">{c.official}</span>
       </span>
-      <ArrowRight size={18} className="shrink-0 text-navy-700 transition-transform group-hover:translate-x-0.5" aria-hidden />
+      <ArrowRight size={18} className="shrink-0 self-center text-navy-700 transition-transform group-hover:translate-x-0.5" aria-hidden />
     </button>
   );
 }
@@ -447,7 +446,6 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
   const index = protectionCategories.findIndex((x) => x.slug === c.slug);
   const prev = protectionCategories[index - 1];
   const next = protectionCategories[index + 1];
-  const infographic = c.infographicId ? findInfographic(c.infographicId) : undefined;
   const products = productsFor(c.slug);
 
   return (
@@ -488,34 +486,24 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
         </Container>
       </section>
 
-      <Container className="mt-6 max-w-[56rem]">
-        <div className="grid gap-3 md:grid-cols-2">
-          <ListCard title="May help with" items={c.mayHelp} titles={c.mayHelpTitles} icons={c.mayHelpIcons} tone="good" />
-          <ListCard title="Doesn't automatically cover" items={c.notAutomatic} titles={c.notAutomaticTitles} tone="bad" />
-        </div>
-
-        {/* Categories with a visual story below tell their example there; the text example stays for the others. */}
-        {!["medical", "critical-illness", "life", "personal-accident"].includes(c.slug) && (
-          <div className="mt-4 flex gap-3 rounded-2xl bg-gold-50 p-4 ring-1 ring-gold-100">
-            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-700"><UserRound size={18} aria-hidden /></span>
-            <p className="text-body-sm text-navy-950">
-              <span className="block text-caption font-bold uppercase tracking-[0.08em] text-gold-700">Example (illustrative)</span>
-              {c.example.text}
-            </p>
-          </div>
-          )}
-      </Container>
-
       <Container className="max-w-[56rem]">
-        {c.slug === "medical" && (
-          <>
-            <BillSplitter />
-            <TermExplainer />
-          </>
-        )}
-        {c.slug === "critical-illness" && <CiTimeline />}
-        {c.slug === "life" && <FamilyMap />}
-        {c.slug === "personal-accident" && <AccidentStory />}
+        {/* 1 How it works → 2 May help with → 3 Doesn't automatically cover */}
+        <HowItWorks category={c} />
+        <CoverPanels category={c} />
+
+        {/* 4 Real-life example: the person's story, then the category's own interactive picture */}
+        <ExampleCard category={c}>
+          {c.slug === "medical" && (
+            <>
+              <BillSplitter />
+              <TermExplainer />
+            </>
+          )}
+          {c.slug === "critical-illness" && <CiTimeline />}
+          {c.slug === "life" && <FamilyMap />}
+          {c.slug === "personal-accident" && <AccidentStory />}
+          {c.slug === "tpd" && <div className="mt-4"><LumpSumVsIncome /></div>}
+        </ExampleCard>
       </Container>
 
       <Container className="mt-10 max-w-[56rem]">
@@ -540,32 +528,10 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
         </ul>
       </Container>
 
-      <Container className="mt-10 grid max-w-[56rem] gap-3 md:grid-cols-2">
-        {infographic ? (
-          <button type="button" onClick={() => go(`app/learn/infographic/${infographic.id}`)} className="group flex items-center gap-3 rounded-2xl bg-surface p-3 text-left ring-1 ring-ink/[0.07] hover:shadow-e2">
-            <img src={infographic.thumb} alt="" loading="lazy" className={cn("ge-skeleton shrink-0 rounded-xl object-cover ring-1 ring-ink/[0.06]", infographic.orientation === "landscape" ? "h-20 w-28" : "h-24 w-20")} />
-            <span className="min-w-0 flex-1">
-              <span className="block text-caption font-bold uppercase tracking-[0.08em] text-ink-muted">Visual guide</span>
-              <span className="block text-body font-semibold text-navy-950">{infographic.title}</span>
-              <span className="block text-caption text-ink-secondary">Pass its quiz to earn points.</span>
-            </span>
-            <ArrowRight size={18} className="shrink-0 text-navy-700" aria-hidden />
-          </button>
-        ) : (
-          <LumpSumVsIncome />
-        )}
-        {c.scenario && (
-          <button type="button" onClick={() => go(c.scenario!.href)} className="group flex items-center gap-3 rounded-2xl bg-crimson-600 p-4 text-left text-white hover:bg-crimson-700">
-            <span className="min-w-0 flex-1">
-              <span className="block text-caption font-bold uppercase tracking-[0.08em] text-white/90">Try it</span>
-              <span className="block text-body font-semibold">{c.scenario.label}</span>
-              <span className="block text-caption text-white/90">{c.scenario.text}</span>
-            </span>
-            <ArrowRight size={18} className="shrink-0" aria-hidden />
-          </button>
-        )}
+      {/* 5 Learn more */}
+      <Container className="max-w-[56rem]">
+        <LearnMore category={c} />
       </Container>
-
       <Container className="mt-10 grid max-w-[56rem] gap-2">
         {c.malaysia && (
           <Disclosure title={`In Malaysia (${c.malaysia.length})`} icon={Landmark}>
@@ -630,32 +596,7 @@ function CategoryView({ category: c }: { category: ProtectionCategory }) {
   );
 }
 
-/** Covered / not-covered list: icon tile + short title + one supporting line per item. */
-function ListCard({ title, items, titles, icons, tone }: { title: string; items: string[]; titles: string[]; icons?: GeIconName[]; tone: "good" | "bad" }) {
-  const good = tone === "good";
-  return (
-    <section className={cn("rounded-2xl p-4", good ? "bg-surface ring-1 ring-ink/[0.08]" : "bg-crimson-50/70 ring-1 ring-crimson-100")} aria-label={title}>
-      <h2 className={cn("flex items-center gap-2 text-body font-semibold", good ? "text-teal-800" : "text-crimson-700")}>
-        {good ? <Check size={18} aria-hidden /> : <X size={18} aria-hidden />} {title}
-      </h2>
-      <ul className="mt-3 grid gap-3">
-        {items.map((it, i) => (
-          <li key={it} className="flex gap-3">
-            <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-xl", good ? "bg-teal-50 text-teal-700" : "bg-white text-crimson-600")}>
-              {good && icons ? <GeIcon name={icons[i]} size={20} aria-hidden /> : <X size={18} strokeWidth={2.25} aria-hidden />}
-            </span>
-            <span className="min-w-0 pt-0.5">
-              <span className="block text-body-sm font-semibold text-navy-950">{titles[i]}</span>
-              <span className="block text-caption text-ink-secondary">{it}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-/** For TPD (no infographic): how a lump sum differs from a monthly income. */
+/** For TPD: how a lump sum differs from a monthly income. */
 function LumpSumVsIncome() {
   return (
     <figure className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.07]" aria-label="Illustration: a lump sum is paid once and then drawn down, while an income benefit pays a regular amount each month.">
