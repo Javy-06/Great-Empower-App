@@ -192,7 +192,7 @@ export type AreaStatus = "covered" | "review" | "gap" | "not-assessed";
 
 /** Each status has a colour AND a shape, so it never depends on colour alone. */
 export const statusStyle: Record<AreaStatus, { label: string; cls: string; bar: string; icon: typeof Check }> = {
-  covered: { label: "Covered", cls: "bg-success-50 text-success-700", bar: "bg-success-600 text-white", icon: Check },
+  covered: { label: "Covered", cls: "bg-success-50 text-success-700", bar: "bg-success-700 text-white", icon: Check },
   review: { label: "Review", cls: "bg-gold-50 text-gold-700", bar: "bg-gold-500 text-navy-950", icon: TriangleAlert },
   gap: { label: "Gap", cls: "bg-crimson-50 text-crimson-700", bar: "bg-crimson-600 text-white", icon: X },
   "not-assessed": { label: "Not assessed", cls: "bg-sunken text-ink-muted", bar: "bg-sunken text-ink-muted", icon: CircleHelp },

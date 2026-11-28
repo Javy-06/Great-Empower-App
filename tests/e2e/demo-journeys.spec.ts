@@ -112,8 +112,8 @@ test("rewards journey: browse, details, redeem, cancel, confirm, success, wallet
   await page.getByRole("button", { name: "Confirm demo redemption" }).click();
 
   // Success: demo-labelled, points deducted, remaining balance, status.
-  await expect(page.locator("h1")).toHaveText("Redeemed");
-  await expect(page.getByText("Demo redemption", { exact: true })).toBeVisible();
+  await expect(page.locator("h1")).toHaveText("Successfully redeemed");
+  await expect(page.getByText("Demo mode", { exact: true })).toBeVisible();
   await expect(page.locator("main")).toContainText("−1,000");
   await expect(page.locator("main")).toContainText("1,450");
   await expect(page.getByText("In your wallet", { exact: true })).toBeVisible();
@@ -219,7 +219,7 @@ test("isolation: journeys, redemption and reset never touch a real account; real
   await page.goto("/?demo=app#app/rewards/product/gev-rm10");
   await page.getByRole("button", { name: /Redeem for/ }).click();
   await page.getByRole("button", { name: "Confirm demo redemption" }).click();
-  await expect(page.getByText("Demo redemption", { exact: true })).toBeVisible();
+  await expect(page.getByText("Demo mode", { exact: true })).toBeVisible();
   expect(await snapshot()).toEqual(before);
 });
 

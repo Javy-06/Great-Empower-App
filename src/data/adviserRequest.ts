@@ -37,6 +37,10 @@ export interface AdviserRequestDraft {
   topics: ProtectionArea[];
   method: ContactMethod | "";
   time: ContactTime;
+  /** Optional preferred day for the conversation (yyyy-mm-dd). A preference, never a booking. */
+  preferredDate: string;
+  /** Optional note for the adviser, up to NOTES_MAX characters. No health details are asked for. */
+  notes: string;
   /** Review: the user understands this stays on the device. */
   understandsDemo: boolean;
 }
@@ -82,9 +86,16 @@ export function emptyAdviserRequest(prefill?: { fullName?: string; topics?: Prot
     topics: prefill?.topics ?? [],
     method: "",
     time: "",
+    preferredDate: "",
+    notes: "",
     understandsDemo: false,
   };
 }
+
+export const NOTES_MAX = 300;
+
+/** yyyy-mm-dd for a local date. */
+export const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 /** The age band for a valid age in whole years. 18 is the age of majority (Age of Majority Act 1971, s 2). */
 export function ageBand(age: number): AgeBand {
@@ -189,6 +200,13 @@ export function validateAdviserContact(d: AdviserRequestDraft, today = new Date(
     else if (!isEmail(d.email)) e.email = "Enter a valid email address, for example name@example.com.";
   }
   if (!d.method) e.method = "Choose how you'd like to be contacted.";
+  if (d.preferredDate) {
+    const last = new Date(today);
+    last.setFullYear(last.getFullYear() + 1);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d.preferredDate) || d.preferredDate < isoDay(today) || d.preferredDate > isoDay(last))
+      e.preferredDate = "Choose a day from today up to a year ahead, or leave it blank.";
+  }
+  if ((d.notes ?? "").length > NOTES_MAX) e.notes = `Keep the note under ${NOTES_MAX} characters.`;
   return e;
 }
 
@@ -221,6 +239,8 @@ export function toSavedRequest(d: AdviserRequestDraft, today = new Date()): Save
     relationship: minor ? d.relationship : "",
     guardianConsent: minor ? d.guardianConsent : false,
     fullName: d.fullName.trim(),
+    notes: (d.notes ?? "").trim(),
+    preferredDate: d.preferredDate ?? "",
     band,
     savedAt: Date.now(),
   };
@@ -236,8 +256,9 @@ export function requestSummary(r: SavedAdviserRequest, topicLabel: (a: Protectio
       ? `Parent/guardian: ${r.guardianName} (${r.relationship ? relationshipLabels[r.relationship] : ""}), ${r.guardianPhone}, ${r.guardianEmail}`
       : `Contact: ${r.phone}, ${r.email}`,
     `Topics: ${r.topics.length ? r.topics.map(topicLabel).join(", ") : "Not sure yet"}`,
-    `Preferred contact: ${r.method ? contactMethodLabels[r.method] : ""}${r.time ? `, ${contactTimeLabels[r.time]}` : ""}`,
+    `Preferred contact: ${r.method ? contactMethodLabels[r.method] : ""}${r.time ? `, ${contactTimeLabels[r.time]}` : ""}${r.preferredDate ? `, from ${r.preferredDate}` : ""}`,
   ];
+  if (r.notes) lines.push(`Note: ${r.notes}`);
   if (minor) lines.push("Under 18: please confirm eligibility, policy ownership and consent for the plan discussed.");
   return lines.join("\n");
 }

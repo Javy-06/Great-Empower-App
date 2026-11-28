@@ -66,8 +66,8 @@ function Lede({ children }: { children: ReactNode }) {
   return <p className="max-w-[40rem] text-[1.125rem] leading-relaxed text-ink-secondary lg:text-[1.25rem]">{children}</p>;
 }
 
-function Label({ children, tone = "teal" }: { children: ReactNode; tone?: "teal" | "crimson" | "gold" | "navy" }) {
-  const c = { teal: "text-teal-700", crimson: "text-crimson-700", gold: "text-gold-700", navy: "text-navy-700" }[tone];
+function Label({ children, tone = "teal" }: { children: ReactNode; tone?: "teal" | "crimson" | "gold" | "navy" | "onDark" }) {
+  const c = { teal: "text-teal-700", crimson: "text-crimson-700", gold: "text-gold-700", navy: "text-navy-700", onDark: "text-gold-300" }[tone];
   return <p className={cn("text-caption font-bold uppercase tracking-[0.14em]", c)}>{children}</p>;
 }
 
@@ -218,7 +218,7 @@ export const topics: Topic[] = [
           ))}
         </ol>
         <div className="rounded-3xl bg-navy-950 p-5 text-white">
-          <Label tone="gold">Why it matters</Label>
+          <Label tone="onDark">Why it matters</Label>
           <p className="mt-2 text-[1.125rem] leading-relaxed">
             When cover is misunderstood, people find out what isn't paid at the worst moment: after the bill arrives.
           </p>
@@ -326,7 +326,7 @@ export const topics: Topic[] = [
         <Lede>Four simple, explained rules turn the check into a finding for each area, each with a next step.</Lede>
         <ul className="grid gap-2 sm:grid-cols-2">
           {[
-            { s: "Covered", r: "You said you have it. We remind you to check its limits.", cls: "bg-success-600 text-white", icon: Check },
+            { s: "Covered", r: "You said you have it. We remind you to check its limits.", cls: "bg-success-700 text-white", icon: Check },
             { s: "Gap", r: "It matters to you, and you have no cover yet.", cls: "bg-crimson-600 text-white", icon: X },
             { s: "Review", r: "No cover but not a priority, or you're not sure.", cls: "bg-gold-500 text-navy-950", icon: TriangleAlert },
             { s: "Not assessed", r: "Not answered yet. One tap to answer it.", cls: "bg-sunken text-ink-muted", icon: CircleHelp },
@@ -341,16 +341,16 @@ export const topics: Topic[] = [
           ))}
         </ul>
         <div className="rounded-3xl bg-navy-950 p-5 text-white">
-          <Label tone="gold">In the demo: {demoPersona.name}, {demoPersona.age} (fictional)</Label>
+          <Label tone="onDark">In the demo: {demoPersona.name}, {demoPersona.age} (fictional)</Label>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              ["Medical", "Covered", "bg-success-600"],
+              ["Medical", "Covered", "bg-success-700"],
               ["Critical illness", "Gap", "bg-crimson-600"],
               ["Life & income", "Review", "bg-gold-500 text-navy-950"],
               ["Accident", "Review", "bg-gold-500 text-navy-950"],
             ].map(([a, s, c]) => (
               <div key={a} className={cn("rounded-xl p-3 text-center", c)}>
-                <p className="text-caption font-semibold opacity-90">{a}</p>
+                <p className="text-caption font-semibold">{a}</p>
                 <p className="font-bold">{s}</p>
               </div>
             ))}
@@ -482,8 +482,43 @@ export const topics: Topic[] = [
     ),
   },
   {
-    id: "simulate",
+    id: "adviser",
     n: "09",
+    title: "Talk to an adviser",
+    short: "Adviser",
+    subtitle: "Human help, without the pressure",
+    hash: "app/protect/adviser",
+    phoneCaption: "Talk to an adviser: a short request, saved on the device",
+    takeaway: "A person is always an option, and the request is prepared honestly: nothing is booked or sent behind the user's back.",
+    body: () => (
+      <div className="grid gap-6">
+        <Lede>Some decisions need a conversation. A short request prepares it, in the user's own words.</Lede>
+        <Features
+          items={[
+            { icon: HeartPulse, title: "Health or job questions", text: "When a condition or a risky job makes plans harder to compare." },
+            { icon: Users, title: "Under 18", text: "Age comes from the date of birth; a parent or guardian joins in." },
+            { icon: MessagesSquare, title: "Terms explained first", text: "Ask what's covered, limits and costs before deciding." },
+            { icon: CircleHelp, title: "Not sure where to start", text: "Topics, a preferred day and time, and an optional note." },
+          ]}
+        />
+        <Flow
+          tone="teal"
+          steps={[
+            { icon: Users, label: "Details", text: "Name and date of birth" },
+            { icon: ClipboardCheck, label: "Age guidance", text: "Own request, or guardian-assisted" },
+            { icon: MessagesSquare, label: "Contact", text: "How, when, and a note" },
+            { icon: Check, label: "Review", text: "Then submit" },
+          ]}
+        />
+        <Honest>
+          <strong className="font-semibold">Demo request.</strong> GREAT EMPOWER has no adviser integration yet: the request is saved on the device, no adviser is notified and nothing is booked. The user can take the summary to an official adviser channel themselves.
+        </Honest>
+      </div>
+    ),
+  },
+  {
+    id: "simulate",
+    n: "10",
     title: "Simulate",
     short: "Simulate",
     subtitle: "Try a real-life scenario before it happens",
@@ -531,7 +566,7 @@ export const topics: Topic[] = [
   },
   {
     id: "rewards",
-    n: "10",
+    n: "11",
     title: "Rewards",
     short: "Rewards",
     subtitle: "Learning that pays off, and keeps people coming back",
@@ -541,20 +576,20 @@ export const topics: Topic[] = [
     body: () => (
       <div className="grid gap-6">
         <div className="grid items-center gap-5 sm:grid-cols-[auto_1fr]">
-          <ol className="relative mx-auto my-8 grid size-48 shrink-0 place-items-center rounded-full bg-navy-950 text-white sm:my-6 sm:size-56" aria-label="The rewards loop: learn, earn, redeem, then learn more">
-            <span className="text-center font-brand text-[1.375rem] font-semibold leading-tight">Learn<br />loop</span>
+          <div role="img" className="relative mx-auto my-8 grid size-48 shrink-0 place-items-center rounded-full bg-navy-950 text-white sm:my-6 sm:size-56" aria-label="The rewards loop: learn, earn, redeem, then learn more">
+            <span className="text-center font-brand text-[1.375rem] font-semibold leading-tight" aria-hidden>Learn<br />loop</span>
             {[
               { t: "Learn", icon: GraduationCap, cls: "left-1/2 top-0 -translate-x-1/2 -translate-y-1/3" },
               { t: "Earn", icon: Coins, cls: "right-0 top-1/2 -translate-y-1/2 translate-x-1/3" },
               { t: "Redeem", icon: Gift, cls: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/3" },
               { t: "Repeat", icon: ArrowRight, cls: "left-0 top-1/2 -translate-x-1/3 -translate-y-1/2" },
             ].map(({ t, icon: Icon, cls }) => (
-              <li key={t} className={cn("absolute flex flex-col items-center gap-1", cls)}>
+              <span key={t} aria-hidden className={cn("absolute flex flex-col items-center gap-1", cls)}>
                 <span className="inline-flex size-12 items-center justify-center rounded-full bg-gold-500 text-navy-950 ring-4 ring-canvas"><Icon size={20} aria-hidden /></span>
                 <span className="rounded-full bg-canvas px-2 text-caption font-bold text-navy-950">{t}</span>
-              </li>
+              </span>
             ))}
-          </ol>
+          </div>
           <div>
             <Label>How points are earned</Label>
             <ul className="mt-2 grid gap-2">
@@ -573,7 +608,7 @@ export const topics: Topic[] = [
   },
   {
     id: "lifetrack",
-    n: "11",
+    n: "12",
     title: "LifeTrack",
     short: "LifeTrack",
     subtitle: "Make Smart Choices. Protect Your Tomorrow.",
@@ -607,7 +642,7 @@ export const topics: Topic[] = [
   },
   {
     id: "impact",
-    n: "12",
+    n: "13",
     title: "Impact",
     short: "Impact",
     subtitle: "What changes for a young Malaysian",
@@ -632,9 +667,12 @@ export const topics: Topic[] = [
             ]}
           />
         </div>
-        <p className="font-brand text-[1.75rem] font-semibold leading-tight text-navy-950 lg:text-[2.125rem]">
-          Empowering You to Protect Your Tomorrow.
-        </p>
+        <div className="rounded-[1.75rem] bg-navy-950 px-6 py-8 text-center text-white sm:py-10" data-testid="closing">
+          <p className="font-brand text-[2rem] font-semibold leading-tight sm:text-[2.75rem]">
+            Learn. Understand. <span className="text-gold-300">Protect.</span> Empower.
+          </p>
+          <p className="mt-3 text-caption font-bold uppercase tracking-[0.18em] text-white/80">GREAT EMPOWER — Protect Today. Secure Tomorrow.</p>
+        </div>
       </div>
     ),
   },

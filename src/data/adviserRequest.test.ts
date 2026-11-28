@@ -86,3 +86,15 @@ test("summary says the app did not send it", () => {
   assert.match(s, /not sent by the app/);
   assert.match(s, /confirm eligibility, policy ownership and consent/);
 });
+
+test("optional preferred day and note: blank is fine, past or far-future days and long notes are refused", () => {
+  const base = { ...adult() };
+  assert.deepEqual(validateAdviserContact({ ...base, preferredDate: "", notes: "" }, today), {});
+  assert.deepEqual(validateAdviserContact({ ...base, preferredDate: "2026-12-01", notes: "Medical options, please." }, today), {});
+  assert.ok(validateAdviserContact({ ...base, preferredDate: "2026-11-01" }, today).preferredDate);
+  assert.ok(validateAdviserContact({ ...base, preferredDate: "2028-01-01" }, today).preferredDate);
+  assert.ok(validateAdviserContact({ ...base, notes: "x".repeat(301) }, today).notes);
+  const saved = toSavedRequest({ ...base, preferredDate: "2026-12-01", notes: "  hello  " }, today);
+  assert.equal(saved.notes, "hello");
+  assert.match(requestSummary(saved, (t) => t), /from 2026-12-01[\s\S]*Note: hello/);
+});

@@ -9,6 +9,7 @@ import {
   LogOut,
   Maximize,
   Minimize,
+  Play,
   RotateCcw,
   Smartphone,
   X,
@@ -18,6 +19,11 @@ import { cn } from "@/lib/cn";
 import { PhoneFrame } from "../PhoneFrame";
 import { DEMO_URL, resetDemoData } from "../demoSession";
 import { findTopic, topics, type Topic } from "./topics";
+import { AutoBar } from "./auto/AutoBar";
+import { autoRunner, useAuto } from "./auto/runner";
+import { features } from "./auto/script";
+
+const featureForTopic = (id: string) => features.find((f) => f.topic === id);
 
 /**
  * Presentation Demo (`/?demo=present&topic=<id>`): the real app on a phone (left) and the story
@@ -42,6 +48,28 @@ export function PresentationDemo() {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const index = topics.findIndex((t) => t.id === topic.id);
+  const auto = useAuto();
+  const autoOn = auto.mode !== null;
+
+  /** Show a topic's explanation without moving the phone (the Auto Demo drives the phone itself). */
+  const showTopic = useCallback((t: Topic) => {
+    setTopic(t);
+    setOverview(false);
+    const url = new URL(window.location.href);
+    url.searchParams.set("topic", t.id);
+    window.history.replaceState(null, "", url);
+    contentRef.current?.scrollTo({ top: 0 });
+  }, []);
+  useEffect(() => {
+    autoRunner.attach(
+      () => frameRef.current,
+      (id) => {
+        const t = findTopic(id);
+        if (t) showTopic(t);
+      },
+    );
+    return () => autoRunner.stop();
+  }, [showTopic]);
 
   /** Point the phone at a topic's screen, in place (no reload), and scroll to its focus element. */
   const syncPhone = useCallback((t: Topic) => {
@@ -60,6 +88,13 @@ export function PresentationDemo() {
 
   const go = useCallback(
     (t: Topic) => {
+      // During an Auto Demo, picking a topic jumps the demo to that feature.
+      const feature = featureForTopic(t.id);
+      if (autoRunner.state.mode && feature) {
+        autoRunner.jumpTo(feature.id);
+        showTopic(t);
+        return;
+      }
       setTopic(t);
       setOverview(false);
       setConfirmReset(false);
@@ -69,9 +104,19 @@ export function PresentationDemo() {
       syncPhone(t);
       contentRef.current?.scrollTo({ top: 0 });
     },
-    [syncPhone],
+    [syncPhone, showTopic],
   );
-  const step = useCallback((d: 1 | -1) => go(topics[(index + d + topics.length) % topics.length]), [go, index]);
+  const step = useCallback(
+    (d: 1 | -1) => {
+      if (autoRunner.state.mode) return d === 1 ? autoRunner.nextFeature() : autoRunner.prevFeature();
+      go(topics[(index + d + topics.length) % topics.length]);
+    },
+    [go, index],
+  );
+  const startAuto = () => {
+    setMobileView("app");
+    autoRunner.startFull();
+  };
 
   useEffect(() => {
     document.title = `${topic.n} · ${topic.title} — GREAT EMPOWER presentation`;
@@ -86,8 +131,14 @@ export function PresentationDemo() {
       } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
         e.preventDefault();
         step(-1);
+      } else if (e.key === " " && autoRunner.state.mode) {
+        e.preventDefault();
+        const st = autoRunner.state.status;
+        if (st === "playing") autoRunner.pause();
+        else if (st === "paused" || st === "manual") autoRunner.resume();
       } else if (e.key === "Escape") {
         if (overview) setOverview(false);
+        else if (autoRunner.state.status === "playing") autoRunner.pause();
         else if (confirmReset) setConfirmReset(false);
         // In fullscreen the browser uses Escape to leave fullscreen; outside it, Escape exits.
         else if (!document.fullscreenElement) window.location.href = DEMO_URL.entry;
@@ -109,6 +160,7 @@ export function PresentationDemo() {
   };
 
   const reset = () => {
+    autoRunner.stop();
     resetDemoData();
     const w = frameRef.current?.contentWindow;
     try {
@@ -134,12 +186,21 @@ export function PresentationDemo() {
         <span className="hidden h-6 w-px bg-ink/15 sm:block" aria-hidden />
         <p className="min-w-0 flex-1 truncate text-body-sm" data-testid="topic-indicator">
           <span className="font-bold tabular-nums text-crimson-600">{topic.n}</span>
-          <span className="text-ink-muted"> / {topics.length} · </span>
-          <span className="font-semibold text-navy-950">{topic.short}</span>
+          <span className="text-ink-muted max-sm:sr-only"> / {topics.length} · </span>
+          <span className="font-semibold text-navy-950 max-sm:sr-only">{topic.short}</span>
         </p>
+        {!autoOn && (
+          <button
+            type="button"
+            onClick={startAuto}
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-crimson-600 px-3.5 text-body-sm font-bold text-white shadow-e1 hover:bg-crimson-700"
+          >
+            <Play size={16} aria-hidden /> <span className="hidden sm:inline">Start Auto Demo</span><span className="sm:hidden">Auto</span>
+          </button>
+        )}
         <div className="flex shrink-0 items-center gap-1">
-          <Ctl label="Previous topic" onClick={() => step(-1)}><ArrowLeft size={18} aria-hidden /></Ctl>
-          <Ctl label="Next topic" onClick={() => step(1)}><ArrowRight size={18} aria-hidden /></Ctl>
+          <Ctl label={autoOn ? "Previous feature" : "Previous topic"} onClick={() => step(-1)}><ArrowLeft size={18} aria-hidden /></Ctl>
+          <Ctl label={autoOn ? "Next feature" : "Next topic"} onClick={() => step(1)}><ArrowRight size={18} aria-hidden /></Ctl>
           <span className="mx-1 hidden h-6 w-px bg-ink/15 sm:block" aria-hidden />
           <Ctl label="All topics" onClick={() => setOverview(true)} expanded={overview}><LayoutGrid size={18} aria-hidden /><span className="hidden xl:inline">Topics</span></Ctl>
           <Ctl label={navHidden ? "Show navigator" : "Hide navigator"} onClick={() => setNavHidden((v) => !v)} className="hidden lg:inline-flex">
@@ -226,6 +287,18 @@ export function PresentationDemo() {
               <span className="text-caption font-bold uppercase tracking-[0.16em] text-teal-700">{topic.subtitle}</span>
             </p>
             <h1 id="topic-title" className="mt-2 font-brand text-[2.5rem] font-semibold leading-[1.05] text-navy-950 lg:text-[3rem]">{topic.title}</h1>
+            {!autoOn && featureForTopic(topic.id) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileView("app");
+                  autoRunner.startFeature(featureForTopic(topic.id)!.id);
+                }}
+                className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-full bg-navy-900 px-4 text-body-sm font-semibold text-white hover:bg-navy-800"
+              >
+                <Play size={15} aria-hidden /> Auto demo this feature
+              </button>
+            )}
             <div className="mt-6">{topic.body()}</div>
             <aside aria-label="Key takeaway" className="mt-7 flex gap-4 border-l-4 border-crimson-600 bg-surface py-4 pl-5 pr-4 shadow-e1">
               <div>
@@ -239,6 +312,8 @@ export function PresentationDemo() {
           </article>
         </div>
       </main>
+
+      <AutoBar />
 
       {/* ---------------------------------------------------------------- desktop navigator */}
       {!navHidden && (

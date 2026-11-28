@@ -49,6 +49,8 @@ export function demoAdviserDraft(): AdviserRequestDraft {
     topics: ["medical", "accident"],
     method: "whatsapp",
     time: "evening",
+    preferredDate: "",
+    notes: "",
     understandsDemo: false,
   };
 }

@@ -30,6 +30,8 @@ import {
   ADVISER_REQUEST_STEPS,
   ELIGIBILITY_NOTE,
   MINOR_SOURCES,
+  NOTES_MAX,
+  isoDay,
   ageGuidance,
   canSaveAdviserRequest,
   contactMethodLabels,
@@ -228,6 +230,33 @@ export function AdviserRequest({ segment }: { segment?: string }) {
               options={[{ v: "", l: "Any time" }, ...Object.entries(contactTimeLabels).map(([v, l]) => ({ v, l }))]}
               onChange={(v) => update({ time: v as AdviserRequestDraft["time"] })}
             />
+            <TextField
+              className="transition-none"
+              id="preferredDate"
+              label="Preferred day (optional)"
+              type="date"
+              min={isoDay(new Date())}
+              hint="A preference to share with an adviser, not a booking."
+              value={draft.preferredDate ?? ""}
+              error={errors.preferredDate}
+              onChange={(e) => update({ preferredDate: e.target.value })}
+            />
+            <div>
+              <label htmlFor="notes" className="text-body-sm font-semibold text-ink">Anything you&apos;d like to talk about? <span className="font-normal text-ink-muted">(optional)</span></label>
+              <textarea
+                id="notes"
+                rows={3}
+                maxLength={NOTES_MAX}
+                value={draft.notes ?? ""}
+                onChange={(e) => update({ notes: e.target.value })}
+                aria-describedby="notes-hint"
+                aria-invalid={!!errors.notes || undefined}
+                className="ge-input mt-2 min-h-24 w-full py-2"
+                placeholder="e.g. I'd like to understand my medical cover options."
+              />
+              <p id="notes-hint" className="mt-1 text-caption text-ink-muted">Please don&apos;t include health details here. {(draft.notes ?? "").length}/{NOTES_MAX}</p>
+              {errors.notes && <p className="mt-1 text-body-sm text-error-700">{errors.notes}</p>}
+            </div>
             {minor && (
               <div className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]">
                 <Tick id="guardianConsent" checked={draft.guardianConsent} error={errors.guardianConsent} onChange={(v) => update({ guardianConsent: v })}>
@@ -493,6 +522,8 @@ function Review({ draft: d, band, errors, onTick, onBack, onSave }: { draft: Adv
               ] as Array<[string, string]>)),
           ["Contact by", d.method ? contactMethodLabels[d.method] : "—"],
           ["Best time", d.time ? contactTimeLabels[d.time] : "Any time"],
+          ["Preferred day", d.preferredDate ? fmtDob(d.preferredDate) : "No preference"],
+          ["Note", d.notes?.trim() || "—"],
         ]}
       />
       <div className="rounded-2xl bg-surface p-4 ring-1 ring-ink/[0.08]">
@@ -597,7 +628,14 @@ function Done({ request: r }: { request: SavedAdviserRequest }) {
   };
   return (
     <>
-      <PageHero eyebrow="Talk to an adviser" title="Adviser request saved." text="Saved on this device as a demo request. Here's exactly what that means." backLabel="Adviser" onBack={() => go("app/protect")} titleId="adviser-done-title" />
+      <PageHero
+        eyebrow="Talk to an adviser"
+        title={isDemoRuntime() ? "Demo request submitted." : "Adviser request saved."}
+        text={
+          isDemoRuntime()
+            ? "This demonstrates how a consultation request would work. No real adviser booking or notification has been created."
+            : "Saved on this device as a demo request. Here's exactly what that means."
+        } backLabel="Adviser" onBack={() => go("app/protect")} titleId="adviser-done-title" />
       <Container className="max-w-[40rem] pt-5">
         <section aria-labelledby="adviser-status" className="rounded-2xl bg-surface p-5 shadow-e1 ring-1 ring-ink/[0.06]">
           <div className="flex items-start gap-3">

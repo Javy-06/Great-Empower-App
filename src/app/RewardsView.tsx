@@ -436,8 +436,8 @@ function ProductDetail({ id }: { id: string }) {
         <span className="inline-flex size-16 items-center justify-center rounded-full bg-success-50 text-success-600">
           <CheckCircle2 size={34} aria-hidden />
         </span>
-        {isDemoRuntime() && <p className="mt-4 rounded-full bg-gold-50 px-3 py-1 text-caption font-bold uppercase tracking-[0.1em] text-gold-700 ring-1 ring-gold-100">Demo redemption</p>}
-        <h1 className="mt-4 font-brand text-[2rem] font-semibold text-navy-950">Redeemed</h1>
+        {isDemoRuntime() && <p className="mt-4 rounded-full bg-gold-50 px-3 py-1 text-caption font-bold uppercase tracking-[0.1em] text-gold-700 ring-1 ring-gold-100">Demo mode</p>}
+        <h1 className="mt-4 font-brand text-[2rem] font-semibold text-navy-950">{isDemoRuntime() ? "Successfully redeemed" : "Redeemed"}</h1>
         <p className="mt-1 text-body text-ink-secondary">{product.name}</p>
         <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1 text-body-sm font-semibold text-success-700">
           <CheckCircle2 size={15} aria-hidden /> In your wallet

@@ -115,7 +115,7 @@ test("presentation: start on any topic, every topic syncs the phone", async ({ p
   // Arbitrary starting point: Rewards, straight from the URL.
   await page.goto("/?demo=present&topic=rewards");
   await expect(page.locator("h1")).toHaveText("Rewards");
-  await expect(page.getByTestId("topic-indicator")).toContainText("10");
+  await expect(page.getByTestId("topic-indicator")).toContainText("11");
   await expect.poll(() => phoneHash(page)).toBe("#app/rewards");
 
   const nav = page.getByRole("navigation", { name: "Presentation topics" }).filter({ visible: true });
@@ -127,6 +127,7 @@ test("presentation: start on any topic, every topic syncs the phone", async ({ p
     await expect.poll(() => phoneHash(page), { message: `phone for ${t.id}` }).toBe(`#${t.hash}`);
     expect(new URL(page.url()).searchParams.get("topic")).toBe(t.id);
     await expect(page.locator("main")).not.toContainText(FALSE_CLAIMS);
+    if (!mobile) await axe(page, `presentation topic ${t.id}`);
   }
   if (mobile) {
     // Explanation and live app are one tap apart.
@@ -145,12 +146,12 @@ test("presentation: previous/next, keyboard, overview, phone stays interactive",
   await expect(page.locator("h1")).toHaveText("Rewards");
   await page.getByRole("button", { name: "Previous topic" }).click();
   await page.getByRole("button", { name: "Previous topic" }).click();
-  await expect(page.locator("h1")).toHaveText("Get cover");
+  await expect(page.locator("h1")).toHaveText("Talk to an adviser");
   // Keyboard.
   await page.locator("body").press("ArrowRight");
   await expect(page.locator("h1")).toHaveText("Simulate");
   await page.locator("body").press("ArrowLeft");
-  await expect(page.locator("h1")).toHaveText("Get cover");
+  await expect(page.locator("h1")).toHaveText("Talk to an adviser");
   // Wraps around from the first topic.
   await page.goto("/?demo=present");
   await expect(page.locator("h1")).toHaveText("GREAT EMPOWER");
