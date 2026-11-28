@@ -282,25 +282,11 @@ export function WelcomeScreen() {
           />
         </button>
 
-        {/* App Demo: a UI placeholder only. The guided tour is a separate, future feature. */}
-        <div
-          role="group"
-          aria-label="App Demo: watch a quick tour of key features. Coming soon."
-          className={cn(entryCard, "ge-rise flex min-h-[4.75rem] items-center gap-4 p-3.5 sm:p-4")}
-          style={rise(280)}
-        >
-          <EntryRow
-            icon={CirclePlay}
-            tile="bg-teal-50 text-teal-700"
-            title="App Demo"
-            subtitle="Watch a quick tour of key features"
-            trailing={
-              <span className="shrink-0 rounded-full bg-sunken px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted ring-1 ring-ink/[0.06]">
-                Coming soon
-              </span>
-            }
-          />
-        </div>
+        {/* App Demo: opens the Demo System (src/demo): App Demo or Presentation, on a fictional sample
+            profile that is kept separate from every account in this browser. */}
+        <a href="/?demo" className={cn(entryCard, entryButton, "ge-rise hover:bg-teal-50/60")} style={rise(280)}>
+          <EntryRow icon={CirclePlay} tile="bg-teal-50 text-teal-700" title="App Demo" subtitle="Explore the app or the presentation, no account needed" />
+        </a>
 
         <section aria-labelledby="ge-explore" className="ge-rise mt-5" style={rise(300)}>
           <h2 id="ge-explore" className="flex items-center gap-4 text-center text-subheading text-navy-950">

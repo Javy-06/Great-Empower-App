@@ -39,6 +39,18 @@ test("entry: two clear choices, each opening its mode", async ({ page }) => {
   await axe(page, "demo entry");
 });
 
+test("welcome screen: the App Demo card opens the demo, and Start App Demo opens the app", async ({ page }) => {
+  await page.goto("/#app/home");
+  await page.getByRole("link", { name: /App Demo/ }).click();
+  await expect(page).toHaveURL(/\/\?demo$/);
+  await page.getByRole("link", { name: /Start App Demo/ }).click();
+  await expect(page).toHaveURL(/\?demo=app#app\/home$/);
+  await expect(page.locator("body")).toContainText("Aisyah");
+  await page.goto("/?demo");
+  await page.getByRole("link", { name: /Start Presentation/ }).click();
+  await expect(page.locator("h1")).toHaveText("GREAT EMPOWER");
+});
+
 test("app demo: ready to explore with sample data, no sign-in", async ({ page }, info) => {
   test.skip(!["mobile-390", "mobile-375"].includes(info.project.name), "the full-screen app demo is the phone layout");
   await page.goto("/?demo=app#app/home");
