@@ -276,7 +276,11 @@ function Ctl({ label, onClick, children, expanded, className }: { label: string;
 function TopicChip({ topic: t, active, onClick }: { topic: Topic; active: boolean; onClick: () => void }) {
   const ref = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (active) ref.current?.scrollIntoView({ block: "nearest", inline: "center" });
+    if (!active) return;
+    const centre = () => ref.current?.scrollIntoView({ block: "nearest", inline: "center" });
+    centre();
+    // Chip widths change when the web font arrives; centre again so the active topic stays in view.
+    void document.fonts?.ready.then(centre);
   }, [active]);
   return (
     <button

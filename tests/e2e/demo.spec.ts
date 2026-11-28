@@ -240,8 +240,10 @@ for (const [key, url] of [
   test(`visual ${key}`, async ({ page }, info) => {
     test.skip(!["mobile-390", "desktop-1280"].includes(info.project.name), "baselines kept for 390 and 1280");
     await page.goto(url);
-    await page.waitForTimeout(800);
+    // Settle first: under full parallel load the first paint can lag a fixed wait.
+    await page.waitForLoadState("networkidle");
     await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(500);
     // The phone is the live app (covered by the app's own visual tests); mask it here.
     await expect(page).toHaveScreenshot(`${key}.png`, { mask: [page.locator("iframe")], stylePath: "tests/e2e/screenshot.css" });
   });

@@ -31,7 +31,8 @@ import { findStory, NEWS_HASH_PREFIX } from "@/data/news";
 import { goBack } from "@/lib/nav";
 import { initAccounts, useSession } from "@/account/session";
 import { AccountButton, WelcomeScreen } from "./account/AccountScreens";
-import { readDemoMode, isDemoRuntime } from "@/demo/demoSession";
+import { readDemoMode, isDemoRuntime, demoControlsEnabled } from "@/demo/demoSession";
+import { DemoToolbar } from "@/demo/control/DemoToolbar";
 import { DemoAccountButton } from "@/demo/DemoAccountButton";
 
 // Migrate pre-account data once and reopen the last active account (if any). Never in the Demo
@@ -190,6 +191,8 @@ export function ApplicationApp() {
             </p>
           </Container>
         </main>
+
+        {demoControlsEnabled() && <DemoToolbar />}
 
         {/* Floating glass nav: 12px from the screen edge, or above the home indicator. */}
         <div className="fixed inset-x-3 bottom-[max(0.75rem,calc(env(safe-area-inset-bottom)+0.375rem))] z-40 md:hidden">

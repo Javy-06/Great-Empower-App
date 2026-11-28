@@ -24,6 +24,9 @@ import {
   type Engine2ScenarioCalculation,
 } from "./medical-claim/calculateEngine2Scenario";
 import { MedicalClaimResults } from "./medical-claim/MedicalClaimResults";
+import { isDemoRuntime } from "@/demo/demoSession";
+import { demoSignal, useDemoSkip } from "@/demo/control/demoControl";
+import { demoBillDraft } from "@/demo/demoSamples";
 import {
   validateMyrInput,
   validateShareRateInput,
@@ -372,6 +375,25 @@ export function MedicalClaimSimulator() {
 
   const entryButtonLabel = hasDraft ? "Continue your draft" : "Start the bill simulator";
 
+  // App Demo only: fill the wizard with a sample bill instead of typing it live. The same
+  // validation and Engine 2 calculation run when the presenter presses Calculate.
+  const loadDemoSample = () => {
+    setDraft(demoBillDraft());
+    setNextLineId(3);
+    setEducationAcknowledged(true);
+    setTouchedErrors({});
+    invalidateCalculation();
+    setConfirmCancel(false);
+    setStep(steps.length - 1);
+    setIsOpen(true);
+    demoSignal("sim-sample");
+    window.setTimeout(() => document.getElementById("medical-claim-simulator")?.scrollIntoView({ block: "start" }), 60);
+  };
+  useDemoSkip("load a sample RM12,000 bill and go to Review", loadDemoSample, calculation?.kind !== "success");
+  useEffect(() => {
+    if (calculation?.kind === "success") demoSignal("sim-result");
+  }, [calculation]);
+
   return (
     <section
       id="medical-claim-simulator"
@@ -406,6 +428,11 @@ export function MedicalClaimSimulator() {
                 <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" aria-hidden />
               </button>
               <p className="mt-3 text-caption text-ink-muted">About 3 minutes · 7 short steps · your draft stays on this page and isn&apos;t saved.</p>
+            {isDemoRuntime() && (
+              <button type="button" onClick={loadDemoSample} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-dashed border-gold-500/70 bg-gold-50 px-4 text-body-sm font-semibold text-navy-950">
+                Demo only: load a sample bill
+              </button>
+            )}
             </div>
             <ol className="grid gap-2" aria-label="What you'll do">
               {[

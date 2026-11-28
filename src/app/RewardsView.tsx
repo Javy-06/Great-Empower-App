@@ -37,6 +37,8 @@ import {
 import { challengeProgress, heldVouchers, quote, welcomeAvailableFor } from "@/rewards/economy";
 import { rewardsActions, useRewards } from "@/rewards/store";
 import { PassView } from "./rewards/PassView";
+import { isDemoRuntime } from "@/demo/demoSession";
+import { demoSignal } from "@/demo/control/demoControl";
 
 const go = (hash: string) => {
   window.location.hash = hash;
@@ -422,6 +424,7 @@ function ProductDetail({ id }: { id: string }) {
       setCheckout({ phase: "error", message: r.error });
       return;
     }
+    demoSignal("reward-done");
     const pass = r.state.passes.find((p) => p.transactionId === r.transaction.id);
     if (pass) go(`app/rewards/pass/${pass.id}`);
     else setCheckout({ phase: "done", total: -r.transaction.points });
@@ -433,15 +436,19 @@ function ProductDetail({ id }: { id: string }) {
         <span className="inline-flex size-16 items-center justify-center rounded-full bg-success-50 text-success-600">
           <CheckCircle2 size={34} aria-hidden />
         </span>
+        {isDemoRuntime() && <p className="mt-4 rounded-full bg-gold-50 px-3 py-1 text-caption font-bold uppercase tracking-[0.1em] text-gold-700 ring-1 ring-gold-100">Demo redemption</p>}
         <h1 className="mt-4 font-brand text-[2rem] font-semibold text-navy-950">Redeemed</h1>
         <p className="mt-1 text-body text-ink-secondary">{product.name}</p>
+        <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1 text-body-sm font-semibold text-success-700">
+          <CheckCircle2 size={15} aria-hidden /> In your wallet
+        </p>
         <dl className="mt-4 grid w-full grid-cols-2 gap-2 text-left">
           <div className="rounded-xl bg-crimson-50 p-3">
             <dt className="text-caption text-ink-secondary">Points used</dt>
             <dd className="font-brand text-[1.5rem] font-semibold tabular-nums text-crimson-700">−{pts(checkout.total)}</dd>
           </div>
           <div className="rounded-xl bg-teal-50 p-3">
-            <dt className="text-caption text-ink-secondary">Balance now</dt>
+            <dt className="text-caption text-ink-secondary">{isDemoRuntime() ? "Demo balance now" : "Balance now"}</dt>
             <dd className="font-brand text-[1.5rem] font-semibold tabular-nums text-teal-800">{pts(state.points)}</dd>
           </div>
         </dl>
@@ -449,6 +456,9 @@ function ProductDetail({ id }: { id: string }) {
           <p className="mt-3 rounded-xl bg-navy-50 px-4 py-3 text-body-sm text-navy-900">
             Saved in your wallet as a collectible reward. GREAT EMPOWER doesn&apos;t sell insurance, so vouchers can&apos;t be used to pay for insurance and have no cash value.
           </p>
+        )}
+        {isDemoRuntime() && (
+          <p className="mt-3 text-caption text-ink-muted">Demo only: no voucher is issued or sent, no order is created, and no real account or rewards record changes.</p>
         )}
         <div className="mt-6 flex gap-3">
           <button type="button" onClick={() => go("app/rewards/wallet")} className="inline-flex h-12 items-center rounded-full bg-navy-900 px-5 text-body-sm font-semibold text-white">
@@ -563,7 +573,7 @@ function ProductDetail({ id }: { id: string }) {
             </p>
             <div className="mt-3 flex gap-2">
               <button type="button" onClick={confirm} disabled={checkout.phase === "processing"} className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-crimson-600 text-body-sm font-bold text-white hover:bg-crimson-700 disabled:opacity-70">
-                {checkout.phase === "processing" && <Loader2 size={18} className="animate-spin" aria-hidden />} Confirm
+                {checkout.phase === "processing" && <Loader2 size={18} className="animate-spin" aria-hidden />} {isDemoRuntime() ? "Confirm demo redemption" : "Confirm"}
               </button>
               <button type="button" onClick={() => setCheckout({ phase: "idle" })} className="inline-flex h-12 items-center rounded-full px-5 text-body-sm font-semibold text-white ring-1 ring-white/30">
                 Cancel
@@ -574,7 +584,10 @@ function ProductDetail({ id }: { id: string }) {
           <button
             type="button"
             disabled={!q.affordable || held}
-            onClick={() => setCheckout({ phase: "confirm" })}
+            onClick={() => {
+              setCheckout({ phase: "confirm" });
+              demoSignal("reward-confirm");
+            }}
             className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-crimson-600 text-body font-bold text-white hover:bg-crimson-700 disabled:bg-ink/20 disabled:text-ink-muted"
           >
             {held ? "Already in your wallet" : q.affordable ? <>Redeem for {pts(q.total)} <ArrowRight size={18} aria-hidden /></> : `Not enough points (${pts(q.total - state.points)} short)`}
@@ -730,7 +743,7 @@ function WalletView() {
       )}
 
       <Container className="mt-7">
-        <h2 className="flex items-center gap-2 text-heading text-navy-950"><History size={20} aria-hidden /> History</h2>
+        <h2 data-demo="history" className="flex items-center gap-2 text-heading text-navy-950"><History size={20} aria-hidden /> History</h2>
         {state.transactions.length === 0 ? (
           <p className="mt-2 text-body-sm text-ink-muted">No transactions yet.</p>
         ) : (

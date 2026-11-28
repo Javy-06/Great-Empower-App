@@ -4,6 +4,7 @@ import { LogOut, Presentation, RotateCcw, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { demoPersona } from "./demoData";
 import { DEMO_URL, isEmbedded, resetDemoData } from "./demoSession";
+import { demoControl } from "./control/demoControl";
 
 /**
  * In the App Demo, the header's account button becomes a small "Demo" pill: the subtle
@@ -18,7 +19,6 @@ export function DemoAccountButton({ tone = "dark" }: { tone?: "dark" | "light" }
         type="button"
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
-        aria-label="Demo mode, sample profile. Open demo options"
         data-testid="demo-indicator"
         className={cn(
           "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12px] font-bold uppercase tracking-[0.08em]",
@@ -28,6 +28,7 @@ export function DemoAccountButton({ tone = "dark" }: { tone?: "dark" | "light" }
         <span className="size-1.5 rounded-full bg-crimson-600" aria-hidden />
         Demo
         <span className="hidden font-semibold normal-case tracking-normal lg:inline">· Sample profile</span>
+        <span className="sr-only">: sample profile and demo options</span>
       </button>
       {open && createPortal(<DemoSheet onClose={() => setOpen(false)} />, document.body)}
     </>
@@ -93,6 +94,7 @@ function DemoSheet({ onClose }: { onClose: () => void }) {
                 <button
                   type="button"
                   onClick={() => {
+                    demoControl.clear();
                     resetDemoData();
                     window.location.reload();
                   }}

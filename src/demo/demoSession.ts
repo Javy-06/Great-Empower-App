@@ -32,12 +32,19 @@ export function readDemoMode(search = typeof window !== "undefined" ? window.loc
 export const isDemoRuntime = () => readDemoMode() === "app";
 /** Running inside the presentation's (or desktop App Demo's) phone frame. */
 export const isEmbedded = () => new URLSearchParams(window.location.search).get("embed") === "1";
+/**
+ * The App Demo's presenter controls (journeys, pause, skip waiting). Shown in the App Demo, including
+ * its desktop phone (`controls=1`), but not in the Presentation's phone, which has its own controls.
+ */
+export const demoControlsEnabled = () => isDemoRuntime() && (!isEmbedded() || new URLSearchParams(window.location.search).get("controls") === "1");
 
 export const DEMO_URL = {
   entry: "/?demo",
   app: "/?demo=app#app/home",
   present: (topic?: string) => `/?demo=present${topic ? `&topic=${topic}` : ""}`,
   phone: (hash: string) => `/?demo=app&embed=1#${hash}`,
+  /** The App Demo's desktop phone: same app, with the presenter controls. */
+  stagePhone: (hash: string) => `/?demo=app&embed=1&controls=1#${hash}`,
 };
 
 const SEED_FLAG = `ge-demo-seed::${DEMO_ACCOUNT_ID}`;

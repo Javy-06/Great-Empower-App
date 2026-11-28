@@ -5,6 +5,7 @@ import { Logo } from "@/components/brand/Logo";
 import { PhoneFrame } from "./PhoneFrame";
 import { demoPersona } from "./demoData";
 import { DEMO_URL, isEmbedded, resetDemoData } from "./demoSession";
+import { demoControl } from "./control/demoControl";
 
 /**
  * App Demo (`/?demo=app`). On phones and tablets it IS the app (mobile-first, full screen). On wide
@@ -46,7 +47,7 @@ function DemoStage() {
   }, []);
   const open = (hash: string) => {
     try {
-      frameRef.current?.contentWindow?.location.replace(DEMO_URL.phone(hash));
+      frameRef.current?.contentWindow?.location.replace(DEMO_URL.stagePhone(hash));
       frameRef.current?.contentWindow?.scrollTo({ top: 0 });
     } catch {
       /* still loading */
@@ -98,9 +99,10 @@ function DemoStage() {
                 <button
                   type="button"
                   onClick={() => {
+                    demoControl.clear();
                     resetDemoData();
                     try {
-                      frameRef.current?.contentWindow?.location.replace(DEMO_URL.phone("app/home"));
+                      frameRef.current?.contentWindow?.location.replace(DEMO_URL.stagePhone("app/home"));
                       frameRef.current?.contentWindow?.location.reload();
                     } catch {
                       /* ignore */
@@ -131,7 +133,7 @@ function DemoStage() {
         </div>
       </aside>
       <main className="min-h-0 p-6">
-        <PhoneFrame src={DEMO_URL.phone(start)} frameRef={frameRef} />
+        <PhoneFrame src={DEMO_URL.stagePhone(start)} frameRef={frameRef} />
       </main>
     </div>
   );

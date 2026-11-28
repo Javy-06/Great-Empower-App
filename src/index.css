@@ -607,3 +607,10 @@
     display: none;
   }
 }
+
+/* App Demo "Pause": freeze decorative motion (the app stays fully usable). See src/demo/control. */
+[data-demo-paused] *,
+[data-demo-paused] *::before,
+[data-demo-paused] *::after {
+  animation-play-state: paused !important;
+}

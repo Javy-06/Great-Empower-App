@@ -66,12 +66,11 @@ function MoneyRow({
 }) {
   return (
     <div className="grid min-w-0 gap-1 border-b border-line py-3 last:border-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-baseline sm:gap-4">
-      <div className="min-w-0">
-        <dt className={emphasis ? "font-semibold text-ink" : "text-body-sm font-medium text-ink"}>
-          {label}
-        </dt>
-        {note && <dd className="text-caption text-ink-muted">{note}</dd>}
-      </div>
+      {/* dt and dd are direct children of the row (valid <dl> grouping); the note is part of the term. */}
+      <dt className={`min-w-0 ${emphasis ? "font-semibold text-ink" : "text-body-sm font-medium text-ink"}`}>
+        {label}
+        {note && <span className="block text-caption font-normal text-ink-muted">{note}</span>}
+      </dt>
       <dd
         className={`min-w-0 break-words tabular-nums text-ink ${emphasis ? "text-body font-bold" : "text-body-sm font-semibold"}`}
         data-sen={amount?.sen}

@@ -53,6 +53,9 @@ import type { FieldErrors } from "@/data/application";
 import { adviserCallBack, CHANNELS_CHECKED_ON } from "@/data/applyChannels";
 import { ADVISER_PHOTO } from "./ProtectSections";
 import { Choice, ErrorSummary, StepButtons, Tick } from "./ApplyFlow";
+import { isDemoRuntime } from "@/demo/demoSession";
+import { useDemoSkip } from "@/demo/control/demoControl";
+import { demoAdviserDraft } from "@/demo/demoSamples";
 
 /**
  * Protect → Talk to an adviser: `#app/protect/adviser/<step>`.
@@ -124,6 +127,13 @@ export function AdviserRequest({ segment }: { segment?: string }) {
     go(stepHash(to));
   };
 
+  // App Demo only: fill the form with a sample guardian-assisted request instead of typing it live.
+  const fillDemoSample = () => {
+    setErrors({});
+    update(demoAdviserDraft());
+  };
+  useDemoSkip("fill a sample request for a 14-year-old", fillDemoSample, step === "details");
+
   const age = readAge(draft.dateOfBirth);
   const minor = isMinor(age?.band);
   // Later steps need a valid date of birth: without one, show the details step.
@@ -153,6 +163,11 @@ export function AdviserRequest({ segment }: { segment?: string }) {
 
         {shown === "details" && (
           <Section title="Personal details" lead="Who would the cover be for? If it's for your child, enter your child's details here.">
+            {isDemoRuntime() && (
+              <button type="button" onClick={fillDemoSample} className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full border-2 border-dashed border-gold-500/70 bg-gold-50 px-4 text-body-sm font-semibold text-navy-950">
+                Demo only: fill a sample under-18 request
+              </button>
+            )}
             <TextField className="transition-none" id="fullName" label="Full name" autoComplete="name" value={draft.fullName} error={errors.fullName} onChange={(e) => update({ fullName: e.target.value })} />
             <div>
               <TextField

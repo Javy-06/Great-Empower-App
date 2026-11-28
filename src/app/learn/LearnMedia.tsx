@@ -40,6 +40,8 @@ import { ProgressBar } from "@/components/ui/Progress";
 import { earningRules } from "@/rewards/catalogue";
 import { RewardQuiz } from "./RewardQuiz";
 import { useWatchTime } from "./useWatchTime";
+import { isDemoRuntime } from "@/demo/demoSession";
+import { DemoLearnControls } from "@/demo/control/DemoLearnControls";
 import { protectionCategories } from "@/data/protection";
 import { GeIcon } from "@/components/illustrations/GeIcons";
 import type { LearningCategoryKey } from "@/types/learning";
@@ -534,7 +536,7 @@ export function VideoLessonView({ id }: { id: string }) {
             <CheckCircle2 size={14} aria-hidden /> {earned ?? "Watched · points earned"}
           </p>
         ) : watch.required > 0 ? (
-          <div className={cn("mt-4 rounded-2xl p-4", portrait ? "bg-white/10" : "bg-surface ring-1 ring-ink/[0.07]")}>
+          <div data-demo="watch-rule" className={cn("mt-4 rounded-2xl p-4", portrait ? "bg-white/10" : "bg-surface ring-1 ring-ink/[0.07]")}>
             <ProgressBar
               value={watch.watched}
               max={watch.required}
@@ -555,6 +557,8 @@ export function VideoLessonView({ id }: { id: string }) {
             )}
           </div>
         ) : null}
+        {/* App Demo only: presenter shortcuts and the completion card. Never in the real app. */}
+        {isDemoRuntime() && <DemoLearnControls videoRef={videoRef} videoId={id} lang={playing.lang} required={watch.required} earned={watch.earned} />}
       </Container>
 
       {video.summary && playing.lang !== "en" && (
