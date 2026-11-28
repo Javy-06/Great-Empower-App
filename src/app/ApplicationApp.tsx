@@ -31,9 +31,13 @@ import { findStory, NEWS_HASH_PREFIX } from "@/data/news";
 import { goBack } from "@/lib/nav";
 import { initAccounts, useSession } from "@/account/session";
 import { AccountButton, WelcomeScreen } from "./account/AccountScreens";
+import { readDemoMode, isDemoRuntime } from "@/demo/demoSession";
+import { DemoAccountButton } from "@/demo/DemoAccountButton";
 
-// Migrate pre-account data once and reopen the last active account (if any).
-initAccounts();
+// Migrate pre-account data once and reopen the last active account (if any). Never in the Demo
+// System: it runs in its own isolated namespace (src/demo/demoSession.ts) and must not open,
+// sync or change any real account on this device.
+if (!readDemoMode()) initAccounts();
 
 const destinations: DashboardDestination[] = [
   "home",
@@ -152,7 +156,7 @@ export function ApplicationApp() {
             unread={unread}
             points={points}
             rewardsActive={destination === "rewards"}
-            account={<AccountButton tone="light" />}
+            account={isDemoRuntime() ? <DemoAccountButton tone="light" /> : <AccountButton tone="light" />}
           />
         </header>
 
@@ -164,7 +168,7 @@ export function ApplicationApp() {
             onHome={() => navigateTo("home")}
             onRewardsClick={() => navigateTo("rewards")}
             onNotificationsClick={() => navigateTo("notifications")}
-            account={<AccountButton />}
+            account={isDemoRuntime() ? <DemoAccountButton /> : <AccountButton />}
           />
         </header>
 

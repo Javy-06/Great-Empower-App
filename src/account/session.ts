@@ -17,6 +17,7 @@ import { APPLICATION_KEY } from "@/state/application";
 import { SESSIONS_KEY } from "@/app/guide/SessionsView";
 import { CHECKLIST_KEY } from "@/app/GuideCentre";
 import { NOTIFICATIONS_KEY } from "@/data/notifications";
+import { ADVISER_REQUEST_KEY } from "@/state/adviserRequest";
 
 /**
  * Demo account session controller (app-level, not real authentication).
@@ -34,7 +35,8 @@ export type SessionStatus =
 export const sessionStore = createStore<SessionStatus>("ge-session", () => ({ kind: "signed-out" }), "memory");
 export const useSession = () => useStore(sessionStore);
 
-const ACCOUNT_KEYS = [REWARDS_KEY, LEARN_KEY, PROFILE_KEY, SESSIONS_KEY, CHECKLIST_KEY, NOTIFICATIONS_KEY, WATCH_COVERAGE_KEY, APPLICATION_KEY];
+/** Every account-scoped store key. A reset or reseed clears all of them for that account only. */
+export const ACCOUNT_KEYS = [REWARDS_KEY, LEARN_KEY, PROFILE_KEY, SESSIONS_KEY, CHECKLIST_KEY, NOTIFICATIONS_KEY, WATCH_COVERAGE_KEY, APPLICATION_KEY, ADVISER_REQUEST_KEY];
 const loadCloud = () => import("./cloud");
 
 /* ------------------------------------------------------------------------------------------
